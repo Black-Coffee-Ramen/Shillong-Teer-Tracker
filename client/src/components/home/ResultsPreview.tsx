@@ -3,14 +3,18 @@ import { format } from "date-fns";
 import { Result } from "@shared/schema";
 
 export default function ResultsPreview() {
-  const { data: results, isLoading } = useQuery<Result[]>({
+  const { data: results, isLoading, refetch } = useQuery<Result[]>({
     queryKey: ["/api/results"],
+    refetchInterval: 60000, // Refetch every minute
   });
   
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
   const todayResult = results?.find(r => {
     const resultDate = new Date(r.date);
-    return resultDate.toDateString() === today.toDateString();
+    resultDate.setHours(0, 0, 0, 0);
+    return resultDate.getTime() === today.getTime();
   });
   
   return (
