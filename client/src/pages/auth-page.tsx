@@ -59,24 +59,28 @@ export default function AuthPage() {
   });
 
   const onLoginSubmit = (values: z.infer<typeof loginSchema>) => {
+    // If already in a login/register process, don't submit again
+    if (loginMutation.isPending || registerMutation.isPending) {
+      return;
+    }
+    
     loginMutation.mutate(values, {
       onSuccess: () => {
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
+        // Toast notification is handled in the mutation
         navigate("/");
       },
     });
   };
 
   const onRegisterSubmit = (values: z.infer<typeof registerSchema>) => {
+    // If already in a login/register process, don't submit again
+    if (loginMutation.isPending || registerMutation.isPending) {
+      return;
+    }
+    
     registerMutation.mutate(values, {
       onSuccess: () => {
-        toast({
-          title: "Registration successful",
-          description: "Your account has been created.",
-        });
+        // Toast notification is handled in the mutation
         navigate("/");
       },
     });

@@ -37,7 +37,10 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      sameSite: "lax"
     }
   };
 
@@ -73,25 +76,42 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
+      // Enhanced registration schema with better validation messages
       const registrationSchema = insertUserSchema.extend({
-        username: z.string().min(3).max(50),
-        password: z.string().min(6),
-        email: z.string().email().optional(),
-        name: z.string().min(2).optional()
+        username: z.string()
+          .min(3, "Username must be at least 3 characters")
+          .max(50, "Username cannot exceed 50 characters")
+          .trim()
+          .refine(val => /^[a-zA-Z0-9_]+$/.test(val), {
+            message: "Username can only contain letters, numbers, and underscores",
+          }),
+        password: z.string()
+          .min(6, "Password must be at least 6 characters")
+          .refine(val => /[A-Za-z]/.test(val) && /[0-9]/.test(val), {
+            message: "Password must contain at least one letter and one number",
+          }),
+        email: z.string().email("Please enter a valid email").optional().nullish(),
+        name: z.string().min(2, "Name must be at least 2 characters").optional().nullish()
       });
 
       const userData = registrationSchema.parse(req.body);
       
+      // Check if username already exists
       const existingUser = await storage.getUserByUsername(userData.username);
       if (existingUser) {
-        return res.status(400).json({ message: "Username already exists" });
+        return res.status(400).json({ 
+          message: "Registration failed", 
+          errors: [{ path: ["username"], message: "This username is already taken" }] 
+        });
       }
 
+      // Create user with hashed password
       const user = await storage.createUser({
         ...userData,
         password: await hashPassword(userData.password),
       });
 
+      // Log the user in automatically
       req.login(user, (err) => {
         if (err) return next(err);
         // Don't send password to client
@@ -99,25 +119,50 @@ export function setupAuth(app: Express) {
         res.status(201).json(userWithoutPassword);
       });
     } catch (error) {
+      console.error("Registration error:", error);
+      
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: error.errors.map(err => ({
+            path: err.path,
+            message: err.message
+          }))
+        });
+      }
+      
+      // Generic error handler
+      res.status(500).json({ message: "Registration failed. Please try again." });
+    }
+  });
+
+  app.post("/api/login", (req, res, next) => {
+    try {
+      // Validate login input
+      const loginSchema = z.object({
+        username: z.string().min(1, "Username is required"),
+        password: z.string().min(1, "Password is required"),
+      });
+      
+      loginSchema.parse(req.body);
+      
+      passport.authenticate("local", (err: Error | null, user: Express.User | false, info: any) => {
+        if (err) return next(err);
+        if (!user) return res.status(401).json({ message: "Invalid username or password" });
+        
+        req.login(user, (err) => {
+          if (err) return next(err);
+          // Don't send password to client
+          const { password, ...userWithoutPassword } = user;
+          res.status(200).json(userWithoutPassword);
+        });
+      })(req, res, next);
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Validation error", errors: error.errors });
       }
       next(error);
     }
-  });
-
-  app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
-      if (err) return next(err);
-      if (!user) return res.status(401).json({ message: "Invalid username or password" });
-      
-      req.login(user, (err) => {
-        if (err) return next(err);
-        // Don't send password to client
-        const { password, ...userWithoutPassword } = user;
-        res.status(200).json(userWithoutPassword);
-      });
-    })(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {

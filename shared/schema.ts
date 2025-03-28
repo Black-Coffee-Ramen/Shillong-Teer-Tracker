@@ -68,6 +68,10 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
 
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertBet = z.infer<typeof insertBetSchema>;
+export type InsertResult = z.infer<typeof insertResultSchema>;
+export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+
 export type User = typeof users.$inferSelect;
 export type Bet = typeof bets.$inferSelect;
 export type Result = typeof results.$inferSelect;

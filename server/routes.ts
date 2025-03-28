@@ -41,7 +41,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const resultData = insertResultSchema.parse(req.body);
       
       // Check if result for this date already exists
-      const existingResult = await storage.getResultByDate(resultData.date);
+      // Ensure resultData.date is a valid Date
+      const resultDate = resultData.date ? new Date(resultData.date) : new Date();
+      const existingResult = await storage.getResultByDate(resultDate);
       
       if (existingResult) {
         // Update existing result

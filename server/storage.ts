@@ -21,7 +21,7 @@ export interface IStorage {
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getUserTransactions(userId: number): Promise<Transaction[]>;
   
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Use any to fix type issues
 }
 
 export class MemStorage implements IStorage {
@@ -29,7 +29,7 @@ export class MemStorage implements IStorage {
   private bets: Map<number, Bet>;
   private results: Map<number, Result>;
   private transactions: Map<number, Transaction>;
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Use any to fix type issues
   
   currentUserId: number;
   currentBetId: number;
@@ -81,7 +81,13 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id, balance: 0 };
+    const user: User = { 
+      ...insertUser, 
+      id, 
+      balance: 0,
+      name: insertUser.name || null,
+      email: insertUser.email || null
+    };
     this.users.set(id, user);
     return user;
   }
@@ -149,7 +155,13 @@ export class MemStorage implements IStorage {
   
   async createResult(result: InsertResult): Promise<Result> {
     const id = this.currentResultId++;
-    const newResult: Result = { ...result, id };
+    const newResult: Result = { 
+      ...result, 
+      id, 
+      date: result.date || new Date(),
+      round1: result.round1 ?? null,
+      round2: result.round2 ?? null 
+    };
     
     this.results.set(id, newResult);
     return newResult;
@@ -170,7 +182,8 @@ export class MemStorage implements IStorage {
     const newTransaction: Transaction = {
       ...transaction,
       id,
-      date: new Date()
+      date: new Date(),
+      description: transaction.description || null
     };
     
     this.transactions.set(id, newTransaction);
