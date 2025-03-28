@@ -23,9 +23,9 @@ export default function AISuggestions() {
       switch (analysisType) {
         case "frequency":
           return {
-            numbers: [27, 43, 68, 92],
+            numbers: [23, 37, 48, 58],
             confidence: 0.72,
-            description: "These numbers have appeared most frequently in the last 30 days."
+            description: "Based on the last 7 days, numbers ending with 3, 7, 8 appeared more frequently in Round 1. Consider including them in your selection."
           };
         case "pattern":
           return {
@@ -133,9 +133,19 @@ export default function AISuggestions() {
                   </div>
                 </div>
                 
-                <p className="text-gray-400 text-xs mt-2 mb-3">
-                  {aiData?.description}
-                </p>
+                {aiData?.description && (
+                  <p 
+                    className="text-gray-300 text-xs mt-2 mb-3"
+                    dangerouslySetInnerHTML={{
+                      __html: aiData.description.includes("numbers ending with")
+                        ? aiData.description.replace(
+                            /(\d+,\s*)+\d+/g, 
+                            match => `<span class="text-white font-medium">${match}</span>`
+                          )
+                        : aiData.description
+                    }}
+                  />
+                )}
                 
                 <div className="flex flex-wrap gap-2 mt-2">
                   {aiData?.numbers.map(num => (

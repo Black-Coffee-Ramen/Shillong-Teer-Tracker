@@ -5,6 +5,7 @@ import CountdownTimer from "@/components/home/CountdownTimer";
 import ResultsPreview from "@/components/home/ResultsPreview";
 import GameInfo from "@/components/home/GameInfo";
 import AISuggestions from "@/components/home/AISuggestions";
+import LiveStream from "@/components/home/LiveStream";
 import { Button } from "@/components/ui/button";
 
 export default function HomePage() {
@@ -12,25 +13,12 @@ export default function HomePage() {
   
   return (
     <div className="container mx-auto px-4 py-4">
-      {/* Live Game Section */}
+      {/* Live Stream Section */}
+      <LiveStream />
+      
+      {/* Today's Results Preview in a separate section */}
       <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-white font-poppins font-semibold">Live Draw</h2>
-          <div className="flex items-center">
-            <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse mr-1"></span>
-            <span className="text-sm text-red-500">LIVE</span>
-          </div>
-        </div>
-        <div className="aspect-video bg-gray-800 rounded-lg flex items-center justify-center mb-2 overflow-hidden">
-          {/* Placeholder for live video embed - in a real app this would be a YouTube or Facebook iframe */}
-          <div className="text-center">
-            <i className="ri-live-line text-4xl text-gray-500 mb-2"></i>
-            <p className="text-gray-500 text-sm">Live stream will appear here</p>
-            <p className="text-xs text-gray-600 mt-1">YouTube/Facebook embed</p>
-          </div>
-        </div>
-        
-        {/* Today's Results Preview */}
+        <h2 className="text-white font-poppins font-semibold mb-3">Today's Results</h2>
         <ResultsPreview />
       </div>
       
