@@ -60,6 +60,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Direct update endpoint for results by ID
+  app.put("/api/results/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user?.username !== "admin") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+    
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+      
+      const { round1, round2 } = req.body;
+      
+      const updated = await storage.updateResult(id, { 
+        round1: round1 !== undefined ? round1 : null,
+        round2: round2 !== undefined ? round2 : null
+      });
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Result not found" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating result:", error);
+      res.status(500).json({ message: "Error updating result" });
+    }
+  });
+  
   // Bets API
   app.post("/api/bets", async (req, res) => {
     if (!req.isAuthenticated()) {
