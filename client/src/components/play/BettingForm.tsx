@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { cn, formatCurrency } from "@/lib/utils";
+import { useNotification } from "@/hooks/use-notification";
+import { cn, formatCurrency, formatTwoDigits } from "@/lib/utils";
+import { Result } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -16,19 +18,73 @@ interface BettingFormProps {
 export default function BettingForm({ selectedNumbers, selectedRound, onResetSelection }: BettingFormProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { addNotification } = useNotification();
   const [amount, setAmount] = useState<number>(0);
   const [customAmount, setCustomAmount] = useState<string>("");
+  
+  // Fetch today's results to check for wins/near-misses
+  const { data: results } = useQuery<Result[]>({
+    queryKey: ["/api/results"],
+  });
+  
+  // Find today's result
+  const todayResult = results?.find(result => {
+    const resultDate = new Date(result.date);
+    const today = new Date();
+    return resultDate.toDateString() === today.toDateString();
+  });
+  
+  // Check for wins and near-misses after placing bets
+  const checkForWinOrNearMiss = (betNumber: number) => {
+    if (!todayResult) return;
+    
+    // Get the result number for the selected round
+    const resultNumber = selectedRound === 1 ? todayResult.round1 : todayResult.round2;
+    
+    // If the result is not available yet, return early
+    if (resultNumber === null || resultNumber === undefined) return;
+    
+    // Check for exact match (win)
+    if (betNumber === resultNumber) {
+      const winAmount = amount * 80; // 80x multiplier
+      addNotification(
+        `🎉 You won ${formatCurrency(winAmount)}! Your number ${formatTwoDigits(betNumber)} matched today's Round ${selectedRound} result.`,
+        "win"
+      );
+      return;
+    }
+    
+    // Check for near miss (1 digit difference)
+    const betDigits = [Math.floor(betNumber / 10), betNumber % 10];
+    const resultDigits = [Math.floor(resultNumber / 10), resultNumber % 10];
+    
+    // Check if only one digit is different, and the difference is 1
+    const firstDigitDiff = Math.abs(betDigits[0] - resultDigits[0]);
+    const secondDigitDiff = Math.abs(betDigits[1] - resultDigits[1]);
+    
+    if ((firstDigitDiff === 1 && secondDigitDiff === 0) || 
+        (firstDigitDiff === 0 && secondDigitDiff === 1)) {
+      addNotification(
+        `😲 So close! Your number ${formatTwoDigits(betNumber)} was just 1 digit away from the winning number ${formatTwoDigits(resultNumber)}.`,
+        "near-miss"
+      );
+    }
+  };
   
   const placeBetMutation = useMutation({
     mutationFn: async (betData: { number: number; amount: number; round: number }) => {
       const res = await apiRequest("POST", "/api/bets", betData);
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       toast({
         title: "Bet placed successfully!",
         description: `You've placed a bet of ${formatCurrency(amount)} on ${selectedNumbers.length} numbers.`,
       });
+      
+      // Check if we won or had a near miss with the number we just bet on
+      checkForWinOrNearMiss(variables.number);
+      
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       onResetSelection();
       setAmount(0);

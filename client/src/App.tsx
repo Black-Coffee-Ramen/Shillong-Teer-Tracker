@@ -9,8 +9,11 @@ import ResultsPage from "@/pages/results-page";
 import ProfilePage from "@/pages/profile-page";
 import AuthPage from "@/pages/auth-page";
 import { AuthProvider } from "@/hooks/use-auth";
+import { NotificationProvider } from "@/hooks/use-notification";
+import { NotificationContainer } from "@/components/ui/notification";
 import { ProtectedRoute } from "@/lib/protected-route";
 import AppLayout from "@/components/layout/AppLayout";
+import AudioFiles from "@/components/audio/AudioFiles";
 
 function Router() {
   return (
@@ -48,8 +51,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router />
-        <Toaster />
+        <NotificationProvider>
+          <Router />
+          <AudioFiles />
+          <NotificationContainer />
+          <Toaster />
+        </NotificationProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
