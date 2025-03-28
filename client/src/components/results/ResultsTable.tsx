@@ -55,7 +55,7 @@ export default function ResultsTable() {
       
       // Get bets for this date and round
       const matchingBets = userBets.filter(bet => {
-        const betDate = new Date(bet.createdAt);
+        const betDate = new Date(bet.date);
         const resultDate = new Date(selectedDateResult.date);
         return format(betDate, 'yyyy-MM-dd') === format(resultDate, 'yyyy-MM-dd') && 
                bet.round === round;

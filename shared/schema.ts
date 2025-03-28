@@ -36,6 +36,10 @@ export const transactions = pgTable("transactions", {
   type: text("type").notNull(), // deposit, withdraw, bet, win
   date: timestamp("date").defaultNow().notNull(),
   description: text("description"),
+  razorpayOrderId: text("razorpay_order_id"),
+  razorpayPaymentId: text("razorpay_payment_id"),
+  razorpaySignature: text("razorpay_signature"),
+  status: text("status").default("pending"), // pending, completed, failed
 });
 
 // Insert Schemas
@@ -64,6 +68,10 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   amount: true,
   type: true,
   description: true,
+  razorpayOrderId: true,
+  razorpayPaymentId: true,
+  razorpaySignature: true,
+  status: true,
 });
 
 // Types

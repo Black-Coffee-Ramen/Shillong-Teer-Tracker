@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -16,15 +16,112 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useNotification } from "@/hooks/use-notification";
+
+// Define Razorpay interface
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export default function WalletCard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { addNotification } = useNotification();
   const [depositAmount, setDepositAmount] = useState<number>(500);
   const [withdrawAmount, setWithdrawAmount] = useState<number>(500);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "upi">("card");
+  const [isRazorpayReady, setIsRazorpayReady] = useState(false);
+  const [useTestMode, setUseTestMode] = useState(false); // Toggle for test vs. real payment
   
+  // Load Razorpay script
+  useEffect(() => {
+    if (!document.getElementById("razorpay-js")) {
+      const script = document.createElement("script");
+      script.id = "razorpay-js";
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => setIsRazorpayReady(true);
+      document.body.appendChild(script);
+    } else {
+      setIsRazorpayReady(true);
+    }
+    
+    return () => {
+      // Cleanup - remove script on component unmount if needed
+      const existingScript = document.getElementById("razorpay-js");
+      if (existingScript && !document.querySelector('[data-razorpay-active="true"]')) {
+        existingScript.remove();
+      }
+    };
+  }, []);
+  
+  // Create Razorpay order
+  const createOrderMutation = useMutation({
+    mutationFn: async (amount: number) => {
+      const res = await apiRequest("POST", "/api/payment/create-order", { 
+        amount, 
+        currency: "INR" 
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (isRazorpayReady) {
+        openRazorpayCheckout(data);
+      } else {
+        toast({
+          title: "Payment Gateway Error",
+          description: "Payment gateway is not ready. Please try again.",
+          variant: "destructive",
+        });
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Payment Initialization Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Verify Razorpay payment
+  const verifyPaymentMutation = useMutation({
+    mutationFn: async (paymentData: {
+      razorpay_order_id: string;
+      razorpay_payment_id: string;
+      razorpay_signature: string;
+      transactionId: number;
+    }) => {
+      const res = await apiRequest("POST", "/api/payment/verify", paymentData);
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Payment Successful",
+        description: `${formatCurrency(depositAmount)} has been added to your wallet.`,
+      });
+      addNotification(
+        `💰 ${formatCurrency(depositAmount)} has been added to your wallet.`,
+        "info",
+        true
+      );
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      setIsDepositModalOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Payment Verification Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+  
+  // Direct deposit (testing only)
   const depositMutation = useMutation({
     mutationFn: async (amount: number) => {
       const res = await apiRequest("POST", "/api/transactions/deposit", { amount });
@@ -32,7 +129,7 @@ export default function WalletCard() {
     },
     onSuccess: () => {
       toast({
-        title: "Deposit Successful",
+        title: "Deposit Successful (Test Mode)",
         description: `${formatCurrency(depositAmount)} has been added to your wallet.`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
@@ -69,6 +166,86 @@ export default function WalletCard() {
     }
   });
   
+  // Open Razorpay checkout
+  const openRazorpayCheckout = (orderData: any) => {
+    try {
+      const options = {
+        key: orderData.key,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Shillong Teer",
+        description: orderData.description,
+        order_id: orderData.id,
+        prefill: {
+          name: user?.name || user?.username || "",
+          email: user?.email || "",
+          method: paymentMethod === "upi" ? "upi" : "card"
+        },
+        notes: orderData.notes,
+        theme: {
+          color: "#5D3FD3"
+        },
+        handler: function(response: any) {
+          // Handle the payment success
+          verifyPaymentMutation.mutate({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            transactionId: Number(orderData.notes.transactionId)
+          });
+        },
+        modal: {
+          ondismiss: function() {
+            toast({
+              title: "Payment Cancelled",
+              description: "You have closed the payment window. Your wallet has not been charged.",
+              variant: "destructive"
+            });
+          }
+        }
+      };
+      
+      // Set UPI method if selected
+      if (paymentMethod === "upi") {
+        options.prefill.method = "upi";
+      }
+      
+      const razorpayInstance = new window.Razorpay(options);
+      razorpayInstance.on('payment.failed', function (response: any){
+        toast({
+          title: "Payment Failed",
+          description: response.error.description || "Payment could not be processed",
+          variant: "destructive"
+        });
+      });
+      
+      razorpayInstance.open();
+      
+    } catch (error) {
+      console.error("Error opening Razorpay:", error);
+      toast({
+        title: "Payment Error",
+        description: "Could not initiate payment. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRazorpayDeposit = () => {
+    if (depositAmount < 100) {
+      toast({
+        title: "Invalid Amount",
+        description: "Minimum deposit amount is ₹100",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Initiate Razorpay payment flow
+    createOrderMutation.mutate(depositAmount);
+  };
+  
+  // Handle deposit button click
   const handleDeposit = () => {
     if (depositAmount < 100) {
       toast({
@@ -79,7 +256,13 @@ export default function WalletCard() {
       return;
     }
     
-    depositMutation.mutate(depositAmount);
+    if (!useTestMode && isRazorpayReady) {
+      // Use Razorpay gateway
+      handleRazorpayDeposit();
+    } else {
+      // Use direct deposit (test mode)
+      depositMutation.mutate(depositAmount);
+    }
   };
   
   const handleWithdraw = () => {
@@ -163,14 +346,26 @@ export default function WalletCard() {
             <Label className="block text-gray-300 text-sm mb-2">Payment Method</Label>
             <div className="grid grid-cols-2 gap-3">
               <label className="bg-gray-800 rounded-md p-3 cursor-pointer flex items-center">
-                <input type="radio" name="payment-method" className="mr-2" defaultChecked />
+                <input 
+                  type="radio" 
+                  name="payment-method" 
+                  className="mr-2" 
+                  checked={paymentMethod === "card"}
+                  onChange={() => setPaymentMethod("card")}
+                />
                 <div className="flex items-center">
                   <i className="ri-bank-card-line mr-2 text-accent"></i>
                   <span className="text-white text-sm">Card</span>
                 </div>
               </label>
               <label className="bg-gray-800 rounded-md p-3 cursor-pointer flex items-center">
-                <input type="radio" name="payment-method" className="mr-2" />
+                <input 
+                  type="radio" 
+                  name="payment-method" 
+                  className="mr-2"
+                  checked={paymentMethod === "upi"}
+                  onChange={() => setPaymentMethod("upi")}
+                />
                 <div className="flex items-center">
                   <i className="ri-bank-line mr-2 text-accent"></i>
                   <span className="text-white text-sm">UPI</span>
@@ -179,16 +374,46 @@ export default function WalletCard() {
             </div>
           </div>
           
+          <div className="mb-4 mt-2">
+            <div className="flex justify-center mb-2">
+              <div className="bg-gray-800 rounded-md p-2 inline-block">
+                <img 
+                  src="https://i.postimg.cc/kGPKcVYZ/razorpay-logo.png" 
+                  alt="Razorpay" 
+                  className="h-6" 
+                />
+              </div>
+            </div>
+            
+            {import.meta.env.DEV && (
+              <div className="flex items-center justify-between mt-3 px-1 text-xs text-gray-400">
+                <span>Use test mode (without Razorpay)</span>
+                <div 
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${useTestMode ? 'bg-green-600' : 'bg-gray-700'}`}
+                  onClick={() => setUseTestMode(!useTestMode)}
+                  role="switch"
+                  aria-checked={useTestMode}
+                  tabIndex={0}
+                >
+                  <span 
+                    className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${useTestMode ? 'translate-x-6' : 'translate-x-1'}`} 
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          
           <DialogFooter>
             <Button
               onClick={handleDeposit}
               className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium mb-3"
-              disabled={depositMutation.isPending}
+              disabled={depositMutation.isPending || createOrderMutation.isPending || verifyPaymentMutation.isPending}
             >
-              {depositMutation.isPending ? (
+              {depositMutation.isPending || createOrderMutation.isPending || verifyPaymentMutation.isPending ? (
                 <>
                   <i className="ri-loader-4-line animate-spin mr-2"></i>
-                  Processing...
+                  {createOrderMutation.isPending ? "Initializing payment..." : 
+                   verifyPaymentMutation.isPending ? "Verifying payment..." : "Processing..."}
                 </>
               ) : (
                 "Proceed to Payment"

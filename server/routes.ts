@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
 import { insertBetSchema, insertResultSchema, insertTransactionSchema } from "@shared/schema";
+import crypto from "crypto";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -150,6 +151,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Wallet & Transactions API
+  // Create Razorpay Order
+  app.post("/api/payment/create-order", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    try {
+      const orderSchema = z.object({
+        amount: z.number().min(100),
+        currency: z.string().default("INR")
+      });
+      
+      const { amount, currency } = orderSchema.parse(req.body);
+      
+      // Create unique order ID
+      const orderId = `order_${Date.now()}_${req.user.id}`;
+      
+      // Create transaction record with pending status
+      const transaction = await storage.createTransaction({
+        userId: req.user.id,
+        amount: amount,
+        type: "deposit",
+        description: "Razorpay deposit (pending)",
+        razorpayOrderId: orderId,
+        status: "pending"
+      });
+      
+      // Prepare Razorpay order options
+      const options = {
+        amount: amount * 100, // Razorpay expects amount in smallest currency unit (paise)
+        currency,
+        receipt: `receipt_${transaction.id}`,
+        notes: {
+          userId: req.user.id.toString(),
+          transactionId: transaction.id.toString()
+        }
+      };
+      
+      res.status(200).json({
+        id: orderId,
+        amount: options.amount,
+        currency,
+        key: process.env.RAZORPAY_KEY_ID,
+        name: "Shillong Teer",
+        description: "Add funds to your Shillong Teer wallet",
+        prefill: {
+          name: req.user.name || req.user.username,
+          email: req.user.email
+        },
+        notes: options.notes
+      });
+    } catch (error) {
+      console.error("Error creating payment order:", error);
+      res.status(400).json({ message: "Error creating payment order" });
+    }
+  });
+  
+  // Verify payment and update transaction
+  app.post("/api/payment/verify", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    try {
+      const paymentSchema = z.object({
+        razorpay_order_id: z.string(),
+        razorpay_payment_id: z.string(),
+        razorpay_signature: z.string(),
+        transactionId: z.number()
+      });
+      
+      const { 
+        razorpay_order_id, 
+        razorpay_payment_id, 
+        razorpay_signature,
+        transactionId
+      } = paymentSchema.parse(req.body);
+      
+      // Find the pending transaction
+      const transactions = await storage.getUserTransactions(req.user.id);
+      const pendingTransaction = transactions.find(
+        t => t.id === transactionId && 
+             t.status === "pending" && 
+             t.razorpayOrderId === razorpay_order_id
+      );
+      
+      if (!pendingTransaction) {
+        return res.status(400).json({ message: "Transaction not found" });
+      }
+      
+      // Verify signature
+      const text = razorpay_order_id + "|" + razorpay_payment_id;
+      const secret = process.env.RAZORPAY_KEY_SECRET || "";
+      const generatedSignature = crypto
+        .createHmac("sha256", secret)
+        .update(text)
+        .digest("hex");
+      
+      const isValid = generatedSignature === razorpay_signature;
+      
+      if (!isValid) {
+        // Update transaction as failed
+        // Create a new transaction with failed status since our storage doesn't support updating
+        await storage.createTransaction({
+          userId: req.user.id,
+          amount: 0,
+          type: "deposit",
+          description: "Razorpay deposit (failed verification)",
+          razorpayOrderId: razorpay_order_id,
+          razorpayPaymentId: razorpay_payment_id,
+          razorpaySignature: razorpay_signature,
+          status: "failed"
+        });
+        
+        return res.status(400).json({ message: "Invalid payment signature" });
+      }
+      
+      // Create a new transaction with completed status
+      const completedTransaction = await storage.createTransaction({
+        userId: req.user.id,
+        amount: pendingTransaction.amount,
+        type: "deposit",
+        description: "Razorpay deposit (completed)",
+        razorpayOrderId: razorpay_order_id,
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySignature: razorpay_signature,
+        status: "completed"
+      });
+      
+      // Update user balance
+      const updatedUser = await storage.updateUserBalance(req.user.id, pendingTransaction.amount);
+      if (!updatedUser) {
+        return res.status(400).json({ message: "Failed to update balance" });
+      }
+      
+      res.status(200).json({ 
+        success: true, 
+        transaction: completedTransaction,
+        newBalance: updatedUser.balance
+      });
+    } catch (error) {
+      console.error("Error verifying payment:", error);
+      res.status(400).json({ message: "Error verifying payment" });
+    }
+  });
+  
+  // Add funds to wallet (direct method without payment gateway for testing)
   app.post("/api/transactions/deposit", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -173,7 +321,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: req.user.id,
         amount: amount,
         type: "deposit",
-        description: "Wallet deposit"
+        description: "Wallet deposit (testing)",
+        status: "completed"
       });
       
       res.status(201).json({ 
