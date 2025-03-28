@@ -8,6 +8,10 @@ import { cn, formatCurrency, formatTwoDigits } from "@/lib/utils";
 import { Result } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useOfflineDB, storeOfflineItem, getOfflineItems } from "@/hooks/use-offline-db";
+import { offlineStatus } from "@/components/common/OfflineDetector";
+import { WifiOff, Save, CloudOff, ArrowUpRight, RefreshCw } from "lucide-react";
 
 interface BettingFormProps {
   selectedNumbers: number[];
@@ -21,6 +25,49 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
   const { addNotification } = useNotification();
   const [amount, setAmount] = useState<number>(0);
   const [customAmount, setCustomAmount] = useState<string>("");
+  const { db, isLoading: isDbLoading } = useOfflineDB();
+  const [isOffline, setIsOffline] = useState(offlineStatus.isOffline);
+  const [pendingBets, setPendingBets] = useState<number>(0);
+  
+  // Monitor online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+    
+    // Update from global status object
+    setIsOffline(offlineStatus.isOffline);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+  
+  // Check for pending bets on component mount
+  useEffect(() => {
+    const checkPendingBets = async () => {
+      if (!db) return;
+      
+      try {
+        const offlineBets = await getOfflineItems(db, 'offline-bets');
+        setPendingBets(offlineBets.length);
+      } catch (error) {
+        console.error('Error checking pending bets:', error);
+      }
+    };
+    
+    checkPendingBets();
+    
+    // Set up an interval to periodically check for pending bets
+    const interval = setInterval(() => {
+      checkPendingBets();
+    }, 10000);
+    
+    return () => clearInterval(interval);
+  }, [db, offlineStatus.pendingSyncItems]);
   
   // Fetch today's results to check for wins/near-misses
   const { data: results } = useQuery<Result[]>({
@@ -71,6 +118,20 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
     }
   };
   
+  // Function to trigger manual sync with service worker
+  const triggerSync = () => {
+    if (!navigator.onLine) return;
+    
+    addNotification('Synchronizing offline bets...', 'info');
+    
+    // Send message to service worker to trigger sync
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'SYNC_NOW'
+      });
+    }
+  };
+  
   const placeBetMutation = useMutation({
     mutationFn: async (betData: { number: number; amount: number; round: number }) => {
       const res = await apiRequest("POST", "/api/bets", betData);
@@ -115,12 +176,56 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
   const totalBetAmount = selectedNumbers.length * amount;
   const potentialWinning = totalBetAmount * 80; // 80x multiplier
   
-  const handlePlaceBet = () => {
+  const handlePlaceBet = async () => {
     if (selectedNumbers.length === 0 || amount <= 0) {
       return;
     }
     
-    // Place a bet for each selected number
+    // If offline, store bets in IndexedDB
+    if (isOffline && db) {
+      try {
+        const now = new Date();
+        const storedBets = [];
+        
+        for (const number of selectedNumbers) {
+          const offlineBet = {
+            id: `offline-bet-${Date.now()}-${Math.random().toString(36).substring(2, 5)}`,
+            userId: user?.id || 0,
+            number,
+            amount,
+            round: selectedRound,
+            createdAt: now.toISOString(),
+            status: 'pending',
+            syncStatus: 'not_synced'
+          };
+          
+          await storeOfflineItem(db, 'offline-bets', offlineBet);
+          storedBets.push(offlineBet);
+        }
+        
+        // Update pending bets count
+        setPendingBets(prev => prev + selectedNumbers.length);
+        offlineStatus.pendingSyncItems += selectedNumbers.length;
+        
+        toast({
+          title: "Offline bet stored",
+          description: `Your bet on ${selectedNumbers.length} numbers has been saved and will be placed when you're back online.`,
+        });
+        
+        onResetSelection();
+        setAmount(0);
+        setCustomAmount("");
+      } catch (error) {
+        toast({
+          title: "Failed to store offline bet",
+          description: error instanceof Error ? error.message : String(error),
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+    
+    // Online mode: Place a bet for each selected number
     selectedNumbers.forEach(number => {
       placeBetMutation.mutate({
         number,
@@ -134,8 +239,47 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
   
   return (
     <>
+      {isOffline && (
+        <div className="bg-orange-500/20 border border-orange-500 rounded-xl p-3 mb-4 flex items-center">
+          <WifiOff className="text-orange-500 mr-3 h-5 w-5" />
+          <div>
+            <p className="text-white text-sm font-medium">You are currently offline</p>
+            <p className="text-gray-300 text-xs">Your bets will be saved locally and placed when you're back online.</p>
+          </div>
+        </div>
+      )}
+      
+      {!isOffline && pendingBets > 0 && (
+        <div className="bg-green-500/20 border border-green-500 rounded-xl p-3 mb-4 flex justify-between items-center">
+          <div className="flex items-center">
+            <RefreshCw className="text-green-500 mr-3 h-5 w-5" />
+            <div>
+              <p className="text-white text-sm font-medium">
+                You have {pendingBets} offline {pendingBets === 1 ? 'bet' : 'bets'} pending
+              </p>
+              <p className="text-gray-300 text-xs">These will be synchronized automatically</p>
+            </div>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs border-green-500 text-green-500 hover:bg-green-500/20"
+            onClick={triggerSync}
+          >
+            Sync Now
+          </Button>
+        </div>
+      )}
+      
       <div className="bg-secondary rounded-xl p-4 mb-4 shadow-md">
-        <h2 className="text-white font-poppins font-semibold mb-3">Betting Amount</h2>
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-white font-poppins font-semibold">Betting Amount</h2>
+          {isOffline && (
+            <Badge variant="outline" className="text-orange-500 border-orange-500">
+              <WifiOff className="h-3 w-3 mr-1" /> Offline Mode
+            </Badge>
+          )}
+        </div>
         
         <div className="grid grid-cols-4 gap-2 mb-3">
           {predefinedAmounts.map(predefinedAmount => (
@@ -184,17 +328,25 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
         onClick={handlePlaceBet}
         disabled={!canPlaceBet}
         className={cn(
-          "w-full bg-accent hover:bg-accent/90 text-white py-3 rounded-lg font-poppins font-semibold flex items-center justify-center mb-6",
+          "w-full bg-accent hover:bg-accent/90 text-white py-3 rounded-xl font-poppins font-semibold flex items-center justify-center mb-6 h-14",
           !canPlaceBet && "opacity-50 cursor-not-allowed"
         )}
       >
         {placeBetMutation.isPending ? (
           <>
-            <i className="ri-loader-4-line animate-spin mr-2"></i>
+            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
             Placing Bet...
           </>
+        ) : isOffline ? (
+          <>
+            <Save className="mr-2 h-5 w-5" />
+            Save Bet Offline
+          </>
         ) : (
-          "Place Bet"
+          <>
+            <ArrowUpRight className="mr-2 h-5 w-5" />
+            Place Bet
+          </>
         )}
       </Button>
       
@@ -202,17 +354,17 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
       <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-white font-poppins font-semibold flex items-center">
-            <i className="ri-ai-generate text-accent mr-2"></i>
-            AI Analysis
+            <span className="text-accent mr-2 text-lg">AI</span>
+            Analysis
           </h2>
           <button className="text-accent text-sm flex items-center">
-            Refresh <i className="ri-refresh-line ml-1"></i>
+            Refresh <ArrowUpRight className="ml-1 h-3 w-3" />
           </button>
         </div>
         
         <div className="bg-gray-800 rounded-lg p-3">
-          <p className="text-gray-300 text-sm">
-            Based on the last 7 days, numbers ending with <span className="text-accent">3, 7, 8</span> appeared more frequently in Round {selectedRound}. Consider including them in your selection.
+          <p className="text-white text-sm leading-relaxed">
+            Based on the last 7 days, numbers ending with <span className="text-accent font-medium">3, 7, 8</span> appeared more frequently in Round {selectedRound}. Consider including them in your selection.
           </p>
         </div>
       </div>

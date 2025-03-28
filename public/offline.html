@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - Shillong Teer India</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/app-icon.svg" type="image/svg+xml">
+  <style>
+    :root {
+      --accent: #FF6B00;
+      --background: #121212;
+      --foreground: #FFFFFF;
+      --muted: #999999;
+      --border: #333333;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      padding: 0 16px;
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .logo {
+      margin-bottom: 1.5rem;
+      width: 80px;
+      height: 80px;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: var(--foreground);
+    }
+    
+    p {
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    
+    .button {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.2s;
+    }
+    
+    .button:hover {
+      background-color: #FF8833;
+    }
+    
+    .icon {
+      display: block;
+      margin: 0 auto 2rem;
+      width: 64px;
+      height: 64px;
+    }
+    
+    .offline-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background-color: rgba(255, 107, 0, 0.1);
+      border: 1px solid var(--accent);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+    
+    .offline-dot {
+      width: 10px;
+      height: 10px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="/icons/app-icon.svg" alt="Shillong Teer India Logo" class="logo">
+    
+    <div class="offline-message">
+      <span class="offline-dot"></span>
+      <span>You are currently offline</span>
+    </div>
+    
+    <h1>No Internet Connection</h1>
+    
+    <p>
+      It seems that you're not connected to the internet. Don't worry, many features of Shillong Teer India
+      work offline. You can view cached results and place bets that will be submitted once you're back online.
+    </p>
+    
+    <button onclick="location.reload()" class="button">Try Again</button>
+    
+    <p style="margin-top: 2rem; font-size: 0.875rem;">
+      If you're still seeing this page after reconnecting, please check your network settings
+      or try restarting the app.
+    </p>
+  </div>
+
+  <script>
+    // Check periodically if we're back online
+    function checkConnection() {
+      if (navigator.onLine) {
+        window.location.reload();
+      }
+    }
+    
+    // Check connection status every 5 seconds
+    setInterval(checkConnection, 5000);
+    
+    // Also check when online event fires
+    window.addEventListener('online', () => {
+      window.location.reload();
+    });
+  </script>
+</body>
+</html>

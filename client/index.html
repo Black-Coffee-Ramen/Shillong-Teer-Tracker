@@ -2,8 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Official Shillong Teer betting application - place bets, view results, and manage your wallet.">
+    <meta name="theme-color" content="#FF6B00">
     <title>Shillong Teer India</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Teer India">
+    <meta name="application-name" content="Shillong Teer India">
+    <meta name="format-detection" content="telephone=no">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/svg+xml" href="/icons/app-icon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/app-icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/app-icon-512.png">
+    <link rel="apple-touch-icon" href="/icons/app-icon-192.png">
+    <link rel="apple-touch-startup-image" href="/icons/app-icon-512.png">
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- iOS splash screens -->
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px)" href="/icons/splash/iphone5_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px)" href="/icons/splash/iphone6_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px)" href="/icons/splash/iphoneplus_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px)" href="/icons/splash/iphonex_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 768px) and (device-height: 1024px)" href="/icons/splash/ipad_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1112px)" href="/icons/splash/ipadpro1_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1194px)" href="/icons/splash/ipadpro3_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px)" href="/icons/splash/ipadpro2_splash.png">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap');
         
@@ -45,10 +74,275 @@
                 opacity: 0.5;
             }
         }
+        
+        /* Add PWA install prompt styling */
+        #pwa-install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        #pwa-install-prompt button {
+            background-color: #5D3FD3;
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
+    
+    <!-- PWA Install Prompt -->
+    <div id="pwa-install-prompt">
+        Install app on your device
+        <button id="pwa-install-button">Install</button>
+    </div>
+    
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Check browser support for various PWA features
+        const PWA = {
+            serviceWorker: 'serviceWorker' in navigator,
+            indexedDB: 'indexedDB' in window,
+            caches: 'caches' in window,
+            localStorage: 'localStorage' in window,
+            pushManager: 'PushManager' in window,
+            notificationPermission: 'Notification' in window,
+            backgroundSync: 'SyncManager' in window,
+            share: 'share' in navigator,
+            orientation: 'orientation' in screen,
+            pageVisibility: 'hidden' in document
+        };
+        
+        // Log PWA capabilities for debugging
+        console.info('PWA Capabilities:', PWA);
+        
+        // Create a hidden div with data attributes for app to check at runtime
+        const capabilitiesDiv = document.createElement('div');
+        capabilitiesDiv.id = 'pwa-capabilities';
+        capabilitiesDiv.style.display = 'none';
+        Object.entries(PWA).forEach(([key, value]) => {
+            capabilitiesDiv.dataset[key] = value.toString();
+        });
+        document.body.appendChild(capabilitiesDiv);
+        
+        // Register service worker if supported
+        if (PWA.serviceWorker) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.error('ServiceWorker registration failed: ', err);
+                    });
+            });
+            
+            // Handle service worker messages (for offline sync)
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'SYNC_COMPLETE') {
+                    // Handle sync complete message from service worker
+                    showNotification('Sync complete', event.data.message || 'Your offline data has been synchronized.');
+                }
+            });
+        }
+        
+        // Function to show notification from service worker
+        function showNotification(title, message) {
+            // Try to use Notification API if permission granted
+            if (PWA.notificationPermission && Notification.permission === 'granted') {
+                try {
+                    const notification = new Notification(title, {
+                        body: message,
+                        icon: '/icons/app-icon-192.png',
+                        badge: '/icons/app-icon-96.png',
+                        timestamp: Date.now(),
+                        vibrate: [100, 50, 100]
+                    });
+                    
+                    // Auto close after 5 seconds
+                    setTimeout(() => notification.close(), 5000);
+                    return;
+                } catch (e) {
+                    console.log('Notification API failed, falling back to DOM notification');
+                }
+            }
+            
+            // Create notification element (fallback to DOM)
+            const notification = document.createElement('div');
+            notification.classList.add('service-worker-notification');
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <strong>${title}</strong>
+                    <p>${message}</p>
+                </div>
+                <button class="notification-close" aria-label="Close notification">×</button>
+            `;
+            
+            // Style the notification
+            Object.assign(notification.style, {
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                backgroundColor: '#FF6B00',
+                color: 'white',
+                padding: '15px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                zIndex: '9999',
+                maxWidth: '300px',
+                animation: 'slideIn 0.3s ease-out forwards'
+            });
+            
+            // Add animation keyframes
+            if (!document.getElementById('notification-animations')) {
+                const style = document.createElement('style');
+                style.id = 'notification-animations';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                    .service-worker-notification .notification-content {
+                        margin-right: 20px;
+                    }
+                    .service-worker-notification .notification-close {
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
+                        background: none;
+                        border: none;
+                        color: white;
+                        font-size: 18px;
+                        cursor: pointer;
+                        padding: 0;
+                        width: 24px;
+                        height: 24px;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Add to document and set timeout to remove
+            document.body.appendChild(notification);
+            
+            // Add close button functionality
+            const closeBtn = notification.querySelector('.notification-close');
+            closeBtn.addEventListener('click', () => {
+                notification.style.animation = 'slideOut 0.3s ease-in forwards';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            });
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    notification.style.animation = 'slideOut 0.3s ease-in forwards';
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+        
+        // Request notification permission if available
+        function requestNotificationPermission() {
+            if (PWA.notificationPermission && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                Notification.requestPermission();
+            }
+        }
+        
+        // Handle PWA installation prompt
+        let deferredPrompt;
+        const pwaInstallPrompt = document.getElementById('pwa-install-prompt');
+        const pwaInstallButton = document.getElementById('pwa-install-button');
+        
+        // Listen for beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Show the install prompt banner
+            if (pwaInstallPrompt) {
+                pwaInstallPrompt.style.display = 'block';
+            }
+        });
+        
+        // Handle standalone mode detection
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check if app is in standalone/installed mode
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                                (window.navigator.standalone === true) || 
+                                document.referrer.includes('android-app://');
+            
+            // Hide install prompt if already installed
+            if (isStandalone && pwaInstallPrompt) {
+                pwaInstallPrompt.style.display = 'none';
+            }
+            
+            // Request notification permission after a delay
+            setTimeout(requestNotificationPermission, 3000);
+        });
+        
+        // Handle install button click
+        if (pwaInstallButton) {
+            pwaInstallButton.addEventListener('click', (e) => {
+                // Hide the app install prompt
+                if (pwaInstallPrompt) {
+                    pwaInstallPrompt.style.display = 'none';
+                }
+                
+                // Show the browser install prompt
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    // Wait for the user to respond to the prompt
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        } else {
+                            console.log('User dismissed the install prompt');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            });
+        }
+        
+        // Listen for app installed event
+        window.addEventListener('appinstalled', (e) => {
+            console.log('Shillong Teer India was installed');
+            
+            // Hide the install prompt if it's still visible
+            if (pwaInstallPrompt) {
+                pwaInstallPrompt.style.display = 'none';
+            }
+            
+            // Show a thank you notification
+            showNotification('Successfully Installed', 'Thank you for installing Shillong Teer India on your device!');
+        });
+    </script>
 </body>
 </html>
