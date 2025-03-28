@@ -1,0 +1,197 @@
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { Result } from "@shared/schema";
+import { formatTwoDigits } from "@/lib/utils";
+
+export default function ResultsTable() {
+  const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
+  
+  const { data: results, isLoading } = useQuery<Result[]>({
+    queryKey: ["/api/results"],
+  });
+  
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedDate(e.target.value);
+  };
+  
+  const navigateDate = (days: number) => {
+    const date = new Date(selectedDate);
+    date.setDate(date.getDate() + days);
+    setSelectedDate(format(date, 'yyyy-MM-dd'));
+  };
+  
+  // Get selected date's result
+  const selectedDateResult = results?.find(result => {
+    const resultDate = new Date(result.date);
+    return format(resultDate, 'yyyy-MM-dd') === selectedDate;
+  });
+  
+  // Get recent results (last 5 days excluding today)
+  const recentResults = results?.filter(result => {
+    const resultDate = new Date(result.date);
+    return format(resultDate, 'yyyy-MM-dd') !== selectedDate;
+  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+  
+  return (
+    <>
+      <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
+        <h2 className="text-white font-poppins font-semibold mb-4">Shillong Teer Results</h2>
+        
+        {/* Date Selector */}
+        <div className="flex items-center mb-4">
+          <button 
+            className="text-gray-400 p-1" 
+            onClick={() => navigateDate(-1)}
+          >
+            <i className="ri-arrow-left-s-line text-xl"></i>
+          </button>
+          <input 
+            type="date" 
+            className="bg-gray-800 text-white px-3 py-2 rounded-md flex-1 text-center" 
+            value={selectedDate}
+            onChange={handleDateChange}
+            max={format(new Date(), 'yyyy-MM-dd')}
+          />
+          <button 
+            className="text-gray-400 p-1" 
+            onClick={() => navigateDate(1)}
+            disabled={format(new Date(), 'yyyy-MM-dd') === selectedDate}
+          >
+            <i className="ri-arrow-right-s-line text-xl"></i>
+          </button>
+        </div>
+        
+        {/* Today's Result Display */}
+        <div className="bg-gray-800 rounded-lg p-4 mb-4">
+          <p className="text-gray-400 text-center text-sm mb-3">
+            {selectedDate ? format(new Date(selectedDate), 'MMMM d, yyyy') : ''}
+          </p>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-secondary rounded-lg p-3 text-center">
+              <p className="text-gray-400 text-xs mb-1">Round 1 (15:30)</p>
+              <p className="font-mono font-bold text-2xl text-white">
+                {isLoading ? (
+                  <span>Loading...</span>
+                ) : selectedDateResult?.round1 !== undefined && selectedDateResult.round1 !== null ? (
+                  <span className="text-accent">{formatTwoDigits(selectedDateResult.round1)}</span>
+                ) : (
+                  <span className="text-gray-500">--</span>
+                )}
+              </p>
+            </div>
+            <div className="bg-secondary rounded-lg p-3 text-center">
+              <p className="text-gray-400 text-xs mb-1">Round 2 (16:30)</p>
+              <p className="font-mono font-bold text-2xl text-white">
+                {isLoading ? (
+                  <span>Loading...</span>
+                ) : selectedDateResult?.round2 !== undefined && selectedDateResult.round2 !== null ? (
+                  <span className="text-accent">{formatTwoDigits(selectedDateResult.round2)}</span>
+                ) : (
+                  <span className="text-gray-500">--</span>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Past Results Table */}
+      <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
+        <h2 className="text-white font-poppins font-semibold mb-3">Recent Results</h2>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-gray-700">
+                <th className="pb-2 text-gray-400 font-medium text-sm">Date</th>
+                <th className="pb-2 text-gray-400 font-medium text-sm text-center">Round 1</th>
+                <th className="pb-2 text-gray-400 font-medium text-sm text-center">Round 2</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={3} className="py-4 text-center text-gray-400">Loading results...</td>
+                </tr>
+              ) : recentResults && recentResults.length > 0 ? (
+                recentResults.map(result => (
+                  <tr key={result.id} className="border-b border-gray-700">
+                    <td className="py-3 text-white text-sm">
+                      {format(new Date(result.date), 'MMMM d, yyyy')}
+                    </td>
+                    <td className="py-3 text-center">
+                      {result.round1 !== undefined && result.round1 !== null ? (
+                        <span className="font-mono text-accent font-medium">
+                          {formatTwoDigits(result.round1)}
+                        </span>
+                      ) : (
+                        <span className="text-gray-500">--</span>
+                      )}
+                    </td>
+                    <td className="py-3 text-center">
+                      {result.round2 !== undefined && result.round2 !== null ? (
+                        <span className="font-mono text-accent font-medium">
+                          {formatTwoDigits(result.round2)}
+                        </span>
+                      ) : (
+                        <span className="text-gray-500">--</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className="py-4 text-center text-gray-400">No results available</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        
+        <button className="w-full border border-accent text-accent py-2 rounded-lg mt-4 text-sm">
+          Load More Results
+        </button>
+      </div>
+      
+      {/* Result Analysis */}
+      <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
+        <h2 className="text-white font-poppins font-semibold mb-3 flex items-center">
+          <i className="ri-bar-chart-box-line text-accent mr-2"></i>
+          Result Analysis
+        </h2>
+        
+        <div className="bg-gray-800 rounded-lg p-3 mb-3">
+          <p className="text-white text-sm mb-2">Most Frequent Numbers (Last 30 Days)</p>
+          <div className="flex flex-wrap gap-2">
+            <div className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
+              <span className="font-mono mr-1">27</span>
+              <span className="text-accent text-xs">(6x)</span>
+            </div>
+            <div className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
+              <span className="font-mono mr-1">43</span>
+              <span className="text-accent text-xs">(5x)</span>
+            </div>
+            <div className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
+              <span className="font-mono mr-1">76</span>
+              <span className="text-accent text-xs">(5x)</span>
+            </div>
+            <div className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
+              <span className="font-mono mr-1">19</span>
+              <span className="text-accent text-xs">(4x)</span>
+            </div>
+            <div className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
+              <span className="font-mono mr-1">82</span>
+              <span className="text-accent text-xs">(4x)</span>
+            </div>
+          </div>
+        </div>
+        
+        <button className="w-full bg-gray-800 hover:bg-gray-700 text-white py-2 rounded-lg text-sm">
+          View Detailed Analysis
+        </button>
+      </div>
+    </>
+  );
+}
