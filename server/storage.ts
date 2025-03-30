@@ -51,33 +51,52 @@ export class MemStorage implements IStorage {
       checkPeriod: 86400000,
     });
     
-    // Add a month of real historical data
+    // Full historical results data as of March 30, 2025
     const resultsData = [
+      { date: "2025-03-29", round1: 61, round2: 51 },
       { date: "2025-03-28", round1: 86, round2: 25 },
       { date: "2025-03-27", round1: 0, round2: 35 },
       { date: "2025-03-26", round1: 14, round2: 89 },
       { date: "2025-03-25", round1: 78, round2: 72 },
       { date: "2025-03-24", round1: 74, round2: 29 },
+      // Sunday - No results for March 23, 2025
       { date: "2025-03-22", round1: 52, round2: 61 },
       { date: "2025-03-21", round1: 70, round2: 98 },
       { date: "2025-03-20", round1: 92, round2: 66 },
       { date: "2025-03-19", round1: 91, round2: 78 },
       { date: "2025-03-18", round1: 0, round2: 81 },
       { date: "2025-03-17", round1: 44, round2: 46 },
+      // Sunday - No results for March 16, 2025
       { date: "2025-03-15", round1: 30, round2: 70 },
       { date: "2025-03-14", round1: 67, round2: 44 },
       { date: "2025-03-13", round1: 66, round2: 88 },
       { date: "2025-03-12", round1: 26, round2: 71 },
       { date: "2025-03-11", round1: 47, round2: 35 },
       { date: "2025-03-10", round1: 3, round2: 8 },
+      // Sunday - No results for March 9, 2025
       { date: "2025-03-08", round1: 44, round2: 63 },
       { date: "2025-03-07", round1: 83, round2: 10 },
       { date: "2025-03-06", round1: 24, round2: 34 },
       { date: "2025-03-05", round1: 23, round2: 10 },
       { date: "2025-03-04", round1: 82, round2: 76 },
       { date: "2025-03-03", round1: 60, round2: 46 },
+      // Sunday - No results for March 2, 2025
       { date: "2025-03-01", round1: 33, round2: 46 },
-      { date: "2025-02-28", round1: 66, round2: 6 }
+      { date: "2025-02-28", round1: 66, round2: 6 },
+      { date: "2025-02-27", round1: 98, round2: 76 },
+      { date: "2025-02-26", round1: 2, round2: 5 },
+      { date: "2025-02-25", round1: 35, round2: 49 },
+      { date: "2025-02-24", round1: 81, round2: 18 },
+      // Sunday - No results for February 23, 2025
+      { date: "2025-02-22", round1: 5, round2: 17 },
+      { date: "2025-02-21", round1: 84, round2: 57 },
+      { date: "2025-02-20", round1: 95, round2: 28 },
+      { date: "2025-02-19", round1: 36, round2: 26 },
+      { date: "2025-02-18", round1: 43, round2: 85 },
+      { date: "2025-02-17", round1: 84, round2: 54 },
+      // Sunday - No results for February 16, 2025
+      { date: "2025-02-15", round1: 97, round2: 35 },
+      { date: "2025-02-14", round1: 77, round2: 97 }
     ];
     
     // Add all results to the map
@@ -206,10 +225,16 @@ export class MemStorage implements IStorage {
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const id = this.currentTransactionId++;
     const newTransaction: Transaction = {
-      ...transaction,
       id,
+      type: transaction.type,
+      amount: transaction.amount,
+      userId: transaction.userId,
       date: new Date(),
-      description: transaction.description || null
+      description: transaction.description || null,
+      status: transaction.status || null,
+      razorpayOrderId: transaction.razorpayOrderId || null,
+      razorpayPaymentId: transaction.razorpayPaymentId || null,
+      razorpaySignature: transaction.razorpaySignature || null
     };
     
     this.transactions.set(id, newTransaction);

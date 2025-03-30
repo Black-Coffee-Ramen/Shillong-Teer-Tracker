@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Bet, Result } from "@shared/schema";
 import { formatTwoDigits, formatCurrency } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useNotification } from "@/hooks/use-notification";
+import { CalendarX } from "lucide-react";
 
 export default function ResultsTable() {
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
@@ -32,17 +33,34 @@ export default function ResultsTable() {
     setSelectedDate(format(date, 'yyyy-MM-dd'));
   };
   
+  // Check if selected date is a Sunday
+  const isSunday = useMemo(() => {
+    const date = new Date(selectedDate);
+    return date.getDay() === 0; // 0 is Sunday in JavaScript
+  }, [selectedDate]);
+  
+  // Check if selected date is today or in the future
+  const isFutureOrToday = useMemo(() => {
+    const selectedDateObj = new Date(selectedDate);
+    selectedDateObj.setHours(0, 0, 0, 0);
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return selectedDateObj >= today;
+  }, [selectedDate]);
+  
   // Get selected date's result
   const selectedDateResult = results?.find(result => {
     const resultDate = new Date(result.date);
     return format(resultDate, 'yyyy-MM-dd') === selectedDate;
   });
   
-  // Get recent results (last 5 days excluding today)
+  // Get recent results (excluding selected date)
   const recentResults = results?.filter(result => {
     const resultDate = new Date(result.date);
     return format(resultDate, 'yyyy-MM-dd') !== selectedDate;
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
   
   // Check for matching bets when result is shown
   useEffect(() => {
@@ -130,37 +148,56 @@ export default function ResultsTable() {
         </div>
         
         {/* Today's Result Display */}
-        <div className="bg-gray-800 rounded-lg p-4 mb-4">
-          <p className="text-gray-400 text-center text-sm mb-3">
-            {selectedDate ? format(new Date(selectedDate), 'MMMM d, yyyy') : ''}
-          </p>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-secondary rounded-lg p-3 text-center">
-              <p className="text-gray-400 text-xs mb-1">Round 1 (15:30)</p>
-              <p className="font-mono font-bold text-2xl text-white">
-                {isLoading ? (
-                  <span>Loading...</span>
-                ) : selectedDateResult?.round1 !== undefined && selectedDateResult.round1 !== null ? (
-                  <span className="text-accent">{formatTwoDigits(selectedDateResult.round1)}</span>
-                ) : (
-                  <span className="text-gray-500">--</span>
-                )}
-              </p>
-            </div>
-            <div className="bg-secondary rounded-lg p-3 text-center">
-              <p className="text-gray-400 text-xs mb-1">Round 2 (16:30)</p>
-              <p className="font-mono font-bold text-2xl text-white">
-                {isLoading ? (
-                  <span>Loading...</span>
-                ) : selectedDateResult?.round2 !== undefined && selectedDateResult.round2 !== null ? (
-                  <span className="text-accent">{formatTwoDigits(selectedDateResult.round2)}</span>
-                ) : (
-                  <span className="text-gray-500">--</span>
-                )}
-              </p>
-            </div>
+        <div className={`bg-gray-800 rounded-lg p-4 mb-4 ${isSunday ? 'border border-red-800' : ''}`}>
+          <div className="flex items-center justify-center mb-3">
+            <p className="text-gray-400 text-center text-sm">
+              {selectedDate ? format(new Date(selectedDate), 'MMMM d, yyyy') : ''}
+            </p>
+            {isSunday && (
+              <span className="ml-2 bg-red-900/60 text-red-200 text-xs px-2 py-0.5 rounded-full">
+                Sunday - Closed
+              </span>
+            )}
           </div>
+          
+          {isSunday ? (
+            <div className="bg-red-900/20 rounded-lg p-4 text-center">
+              <CalendarX className="h-8 w-8 text-red-500/80 mx-auto mb-2" />
+              <p className="text-red-400 font-medium">Market closed on Sundays</p>
+              <p className="text-gray-400 text-sm mt-1">Shillong Teer does not operate on Sundays</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              <div className={`bg-secondary rounded-lg p-3 text-center ${!selectedDateResult && isFutureOrToday ? 'border border-yellow-800/50' : ''}`}>
+                <p className="text-gray-400 text-xs mb-1">Round 1 (15:30)</p>
+                <p className="font-mono font-bold text-2xl text-white">
+                  {isLoading ? (
+                    <span>Loading...</span>
+                  ) : selectedDateResult?.round1 !== undefined && selectedDateResult.round1 !== null ? (
+                    <span className="text-accent">{formatTwoDigits(selectedDateResult.round1)}</span>
+                  ) : isFutureOrToday ? (
+                    <span className="text-yellow-500">Pending</span>
+                  ) : (
+                    <span className="text-gray-500">Not Available</span>
+                  )}
+                </p>
+              </div>
+              <div className={`bg-secondary rounded-lg p-3 text-center ${!selectedDateResult && isFutureOrToday ? 'border border-yellow-800/50' : ''}`}>
+                <p className="text-gray-400 text-xs mb-1">Round 2 (16:30)</p>
+                <p className="font-mono font-bold text-2xl text-white">
+                  {isLoading ? (
+                    <span>Loading...</span>
+                  ) : selectedDateResult?.round2 !== undefined && selectedDateResult.round2 !== null ? (
+                    <span className="text-accent">{formatTwoDigits(selectedDateResult.round2)}</span>
+                  ) : isFutureOrToday ? (
+                    <span className="text-yellow-500">Pending</span>
+                  ) : (
+                    <span className="text-gray-500">Not Available</span>
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       
