@@ -79,7 +79,7 @@ export default function CountdownTimer({ targetHour, targetMinute, label, roundN
           <p className="text-gray-400 text-sm">{label}</p>
         </div>
         <div className="text-right">
-          <p className={`text-xs ${isNearingClose ? 'text-yellow-500 font-medium' : 'text-gray-500'}`}>
+          <p className={`text-xs ${isNearingClose ? 'text-yellow-500 font-medium' : 'text-white'}`}>
             {isClosed ? "Closed" : "Closes in"}
           </p>
           <p className={`font-mono font-medium text-lg ${getTimerColor()} ${isNearingClose ? 'animate-pulse' : ''}`}>

@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -33,6 +34,8 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [_, navigate] = useLocation();
   const { toast } = useToast();
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
   // Redirect if already logged in
   if (user) {
@@ -122,9 +125,27 @@ export default function AuthPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="Enter your password" {...field} className="bg-gray-800 border-gray-700" />
-                        </FormControl>
+                        <div className="relative">
+                          <FormControl>
+                            <Input 
+                              type={showLoginPassword ? "text" : "password"} 
+                              placeholder="Enter your password" 
+                              {...field} 
+                              className="bg-gray-800 border-gray-700 pr-10" 
+                            />
+                          </FormControl>
+                          <button 
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                            onClick={() => setShowLoginPassword(!showLoginPassword)}
+                          >
+                            {showLoginPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -171,9 +192,27 @@ export default function AuthPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="Create a password" {...field} className="bg-gray-800 border-gray-700" />
-                        </FormControl>
+                        <div className="relative">
+                          <FormControl>
+                            <Input 
+                              type={showRegisterPassword ? "text" : "password"} 
+                              placeholder="Create a password" 
+                              {...field} 
+                              className="bg-gray-800 border-gray-700 pr-10" 
+                            />
+                          </FormControl>
+                          <button 
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                            onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                          >
+                            {showRegisterPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}

@@ -105,7 +105,7 @@ export default function TransactionHistory() {
           </div>
           <div>
             <p className="text-white text-sm">{getTransactionTitle(transaction.type)}</p>
-            <p className="text-gray-500 text-xs">
+            <p className="text-white text-xs">
               {format(new Date(transaction.date), "MMM d, yyyy · h:mm a")}
             </p>
           </div>

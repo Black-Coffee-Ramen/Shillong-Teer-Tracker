@@ -11,15 +11,22 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useOfflineDB, storeOfflineItem, getOfflineItems } from "@/hooks/use-offline-db";
 import { offlineStatus } from "@/components/common/OfflineDetector";
-import { WifiOff, Save, CloudOff, ArrowUpRight, RefreshCw } from "lucide-react";
+import { WifiOff, Save, CloudOff, ArrowUpRight, RefreshCw, Plus } from "lucide-react";
+
+interface BetItem {
+  number: number;
+  amount: number;
+  round: number;
+}
 
 interface BettingFormProps {
   selectedNumbers: number[];
   selectedRound: number;
   onResetSelection: () => void;
+  onAddToCart?: (amount: number) => void;
 }
 
-export default function BettingForm({ selectedNumbers, selectedRound, onResetSelection }: BettingFormProps) {
+export default function BettingForm({ selectedNumbers, selectedRound, onResetSelection, onAddToCart }: BettingFormProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { addNotification } = useNotification();
@@ -45,6 +52,32 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+  
+  // Listen for checkout events from the cart
+  useEffect(() => {
+    const handleCartCheckout = (event: CustomEvent<{cartItems: BetItem[]}>) => {
+      const { cartItems } = event.detail;
+      
+      if (!cartItems || cartItems.length === 0) return;
+      
+      // Process each cart item as a bet
+      cartItems.forEach((item: BetItem) => {
+        // Call the placeBet mutation for each item
+        placeBetMutation.mutate({
+          number: item.number,
+          amount: item.amount,
+          round: item.round
+        });
+      });
+    };
+    
+    // Add event listener for custom event
+    document.addEventListener('place-bet-from-cart', handleCartCheckout as EventListener);
+    
+    return () => {
+      document.removeEventListener('place-bet-from-cart', handleCartCheckout as EventListener);
+    };
+  }, [placeBetMutation]);
   
   // Check for pending bets on component mount
   useEffect(() => {
@@ -324,31 +357,50 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
         </div>
       </div>
       
-      <Button
-        onClick={handlePlaceBet}
-        disabled={!canPlaceBet}
-        className={cn(
-          "w-full bg-accent hover:bg-accent/90 text-white py-3 rounded-xl font-poppins font-semibold flex items-center justify-center mb-6 h-14",
-          !canPlaceBet && "opacity-50 cursor-not-allowed"
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        {/* Add to Cart Button */}
+        {onAddToCart && (
+          <Button
+            onClick={() => onAddToCart(amount)}
+            disabled={!canPlaceBet}
+            className={cn(
+              "bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-xl font-poppins font-semibold flex items-center justify-center h-14",
+              !canPlaceBet && "opacity-50 cursor-not-allowed"
+            )}
+            variant="secondary"
+          >
+            <Plus className="mr-2 h-5 w-5" />
+            Add to Cart
+          </Button>
         )}
-      >
-        {placeBetMutation.isPending ? (
-          <>
-            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-            Placing Bet...
-          </>
-        ) : isOffline ? (
-          <>
-            <Save className="mr-2 h-5 w-5" />
-            Save Bet Offline
-          </>
-        ) : (
-          <>
-            <ArrowUpRight className="mr-2 h-5 w-5" />
-            Place Bet
-          </>
-        )}
-      </Button>
+        
+        {/* Place Bet Button */}
+        <Button
+          onClick={handlePlaceBet}
+          disabled={!canPlaceBet}
+          className={cn(
+            `${onAddToCart ? '' : 'w-full'} bg-accent hover:bg-accent/90 text-white py-3 rounded-xl font-poppins font-semibold flex items-center justify-center h-14`,
+            !canPlaceBet && "opacity-50 cursor-not-allowed"
+          )}
+        >
+          {placeBetMutation.isPending ? (
+            <>
+              <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              Placing Bet...
+            </>
+          ) : isOffline ? (
+            <>
+              <Save className="mr-2 h-5 w-5" />
+              Save Bet Offline
+            </>
+          ) : (
+            <>
+              <ArrowUpRight className="mr-2 h-5 w-5" />
+              Place Bet
+            </>
+          )}
+        </Button>
+      </div>
       
       {/* AI Suggestions */}
       <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">

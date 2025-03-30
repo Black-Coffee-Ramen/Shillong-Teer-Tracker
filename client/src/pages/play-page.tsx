@@ -2,7 +2,15 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import NumberGrid from "@/components/play/NumberGrid";
 import BettingForm from "@/components/play/BettingForm";
-import { Calendar, Clock } from "lucide-react";
+import BettingCart from "@/components/play/BettingCart";
+import { Calendar, Clock, ShoppingCart, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+interface BetItem {
+  number: number;
+  amount: number;
+  round: number;
+}
 
 export default function PlayPage() {
   const [selectedRound, setSelectedRound] = useState<number>(1);
@@ -12,6 +20,8 @@ export default function PlayPage() {
   const [isClosed, setIsClosed] = useState<boolean>(false);
   const [isNearingClose, setIsNearingClose] = useState<boolean>(false);
   const [isSunday, setIsSunday] = useState<boolean>(false);
+  const [currentBetAmount, setCurrentBetAmount] = useState<number>(0);
+  const [cartItems, setCartItems] = useState<BetItem[]>([]);
   
   // Update current date and time for Kolkata IST
   useEffect(() => {
@@ -161,6 +171,55 @@ export default function PlayPage() {
     setSelectedNumbers([]);
   };
   
+  // Add selected numbers to cart
+  const addToCart = (amount: number) => {
+    if (selectedNumbers.length === 0 || amount <= 0) {
+      return;
+    }
+    
+    const newCartItems = selectedNumbers.map(number => ({
+      number,
+      amount,
+      round: selectedRound
+    }));
+    
+    setCartItems(prev => [...prev, ...newCartItems]);
+    resetSelection();
+  };
+  
+  // Remove item from cart
+  const removeFromCart = (index: number) => {
+    setCartItems(prev => prev.filter((_, i) => i !== index));
+  };
+  
+  // Clear all items from cart
+  const clearCart = () => {
+    setCartItems([]);
+  };
+  
+  // Process checkout from the cart
+  const handleCheckout = () => {
+    if (cartItems.length === 0) {
+      return;
+    }
+    
+    // Get the current betting form component
+    const bettingFormElement = document.querySelector('.betting-form-container');
+    if (bettingFormElement) {
+      // Scroll to the betting form to show the checkout process
+      bettingFormElement.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Use the placeBet function from BettingForm through a custom event
+    const placeBetEvent = new CustomEvent('place-bet-from-cart', {
+      detail: { cartItems }
+    });
+    document.dispatchEvent(placeBetEvent);
+    
+    // After placing bets, clear the cart
+    clearCart();
+  };
+  
   // Format date to display
   const formattedDate = currentDateTime.toLocaleDateString('en-IN', {
     day: '2-digit',
@@ -259,11 +318,27 @@ export default function PlayPage() {
           />
           
           {/* Betting Form */}
-          <BettingForm 
-            selectedNumbers={selectedNumbers}
-            selectedRound={selectedRound}
-            onResetSelection={resetSelection}
-          />
+          <div className="betting-form-container">
+            <BettingForm 
+              selectedNumbers={selectedNumbers}
+              selectedRound={selectedRound}
+              onResetSelection={resetSelection}
+              onAddToCart={addToCart}
+            />
+          </div>
+          
+          {/* Shopping Cart */}
+          {cartItems.length > 0 && (
+            <div className="mb-8">
+              <BettingCart
+                cartItems={cartItems}
+                onRemoveItem={removeFromCart}
+                onClearCart={clearCart}
+                onCheckout={handleCheckout}
+                selectedRound={selectedRound}
+              />
+            </div>
+          )}
         </>
       )}
     </div>
