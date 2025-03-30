@@ -1,15 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, QueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import WalletCard from "@/components/profile/WalletCard";
 import TransactionHistory from "@/components/profile/TransactionHistory";
 import AccountSettings from "@/components/profile/settings/AccountSettings";
 import SupportChat from "@/components/profile/support/SupportChat";
 import PrivacyPolicy from "@/components/profile/privacy/PrivacyPolicy";
-import { Settings, HelpCircle, Shield, LogOut, Loader2 } from "lucide-react";
+import { Settings, HelpCircle, Shield, LogOut, Loader2, RefreshCw } from "lucide-react";
 import { Bet } from "@shared/schema";
 
 type ScreenView = 'main' | 'settings' | 'support' | 'privacy';
@@ -19,18 +19,53 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
   const [currentView, setCurrentView] = useState<ScreenView>('main');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
-  // Fetch user bets
-  const { data: userBets, isLoading: isLoadingBets } = useQuery<Bet[]>({
+  // Fetch user bets with auto-refresh
+  const { 
+    data: userBets, 
+    isLoading: isLoadingBets,
+    refetch: refetchBets
+  } = useQuery<Bet[]>({
     queryKey: ["/api/bets"],
     enabled: !!user,
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
   
-  // Fetch results for win calculation
-  const { data: results } = useQuery<any[]>({
+  // Fetch results for win calculation with auto-refresh
+  const { 
+    data: results,
+    refetch: refetchResults
+  } = useQuery<any[]>({
     queryKey: ["/api/results"],
     enabled: !!user && !!userBets,
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
+  
+  // Manual refresh function
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        refetchBets(),
+        refetchResults()
+      ]);
+      toast({
+        title: "Data Refreshed",
+        description: "Your profile data has been updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh Failed",
+        description: "Could not refresh data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
   
   // Calculate total bets and wins
   const totalBets = userBets?.length || 0;
@@ -103,14 +138,26 @@ export default function ProfilePage() {
     <div className="container mx-auto px-4 py-4">
       {/* User Profile */}
       <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
-        <div className="flex items-center mb-4">
-          <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center text-white text-xl font-poppins mr-4">
-            {getInitials()}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center text-white text-xl font-poppins mr-4">
+              {getInitials()}
+            </div>
+            <div>
+              <h2 className="text-white font-poppins font-semibold">{user.name || user.username}</h2>
+              <p className="text-gray-400 text-sm">{user.email || `@${user.username}`}</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-white font-poppins font-semibold">{user.name || user.username}</h2>
-            <p className="text-gray-400 text-sm">{user.email || `@${user.username}`}</p>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="text-accent hover:text-accent/80"
+          >
+            <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
         </div>
         
         <div className="grid grid-cols-2 gap-3 mb-2">

@@ -135,6 +135,9 @@ export default function PlayPage() {
     const updateCountdown = () => {
       const timeRemaining = calculateTimeRemaining();
       setCountdown(timeRemaining);
+      
+      // Force rerender by updating the currentDateTime
+      setCurrentDateTime(new Date());
     };
     
     // Update immediately and then every second
