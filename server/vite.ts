@@ -86,3 +86,9 @@ export function serveStatic(app: Express) {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
+
+// Add service worker MIME type
+app.get('/service-worker.js', (_req, res, next) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  next();
+});
