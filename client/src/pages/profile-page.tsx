@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import WalletCard from "@/components/profile/WalletCard";
 import TransactionHistory from "@/components/profile/TransactionHistory";
@@ -9,6 +10,7 @@ import AccountSettings from "@/components/profile/settings/AccountSettings";
 import SupportChat from "@/components/profile/support/SupportChat";
 import PrivacyPolicy from "@/components/profile/privacy/PrivacyPolicy";
 import { Settings, HelpCircle, Shield, LogOut, Loader2 } from "lucide-react";
+import { Bet } from "@shared/schema";
 
 type ScreenView = 'main' | 'settings' | 'support' | 'privacy';
 
@@ -17,6 +19,37 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
   const [currentView, setCurrentView] = useState<ScreenView>('main');
+  
+  // Fetch user bets
+  const { data: userBets, isLoading: isLoadingBets } = useQuery<Bet[]>({
+    queryKey: ["/api/bets"],
+    enabled: !!user,
+  });
+  
+  // Fetch results for win calculation
+  const { data: results } = useQuery<any[]>({
+    queryKey: ["/api/results"],
+    enabled: !!user && !!userBets,
+  });
+  
+  // Calculate total bets and wins
+  const totalBets = userBets?.length || 0;
+  
+  // Calculate wins by comparing user bets with results
+  const wins = userBets?.filter(bet => {
+    // Find corresponding result for this bet's date
+    const betDate = new Date(bet.date);
+    const matchingResult = results && results.length > 0 ? results.find((r: any) => {
+      const resultDate = new Date(r.date);
+      return resultDate.toDateString() === betDate.toDateString();
+    }) : null;
+    
+    if (!matchingResult) return false;
+    
+    // Check if the bet matches the result for the correct round
+    return (bet.round === 1 && matchingResult.round1 === bet.number) ||
+           (bet.round === 2 && matchingResult.round2 === bet.number);
+  }).length || 0;
   
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -83,11 +116,23 @@ export default function ProfilePage() {
         <div className="grid grid-cols-2 gap-3 mb-2">
           <div className="bg-gray-800 rounded-lg p-3 text-center">
             <p className="text-gray-400 text-xs mb-1">Total Bets</p>
-            <p className="font-mono font-bold text-xl text-white">--</p>
+            {isLoadingBets ? (
+              <div className="flex justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-white" />
+              </div>
+            ) : (
+              <p className="font-mono font-bold text-xl text-white">{totalBets}</p>
+            )}
           </div>
           <div className="bg-gray-800 rounded-lg p-3 text-center">
             <p className="text-gray-400 text-xs mb-1">Wins</p>
-            <p className="font-mono font-bold text-xl text-green-500">--</p>
+            {isLoadingBets ? (
+              <div className="flex justify-center">
+                <Loader2 className="h-5 w-5 animate-spin text-green-500" />
+              </div>
+            ) : (
+              <p className="font-mono font-bold text-xl text-green-500">{wins}</p>
+            )}
           </div>
         </div>
       </div>

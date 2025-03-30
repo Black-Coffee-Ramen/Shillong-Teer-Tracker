@@ -34,6 +34,13 @@ export default function WalletCard() {
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "upi">("card");
+  const [withdrawalMethod, setWithdrawalMethod] = useState<"bank" | "upi">("bank");
+  const [bankDetails, setBankDetails] = useState({
+    accountNumber: "",
+    ifscCode: "",
+    accountName: ""
+  });
+  const [upiId, setUpiId] = useState("");
   const [isRazorpayReady, setIsRazorpayReady] = useState(false);
   const [useTestMode, setUseTestMode] = useState(false); // Toggle for test vs. real payment
   
@@ -145,8 +152,12 @@ export default function WalletCard() {
   });
   
   const withdrawMutation = useMutation({
-    mutationFn: async (amount: number) => {
-      const res = await apiRequest("POST", "/api/transactions/withdraw", { amount });
+    mutationFn: async (withdrawalData: {
+      amount: number;
+      method: "bank" | "upi";
+      details: any;
+    }) => {
+      const res = await apiRequest("POST", "/api/transactions/withdraw", withdrawalData);
       return res.json();
     },
     onSuccess: () => {
@@ -155,7 +166,25 @@ export default function WalletCard() {
         description: `Your withdrawal request for ${formatCurrency(withdrawAmount)} has been submitted.`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
+      
+      // Reset form fields
+      setWithdrawAmount(500);
+      setBankDetails({
+        accountNumber: "",
+        ifscCode: "",
+        accountName: ""
+      });
+      setUpiId("");
+      
       setIsWithdrawModalOpen(false);
+      
+      // Show notification
+      addNotification(
+        `🔄 Your withdrawal request for ${formatCurrency(withdrawAmount)} has been submitted.`,
+        "info",
+        true
+      );
     },
     onError: (error: Error) => {
       toast({
@@ -266,6 +295,7 @@ export default function WalletCard() {
   };
   
   const handleWithdraw = () => {
+    // Check amount
     if (withdrawAmount < 500) {
       toast({
         title: "Invalid Amount",
@@ -275,6 +305,7 @@ export default function WalletCard() {
       return;
     }
     
+    // Check sufficient balance
     if (user && withdrawAmount > user.balance) {
       toast({
         title: "Insufficient Balance",
@@ -284,7 +315,45 @@ export default function WalletCard() {
       return;
     }
     
-    withdrawMutation.mutate(withdrawAmount);
+    // Validate bank details or UPI ID
+    if (withdrawalMethod === "bank") {
+      if (!bankDetails.accountName || !bankDetails.accountNumber || !bankDetails.ifscCode) {
+        toast({
+          title: "Missing Bank Details",
+          description: "Please provide all required bank account details",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (bankDetails.ifscCode.length < 11) {
+        toast({
+          title: "Invalid IFSC Code",
+          description: "Please enter a valid 11-character IFSC code",
+          variant: "destructive"
+        });
+        return;
+      }
+    } else if (withdrawalMethod === "upi") {
+      if (!upiId || !upiId.includes('@')) {
+        toast({
+          title: "Invalid UPI ID",
+          description: "Please enter a valid UPI ID (e.g., name@upi)",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+    
+    // Prepare withdrawal data
+    const withdrawalData = {
+      amount: withdrawAmount,
+      method: withdrawalMethod,
+      details: withdrawalMethod === "bank" ? bankDetails : { upiId }
+    };
+    
+    // Submit withdrawal request
+    withdrawMutation.mutate(withdrawalData as any);
   };
   
   return (
@@ -450,16 +519,77 @@ export default function WalletCard() {
           
           <div className="mb-4">
             <Label className="block text-gray-300 text-sm mb-2">Withdrawal Method</Label>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <label className="bg-gray-800 rounded-md p-3 cursor-pointer flex items-center">
-                <input type="radio" name="withdrawal-method" className="mr-2" defaultChecked />
+                <input 
+                  type="radio" 
+                  name="withdrawal-method" 
+                  className="mr-2" 
+                  checked={withdrawalMethod === "bank"}
+                  onChange={() => setWithdrawalMethod("bank")}
+                />
                 <div className="flex items-center">
                   <i className="ri-bank-line mr-2 text-accent"></i>
                   <span className="text-white text-sm">Bank Transfer</span>
                 </div>
               </label>
+              <label className="bg-gray-800 rounded-md p-3 cursor-pointer flex items-center">
+                <input 
+                  type="radio" 
+                  name="withdrawal-method" 
+                  className="mr-2"
+                  checked={withdrawalMethod === "upi"}
+                  onChange={() => setWithdrawalMethod("upi")}
+                />
+                <div className="flex items-center">
+                  <i className="ri-secure-payment-line mr-2 text-accent"></i>
+                  <span className="text-white text-sm">UPI</span>
+                </div>
+              </label>
             </div>
           </div>
+          
+          {withdrawalMethod === "bank" ? (
+            <div className="mb-4 space-y-3">
+              <div>
+                <Label className="block text-gray-300 text-sm mb-2">Account Holder Name</Label>
+                <Input
+                  className="w-full bg-gray-800 text-white px-3 py-3 rounded-md"
+                  placeholder="Enter name as per bank account"
+                  value={bankDetails.accountName}
+                  onChange={(e) => setBankDetails({...bankDetails, accountName: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label className="block text-gray-300 text-sm mb-2">Account Number</Label>
+                <Input
+                  className="w-full bg-gray-800 text-white px-3 py-3 rounded-md font-mono"
+                  placeholder="Enter account number"
+                  value={bankDetails.accountNumber}
+                  onChange={(e) => setBankDetails({...bankDetails, accountNumber: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label className="block text-gray-300 text-sm mb-2">IFSC Code</Label>
+                <Input
+                  className="w-full bg-gray-800 text-white px-3 py-3 rounded-md font-mono uppercase"
+                  placeholder="Enter IFSC code"
+                  value={bankDetails.ifscCode}
+                  onChange={(e) => setBankDetails({...bankDetails, ifscCode: e.target.value.toUpperCase()})}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="mb-4">
+              <Label className="block text-gray-300 text-sm mb-2">UPI ID</Label>
+              <Input
+                className="w-full bg-gray-800 text-white px-3 py-3 rounded-md font-mono"
+                placeholder="Enter UPI ID (e.g., name@upi)"
+                value={upiId}
+                onChange={(e) => setUpiId(e.target.value)}
+              />
+            </div>
+          )}
           
           <DialogFooter>
             <Button
