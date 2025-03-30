@@ -1,0 +1,38 @@
+Warning: validateDOMNesting(...): <a> cannot appear as a descendant of &lt;a&gt;.
+    at a
+    at a
+    at https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=85c6f20d:337:18
+    at div
+    at nav
+    at MobileNavigation (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/src/components/layout/MobileNavigation.tsx:22:22)
+    at div
+    at AppLayout (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/src/components/layout/AppLayout.tsx:19:37)
+    at Route (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=85c6f20d:323:16)
+    at Switch (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=85c6f20d:379:17)
+    at Router
+    at NotificationProvider (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/src/hooks/use-notification.tsx:22:40)
+    at AuthProvider (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/src/hooks/use-auth.tsx:26:32)
+    at QueryClientProvider (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=85c6f20d:2805:3)
+    at App
+at a
+at a
+at https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=85c6f20d:337:18
+at div
+at nav
+at MobileNavigation (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/src/components/layout/MobileNavigation.tsx:22:22)
+at div
+at AppLayout (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/src/components/layout/AppLayout.tsx:19:37)
+at Route (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=85c6f20d:323:16)
+at Switch (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=85c6f20d:379:17)
+at Router
+at NotificationProvider (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/src/hooks/use-notification.tsx:22:40)
+at AuthProvider (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/src/hooks/use-auth.tsx:26:32)
+at QueryClientProvider (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=85c6f20d:2805:3)
+at App
+at t.value (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://de3fc1fd-fbb1-43f8-b69d-2a87a8898308-00-1tmlzxo43pfbz.janeway.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+ServiceWorker registration failed:  
+DOMException {code: 18, name: "SecurityError", message: "Failed to register a ServiceWorker for scope…", INDEX_SIZE_ERR: 1, DOMSTRING_SIZE_ERR: 2, …}
+

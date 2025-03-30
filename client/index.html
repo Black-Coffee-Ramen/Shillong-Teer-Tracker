@@ -16,22 +16,22 @@
     <meta name="format-detection" content="telephone=no">
     
     <!-- PWA Icons -->
-    <link rel="icon" type="image/svg+xml" href="/icons/app-icon.svg">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icons/app-icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/icons/app-icon-512.png">
-    <link rel="apple-touch-icon" href="/icons/app-icon-192.png">
-    <link rel="apple-touch-startup-image" href="/icons/app-icon-512.png">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="./icons/app-icon.svg">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/app-icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="./icons/app-icon-512.png">
+    <link rel="apple-touch-icon" href="./icons/app-icon-192.png">
+    <link rel="apple-touch-startup-image" href="./icons/app-icon-512.png">
+    <link rel="manifest" href="./manifest.json">
     
     <!-- iOS splash screens -->
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px)" href="/icons/splash/iphone5_splash.png">
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px)" href="/icons/splash/iphone6_splash.png">
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px)" href="/icons/splash/iphoneplus_splash.png">
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px)" href="/icons/splash/iphonex_splash.png">
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 768px) and (device-height: 1024px)" href="/icons/splash/ipad_splash.png">
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1112px)" href="/icons/splash/ipadpro1_splash.png">
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1194px)" href="/icons/splash/ipadpro3_splash.png">
-    <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px)" href="/icons/splash/ipadpro2_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px)" href="./icons/splash/iphone5_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px)" href="./icons/splash/iphone6_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px)" href="./icons/splash/iphoneplus_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px)" href="./icons/splash/iphonex_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 768px) and (device-height: 1024px)" href="./icons/splash/ipad_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1112px)" href="./icons/splash/ipadpro1_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1194px)" href="./icons/splash/ipadpro3_splash.png">
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px)" href="./icons/splash/ipadpro2_splash.png">
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap');
@@ -144,22 +144,32 @@
         // Register service worker if supported
         if (PWA.serviceWorker) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(err => {
-                        console.error('ServiceWorker registration failed: ', err);
-                    });
+                // Wait a bit before registering the service worker to ensure the page is fully loaded
+                setTimeout(() => {
+                    const swUrl = new URL('./service-worker.js', window.location.origin);
+                    navigator.serviceWorker.register(swUrl.href)
+                        .then(registration => {
+                            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        })
+                        .catch(err => {
+                            // Log the error but don't show to user as this isn't critical for app function
+                            console.log('ServiceWorker registration: Will try again later.', err.message);
+                            
+                            // The app can still function without service worker
+                            // Users won't get offline capabilities, but the app will work
+                        });
+                }, 2000);
             });
             
             // Handle service worker messages (for offline sync)
-            navigator.serviceWorker.addEventListener('message', (event) => {
-                if (event.data && event.data.type === 'SYNC_COMPLETE') {
-                    // Handle sync complete message from service worker
-                    showNotification('Sync complete', event.data.message || 'Your offline data has been synchronized.');
-                }
-            });
+            if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.addEventListener('message', (event) => {
+                    if (event.data && event.data.type === 'SYNC_COMPLETE') {
+                        // Handle sync complete message from service worker
+                        showNotification('Sync complete', event.data.message || 'Your offline data has been synchronized.');
+                    }
+                });
+            }
         }
         
         // Function to show notification from service worker
@@ -169,8 +179,8 @@
                 try {
                     const notification = new Notification(title, {
                         body: message,
-                        icon: '/icons/app-icon-192.png',
-                        badge: '/icons/app-icon-96.png',
+                        icon: './icons/app-icon-192.png',
+                        badge: './icons/app-icon-96.png',
                         timestamp: Date.now(),
                         vibrate: [100, 50, 100]
                     });
