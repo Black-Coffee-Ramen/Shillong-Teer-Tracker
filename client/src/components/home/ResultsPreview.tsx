@@ -53,13 +53,13 @@ export default function ResultsPreview() {
               <div className="flex justify-center gap-3">
                 <div className="bg-gray-800 rounded-lg px-2 py-1 inline-block">
                   <span className="text-xs text-gray-500 mr-1">R1:</span>
-                  <span className="font-mono text-accent text-sm font-medium">
+                  <span className="font-mono text-white text-sm font-medium">
                     {yesterdayResult.round1?.toString().padStart(2, '0') || '--'}
                   </span>
                 </div>
                 <div className="bg-gray-800 rounded-lg px-2 py-1 inline-block">
                   <span className="text-xs text-gray-500 mr-1">R2:</span>
-                  <span className="font-mono text-accent text-sm font-medium">
+                  <span className="font-mono text-white text-sm font-medium">
                     {yesterdayResult.round2?.toString().padStart(2, '0') || '--'}
                   </span>
                 </div>
@@ -75,7 +75,7 @@ export default function ResultsPreview() {
               {isLoading ? (
                 "Loading..."
               ) : todayResult?.round1 !== undefined && todayResult.round1 !== null ? (
-                <span className="text-accent">{todayResult.round1.toString().padStart(2, '0')}</span>
+                <span className="text-white">{todayResult.round1.toString().padStart(2, '0')}</span>
               ) : (
                 "Waiting"
               )}
@@ -87,7 +87,7 @@ export default function ResultsPreview() {
               {isLoading ? (
                 "Loading..."
               ) : todayResult?.round2 !== undefined && todayResult.round2 !== null ? (
-                <span className="text-accent">{todayResult.round2.toString().padStart(2, '0')}</span>
+                <span className="text-white">{todayResult.round2.toString().padStart(2, '0')}</span>
               ) : (
                 "Waiting"
               )}

@@ -1,83 +1,42 @@
-import React, { useState } from 'react';
-import { Loader2, ExternalLink, Maximize } from 'lucide-react';
+import React from 'react';
+import { Youtube, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 export default function LiveStream() {
-  const [isLoading, setIsLoading] = useState(true);
   const channelUrl = "https://www.youtube.com/@Shillongteerlive129/streams";
-  
-  // YouTube embed URL for the latest livestream from the channel
-  const embedUrl = "https://www.youtube.com/embed/live_stream?channel=UCa9p2o55q6PQQMy7TfG2DRg";
   
   return (
     <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-white font-semibold text-lg">Live Stream</h2>
+        <h2 className="text-white font-semibold text-lg">Live Results</h2>
         <div className="flex items-center gap-2">
           <span className="bg-red-500 bg-opacity-20 text-red-400 text-xs px-2 py-1 rounded-full flex items-center">
             <span className="w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></span>
             LIVE
           </span>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-7 text-xs" 
-            onClick={() => window.open(channelUrl, '_blank')}
-          >
-            <ExternalLink className="h-3 w-3 mr-1" />
-            Channel
-          </Button>
         </div>
       </div>
       
-      <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video mb-2">
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Loader2 className="h-10 w-10 text-accent animate-spin" />
-          </div>
-        )}
+      <div className="bg-gray-800 rounded-lg p-5 flex flex-col items-center justify-center text-center">
+        <Youtube className="h-12 w-12 text-red-500 mb-3" />
+        <h3 className="text-white font-medium mb-2">Watch Live Results on YouTube</h3>
+        <p className="text-gray-300 text-sm mb-4">
+          View live draws and result announcements on the official Shillong Teer YouTube channel
+        </p>
         
-        <iframe
-          src={embedUrl}
-          className="w-full h-full"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title="Shillong Teer Live Stream"
-          onLoad={() => setIsLoading(false)}
-        ></iframe>
+        <Button 
+          size="lg" 
+          className="bg-red-600 hover:bg-red-700 text-white w-full max-w-md gap-2"
+          onClick={() => window.open(channelUrl, '_blank')}
+        >
+          <Youtube className="h-5 w-5" />
+          Open YouTube Channel
+          <ExternalLink className="h-4 w-4 ml-1" />
+        </Button>
       </div>
       
-      <div className="flex justify-end">
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-xs"
-            >
-              <Maximize className="h-3 w-3 mr-1" />
-              Fullscreen
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-[90vw] p-0 bg-black border-0">
-            <div className="aspect-video w-full">
-              <iframe
-                src={embedUrl}
-                className="w-full h-full"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="Shillong Teer Live Stream Fullscreen"
-              ></iframe>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-      
-      <p className="text-gray-500 text-xs text-center italic mt-3">
-        Official Shillong Teer live stream showing results and draws.
+      <p className="text-gray-300 text-xs text-center italic mt-3">
+        The official Shillong Teer YouTube channel broadcasts live drawings and results daily.
       </p>
     </div>
   );

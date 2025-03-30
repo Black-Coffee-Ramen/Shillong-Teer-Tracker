@@ -62,6 +62,46 @@ export default function ResultsTable() {
     return format(resultDate, 'yyyy-MM-dd') !== selectedDate;
   }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
   
+  // Calculate frequent numbers from results data
+  const frequentNumbers: Array<[number, number]> = useMemo(() => {
+    if (!results || results.length === 0) return [];
+    
+    // Get last 30 days results
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const recentResults = results.filter(result => {
+      const resultDate = new Date(result.date);
+      return resultDate >= thirtyDaysAgo;
+    });
+    
+    // Collect all numbers from both rounds
+    const allNumbers: number[] = [];
+    recentResults.forEach(result => {
+      if (result.round1 !== null && result.round1 !== undefined) {
+        allNumbers.push(result.round1);
+      }
+      if (result.round2 !== null && result.round2 !== undefined) {
+        allNumbers.push(result.round2);
+      }
+    });
+    
+    // Count occurrences
+    const numberCounts: Record<string, number> = {};
+    allNumbers.forEach(num => {
+      const numStr = num.toString();
+      numberCounts[numStr] = (numberCounts[numStr] || 0) + 1;
+    });
+    
+    // Convert to array and sort by count
+    const sortedFrequent = Object.entries(numberCounts)
+      .map(([num, count]): [number, number] => [parseInt(num), count])
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5); // Get top 5
+      
+    return sortedFrequent;
+  }, [results]);
+  
   // Check for matching bets when result is shown
   useEffect(() => {
     if (!selectedDateResult || !userBets || !user) return;
@@ -174,11 +214,11 @@ export default function ResultsTable() {
                   {isLoading ? (
                     <span>Loading...</span>
                   ) : selectedDateResult?.round1 !== undefined && selectedDateResult.round1 !== null ? (
-                    <span className="text-accent">{formatTwoDigits(selectedDateResult.round1)}</span>
+                    <span className="text-white">{formatTwoDigits(selectedDateResult.round1)}</span>
                   ) : isFutureOrToday ? (
-                    <span className="text-yellow-500">Pending</span>
+                    <span className="text-yellow-300">Pending</span>
                   ) : (
-                    <span className="text-gray-500">Not Available</span>
+                    <span className="text-gray-300">Not Available</span>
                   )}
                 </p>
               </div>
@@ -188,11 +228,11 @@ export default function ResultsTable() {
                   {isLoading ? (
                     <span>Loading...</span>
                   ) : selectedDateResult?.round2 !== undefined && selectedDateResult.round2 !== null ? (
-                    <span className="text-accent">{formatTwoDigits(selectedDateResult.round2)}</span>
+                    <span className="text-white">{formatTwoDigits(selectedDateResult.round2)}</span>
                   ) : isFutureOrToday ? (
-                    <span className="text-yellow-500">Pending</span>
+                    <span className="text-yellow-300">Pending</span>
                   ) : (
-                    <span className="text-gray-500">Not Available</span>
+                    <span className="text-gray-300">Not Available</span>
                   )}
                 </p>
               </div>
@@ -227,20 +267,20 @@ export default function ResultsTable() {
                     </td>
                     <td className="py-3 text-center">
                       {result.round1 !== undefined && result.round1 !== null ? (
-                        <span className="font-mono text-accent font-medium">
+                        <span className="font-mono text-white font-medium">
                           {formatTwoDigits(result.round1)}
                         </span>
                       ) : (
-                        <span className="text-gray-500">--</span>
+                        <span className="text-gray-300">--</span>
                       )}
                     </td>
                     <td className="py-3 text-center">
                       {result.round2 !== undefined && result.round2 !== null ? (
-                        <span className="font-mono text-accent font-medium">
+                        <span className="font-mono text-white font-medium">
                           {formatTwoDigits(result.round2)}
                         </span>
                       ) : (
-                        <span className="text-gray-500">--</span>
+                        <span className="text-gray-300">--</span>
                       )}
                     </td>
                   </tr>
@@ -269,26 +309,15 @@ export default function ResultsTable() {
         <div className="bg-gray-800 rounded-lg p-3 mb-3">
           <p className="text-white text-sm mb-2">Most Frequent Numbers (Last 30 Days)</p>
           <div className="flex flex-wrap gap-2">
-            <div className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
-              <span className="font-mono mr-1">27</span>
-              <span className="text-accent text-xs">(6x)</span>
-            </div>
-            <div className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
-              <span className="font-mono mr-1">43</span>
-              <span className="text-accent text-xs">(5x)</span>
-            </div>
-            <div className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
-              <span className="font-mono mr-1">76</span>
-              <span className="text-accent text-xs">(5x)</span>
-            </div>
-            <div className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
-              <span className="font-mono mr-1">19</span>
-              <span className="text-accent text-xs">(4x)</span>
-            </div>
-            <div className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
-              <span className="font-mono mr-1">82</span>
-              <span className="text-accent text-xs">(4x)</span>
-            </div>
+            {frequentNumbers.map(([number, count]) => (
+              <div key={number} className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
+                <span className="font-mono mr-1">{number.toString().padStart(2, '0')}</span>
+                <span className="text-accent text-xs">({count}x)</span>
+              </div>
+            ))}
+            {frequentNumbers.length === 0 && (
+              <p className="text-gray-300 text-xs">Analyzing available results data...</p>
+            )}
           </div>
         </div>
         
