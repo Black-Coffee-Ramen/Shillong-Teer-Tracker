@@ -17,18 +17,54 @@ export default function PlayPage() {
   useEffect(() => {
     // Check if today is Sunday (0 is Sunday in JavaScript)
     const checkIfSunday = () => {
-      const now = new Date();
-      return now.getDay() === 0;
+      // Get day in Kolkata time zone
+      const options: Intl.DateTimeFormatOptions = { 
+        timeZone: 'Asia/Kolkata', 
+        weekday: 'long' as const 
+      };
+      const dayInKolkata = new Intl.DateTimeFormat('en-US', options).format(new Date());
+      return dayInKolkata === 'Sunday';
     };
     
     setIsSunday(checkIfSunday());
     
     const updateDateTime = () => {
-      // Create date object for Kolkata IST (UTC+5:30)
+      // Create a new Date object for the current time
       const now = new Date();
-      // Adjust to Kolkata time
-      const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
-      setCurrentDateTime(istTime);
+      
+      // Use Intl.DateTimeFormat to get proper Kolkata time values
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false,
+      });
+      
+      // Get date parts as a string like "3/30/2025, 19:40:00"
+      const kolkataTimeStr = formatter.format(now);
+      
+      // Parse the string to create a new Date object
+      // This isn't a perfect solution due to JS Date limitations
+      // but ensures we're getting the correct Kolkata time
+      const [datePart, timePart] = kolkataTimeStr.split(', ');
+      const [month, day, year] = datePart.split('/');
+      const [hour, minute, second] = timePart.split(':');
+      
+      // Create a new date with the Kolkata time values
+      // Note: month is 0-indexed in JavaScript Date
+      const kolkataDate = new Date();
+      kolkataDate.setFullYear(parseInt(year));
+      kolkataDate.setMonth(parseInt(month) - 1);
+      kolkataDate.setDate(parseInt(day));
+      kolkataDate.setHours(parseInt(hour));
+      kolkataDate.setMinutes(parseInt(minute));
+      kolkataDate.setSeconds(parseInt(second));
+      
+      setCurrentDateTime(kolkataDate);
     };
     
     // Update immediately and then every second
@@ -47,36 +83,51 @@ export default function PlayPage() {
     }
     
     const calculateTimeRemaining = () => {
+      // Get current time in Kolkata timezone
       const now = new Date();
-      const target = new Date(now);
+      
+      // Get current hour and minute in Kolkata
+      const kolkataFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kolkata',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false,
+      });
+      
+      const kolkataTimeStr = kolkataFormatter.format(now);
+      const [kolkataHour, kolkataMinute, kolkataSecond] = kolkataTimeStr.split(':').map(Number);
       
       // Set target time based on selected round (15:30 or 16:30 IST)
-      // For India Standard Time (UTC+5:30)
       const targetHour = selectedRound === 1 ? 15 : 16;
       const targetMinute = 30;
-      target.setHours(targetHour, targetMinute, 0, 0);
       
-      // If the target time has already passed today, set target to tomorrow
-      if (now > target) {
-        target.setDate(target.getDate() + 1);
+      // Calculate if the round is closed (past the target time)
+      const isClosedNow = (kolkataHour > targetHour) || 
+                          (kolkataHour === targetHour && kolkataMinute >= targetMinute);
+      setIsClosed(isClosedNow);
+      
+      // Calculate how many seconds until target time
+      let targetTimeSeconds = targetHour * 3600 + targetMinute * 60;
+      let currentTimeSeconds = kolkataHour * 3600 + kolkataMinute * 60 + kolkataSecond;
+      
+      // If target time is in the past for today, set it for tomorrow
+      if (currentTimeSeconds >= targetTimeSeconds) {
+        // Add 24 hours worth of seconds
+        targetTimeSeconds += 24 * 3600;
       }
       
-      const diff = target.getTime() - now.getTime();
+      // Calculate seconds difference
+      const diffSeconds = targetTimeSeconds - currentTimeSeconds;
       
       // Check if less than 5 minutes to closing
-      const isNearingCloseNow = diff < 5 * 60 * 1000 && diff > 0;
+      const isNearingCloseNow = diffSeconds < 5 * 60 && diffSeconds > 0;
       setIsNearingClose(isNearingCloseNow);
       
       // Format the time remaining
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      
-      // Check if the round is closed (past the target time)
-      const nowHour = now.getHours();
-      const nowMinute = now.getMinutes();
-      const isClosedNow = (nowHour > targetHour) || (nowHour === targetHour && nowMinute >= targetMinute);
-      setIsClosed(isClosedNow);
+      const hours = Math.floor(diffSeconds / 3600);
+      const minutes = Math.floor((diffSeconds % 3600) / 60);
+      const seconds = diffSeconds % 60;
       
       return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     };
