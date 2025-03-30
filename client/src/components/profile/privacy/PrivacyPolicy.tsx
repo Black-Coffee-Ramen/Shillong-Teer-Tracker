@@ -1,0 +1,192 @@
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, Lock, Shield, EyeOff, FileLock2 } from "lucide-react";
+
+interface PrivacyPolicyProps {
+  onBack: () => void;
+}
+
+export default function PrivacyPolicy({ onBack }: PrivacyPolicyProps) {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          className="mr-2"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </Button>
+        <h2 className="text-xl font-semibold text-white">Privacy Policy</h2>
+      </div>
+      
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-accent/10 rounded-full mb-4">
+          <Shield className="h-8 w-8 text-accent" />
+        </div>
+        <h3 className="text-lg font-medium text-white">Shillong Teer India Privacy Policy</h3>
+        <p className="text-sm text-gray-400">Last Updated: March 30, 2025</p>
+      </div>
+      
+      <div className="space-y-6 text-gray-300 text-sm overflow-y-auto pr-1 max-h-[65vh]">
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium flex items-center">
+            <Lock className="h-4 w-4 mr-2 text-accent" />
+            Introduction
+          </h4>
+          <p>
+            Welcome to Shillong Teer India. We respect your privacy and are committed to protecting your personal data. 
+            This privacy policy explains how we collect, use, process, and store your information when you use our application.
+          </p>
+          <p>
+            By using our services, you agree to the collection and use of information in accordance with this policy.
+            If you do not agree with any part of this policy, please do not use our application.
+          </p>
+        </section>
+        
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium flex items-center">
+            <FileLock2 className="h-4 w-4 mr-2 text-accent" />
+            Information We Collect
+          </h4>
+          <p>
+            We collect several types of information for various purposes to provide and improve our service to you:
+          </p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li><strong>Personal Data</strong>: Name, email address, phone number, date of birth, and address for account creation and verification purposes.</li>
+            <li><strong>Payment Information</strong>: When you make transactions, we collect payment method details, transaction history, and banking information for processing withdrawals.</li>
+            <li><strong>Usage Data</strong>: Information on how you interact with our application, including betting patterns, pages visited, time spent, features used, and crash reports.</li>
+            <li><strong>Device Information</strong>: IP address, browser type, device type, operating system, and other technical information about the device you use to access our service.</li>
+            <li><strong>Location Data</strong>: General location information based on IP address or more precise location if you explicitly grant permission.</li>
+          </ul>
+        </section>
+        
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium flex items-center">
+            <EyeOff className="h-4 w-4 mr-2 text-accent" />
+            How We Use Your Information
+          </h4>
+          <p>
+            We use the collected information for various purposes, including:
+          </p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>To provide and maintain our service</li>
+            <li>To verify your identity as required by regulations</li>
+            <li>To process your transactions and manage your account</li>
+            <li>To notify you about changes to our service</li>
+            <li>To provide customer support</li>
+            <li>To gather analysis or valuable information to improve our service</li>
+            <li>To monitor the usage of our service</li>
+            <li>To detect, prevent, and address technical issues</li>
+            <li>To comply with legal obligations</li>
+            <li>To protect against fraudulent or unauthorized transactions</li>
+          </ul>
+        </section>
+        
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium">Legal Basis for Processing</h4>
+          <p>
+            We will only collect and process your personal data where we have a legal basis to do so. Legal bases include:
+          </p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li><strong>Contract</strong>: Processing necessary for the performance of our contract with you</li>
+            <li><strong>Consent</strong>: Processing based on your specific and informed consent</li>
+            <li><strong>Legitimate Interests</strong>: Processing necessary for our legitimate interests, such as fraud prevention and service enhancement</li>
+            <li><strong>Legal Obligations</strong>: Processing necessary to comply with legal requirements</li>
+          </ul>
+        </section>
+        
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium">Data Security</h4>
+          <p>
+            The security of your data is important to us. We have implemented appropriate technical and organizational measures to protect your personal information from unauthorized access, alteration, disclosure, or destruction.
+          </p>
+          <p>
+            All payment transactions are encrypted using industry-standard SSL technology. Your password is stored in an encrypted format, and we regularly review our information collection, storage, and processing practices to prevent unauthorized access.
+          </p>
+          <p>
+            While we strive to use commercially acceptable means to protect your personal data, we cannot guarantee its absolute security. Any information you transmit to us is done at your own risk.
+          </p>
+        </section>
+        
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium">Data Retention</h4>
+          <p>
+            We will retain your personal data only for as long as necessary to fulfill the purposes for which we collected it, including for the purposes of satisfying any legal, regulatory, tax, accounting, or reporting requirements.
+          </p>
+          <p>
+            In some circumstances, we may anonymize your personal data (so that it can no longer be associated with you) for research or statistical purposes, in which case we may use this information indefinitely without further notice to you.
+          </p>
+        </section>
+        
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium">Your Data Protection Rights</h4>
+          <p>
+            Depending on your location, you may have certain rights regarding your personal data:
+          </p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>The right to access your personal data</li>
+            <li>The right to rectification of incorrect personal data</li>
+            <li>The right to erasure of your personal data</li>
+            <li>The right to restrict processing of your personal data</li>
+            <li>The right to data portability</li>
+            <li>The right to object to processing of your personal data</li>
+            <li>The right to withdraw consent</li>
+          </ul>
+          <p>
+            To exercise these rights, please contact us at privacy@shillongteerindia.com. We will respond to your request within 30 days.
+          </p>
+        </section>
+        
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium">Cookies and Tracking Technologies</h4>
+          <p>
+            We use cookies and similar tracking technologies to track activity on our service and hold certain information. Cookies are files with a small amount of data that may include an anonymous unique identifier.
+          </p>
+          <p>
+            You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent. However, if you do not accept cookies, you may not be able to use some portions of our service.
+          </p>
+        </section>
+        
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium">Third-Party Services</h4>
+          <p>
+            Our service may contain links to other sites that are not operated by us. If you click on a third-party link, you will be directed to that third party's site. We strongly advise you to review the Privacy Policy of every site you visit.
+          </p>
+          <p>
+            We have no control over and assume no responsibility for the content, privacy policies, or practices of any third-party sites or services.
+          </p>
+        </section>
+        
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium">Children's Privacy</h4>
+          <p>
+            Our service is not intended for use by individuals under the age of 18 ("Children"). We do not knowingly collect personally identifiable information from Children. If you are a parent or guardian and you are aware that your child has provided us with personal data, please contact us.
+          </p>
+        </section>
+        
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium">Changes to This Privacy Policy</h4>
+          <p>
+            We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.
+          </p>
+          <p>
+            You are advised to review this Privacy Policy periodically for any changes. Changes to this Privacy Policy are effective when they are posted on this page.
+          </p>
+        </section>
+        
+        <section className="space-y-2">
+          <h4 className="text-white text-base font-medium">Contact Us</h4>
+          <p>
+            If you have any questions about this Privacy Policy, please contact us:
+          </p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>By email: privacy@shillongteerindia.com</li>
+            <li>By phone: +91-9876543210</li>
+            <li>By mail: Privacy Officer, Shillong Teer India, 123 Main Street, Shillong, Meghalaya, 793001, India</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  );
+}

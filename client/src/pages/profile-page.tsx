@@ -1,14 +1,22 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import WalletCard from "@/components/profile/WalletCard";
 import TransactionHistory from "@/components/profile/TransactionHistory";
+import AccountSettings from "@/components/profile/settings/AccountSettings";
+import SupportChat from "@/components/profile/support/SupportChat";
+import PrivacyPolicy from "@/components/profile/privacy/PrivacyPolicy";
+import { Settings, HelpCircle, Shield, LogOut, Loader2 } from "lucide-react";
+
+type ScreenView = 'main' | 'settings' | 'support' | 'privacy';
 
 export default function ProfilePage() {
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
   const [_, setLocation] = useLocation();
+  const [currentView, setCurrentView] = useState<ScreenView>('main');
   
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
@@ -32,6 +40,32 @@ export default function ProfilePage() {
     return user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
   
+  // Render the correct view based on currentView state
+  if (currentView === 'settings') {
+    return (
+      <div className="container mx-auto px-4 py-4">
+        <AccountSettings onBack={() => setCurrentView('main')} />
+      </div>
+    );
+  }
+  
+  if (currentView === 'support') {
+    return (
+      <div className="container mx-auto px-4 py-4">
+        <SupportChat onBack={() => setCurrentView('main')} />
+      </div>
+    );
+  }
+  
+  if (currentView === 'privacy') {
+    return (
+      <div className="container mx-auto px-4 py-4">
+        <PrivacyPolicy onBack={() => setCurrentView('main')} />
+      </div>
+    );
+  }
+  
+  // Main profile view
   return (
     <div className="container mx-auto px-4 py-4">
       {/* User Profile */}
@@ -67,28 +101,37 @@ export default function ProfilePage() {
       {/* Settings & Logout */}
       <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
         <div className="divide-y divide-gray-700">
-          <button className="w-full py-3 flex justify-between items-center text-white">
+          <button 
+            className="w-full py-3 flex justify-between items-center text-white"
+            onClick={() => setCurrentView('settings')}
+          >
             <div className="flex items-center">
-              <i className="ri-settings-3-line mr-3 text-gray-500"></i>
+              <Settings className="h-5 w-5 mr-3 text-accent" />
               <span>Account Settings</span>
             </div>
-            <i className="ri-arrow-right-s-line text-gray-500"></i>
+            <span className="text-gray-500">&rarr;</span>
           </button>
           
-          <button className="w-full py-3 flex justify-between items-center text-white">
+          <button 
+            className="w-full py-3 flex justify-between items-center text-white"
+            onClick={() => setCurrentView('support')}
+          >
             <div className="flex items-center">
-              <i className="ri-question-line mr-3 text-gray-500"></i>
+              <HelpCircle className="h-5 w-5 mr-3 text-accent" />
               <span>Help & Support</span>
             </div>
-            <i className="ri-arrow-right-s-line text-gray-500"></i>
+            <span className="text-gray-500">&rarr;</span>
           </button>
           
-          <button className="w-full py-3 flex justify-between items-center text-white">
+          <button 
+            className="w-full py-3 flex justify-between items-center text-white"
+            onClick={() => setCurrentView('privacy')}
+          >
             <div className="flex items-center">
-              <i className="ri-shield-check-line mr-3 text-gray-500"></i>
+              <Shield className="h-5 w-5 mr-3 text-accent" />
               <span>Privacy Policy</span>
             </div>
-            <i className="ri-arrow-right-s-line text-gray-500"></i>
+            <span className="text-gray-500">&rarr;</span>
           </button>
           
           <Button
@@ -98,9 +141,9 @@ export default function ProfilePage() {
             className="w-full py-3 flex items-center justify-start text-red-500 hover:text-red-400"
           >
             {logoutMutation.isPending ? (
-              <i className="ri-loader-4-line animate-spin mr-3"></i>
+              <Loader2 className="h-5 w-5 mr-3 animate-spin" />
             ) : (
-              <i className="ri-logout-box-line mr-3"></i>
+              <LogOut className="h-5 w-5 mr-3" />
             )}
             <span>Logout</span>
           </Button>
