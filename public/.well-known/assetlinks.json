@@ -3,8 +3,6 @@
   "target": {
     "namespace": "android_app",
     "package_name": "com.shillongteerindia.app",
-    "sha256_cert_fingerprints": [
-      "SHA256_CERTIFICATE_FINGERPRINT_WILL_BE_ADDED_DURING_BUILD"
-    ]
+    "sha256_cert_fingerprints": ["PLACEHOLDER_FINGERPRINT_WILL_BE_UPDATED_BY_BUILD_SCRIPT"]
   }
 }]
