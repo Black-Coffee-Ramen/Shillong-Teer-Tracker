@@ -364,7 +364,7 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
         
         <div className="bg-gray-800 rounded-lg p-3">
           <p className="text-white text-sm leading-relaxed">
-            Based on the last 7 days, numbers ending with <span className="text-accent font-medium">3, 7, 8</span> appeared more frequently in Round {selectedRound}. Consider including them in your selection.
+            Based on the last 7 days, numbers ending with <span className="text-white font-medium">3, 7, 8</span> appeared more frequently in Round {selectedRound}. Consider including them in your selection.
           </p>
         </div>
       </div>

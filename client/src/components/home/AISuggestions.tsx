@@ -139,7 +139,7 @@ export default function AISuggestions() {
                     dangerouslySetInnerHTML={{
                       __html: aiData.description.includes("numbers ending with")
                         ? aiData.description.replace(
-                            /(\d+,\s*)+\d+/g, 
+                            /(\d+,\s*)*\d+/g, 
                             match => `<span class="text-white font-medium">${match}</span>`
                           )
                         : aiData.description

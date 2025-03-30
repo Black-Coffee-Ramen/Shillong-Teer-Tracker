@@ -11,6 +11,7 @@ interface CountdownTimerProps {
 export default function CountdownTimer({ targetHour, targetMinute, label, roundNumber }: CountdownTimerProps) {
   const [countdown, setCountdown] = useState<string>("--:--:--");
   const [isClosed, setIsClosed] = useState<boolean>(false);
+  const [isNearingClose, setIsNearingClose] = useState<boolean>(false);
   
   useEffect(() => {
     const calculateTimeRemaining = () => {
@@ -27,7 +28,8 @@ export default function CountdownTimer({ targetHour, targetMinute, label, roundN
       const diff = target.getTime() - now.getTime();
       
       // Check if less than 5 minutes to closing
-      const isNearingClose = diff < 5 * 60 * 1000;
+      const isNearingCloseNow = diff < 5 * 60 * 1000 && diff > 0;
+      setIsNearingClose(isNearingCloseNow);
       
       // Format the time remaining
       const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -35,38 +37,52 @@ export default function CountdownTimer({ targetHour, targetMinute, label, roundN
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
       
       // Check if the round is closed (past the target time)
-      const isClosedNow = now.getHours() >= targetHour && now.getMinutes() >= targetMinute;
+      const nowHour = now.getHours();
+      const nowMinute = now.getMinutes();
+      const isClosedNow = 
+        (nowHour > targetHour) || 
+        (nowHour === targetHour && nowMinute >= targetMinute);
+      
       setIsClosed(isClosedNow);
       
       return {
         formatted: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`,
-        isNearingClose
+        hours,
+        minutes,
+        seconds
       };
     };
     
-    const { formatted, isNearingClose } = calculateTimeRemaining();
+    const { formatted } = calculateTimeRemaining();
     setCountdown(formatted);
     
     const interval = setInterval(() => {
-      const { formatted, isNearingClose } = calculateTimeRemaining();
+      const { formatted } = calculateTimeRemaining();
       setCountdown(formatted);
     }, 1000);
     
     return () => clearInterval(interval);
   }, [targetHour, targetMinute]);
   
+  // Determine the right color for the countdown
+  const getTimerColor = () => {
+    if (isClosed) return "text-red-500";
+    if (isNearingClose) return "text-yellow-500"; 
+    return roundNumber === 1 ? "text-accent" : "text-gray-300";
+  };
+  
   return (
-    <div className="border border-gray-700 rounded-lg p-3">
+    <div className={`border ${isNearingClose ? 'border-yellow-500/50' : 'border-gray-700'} rounded-lg p-3 transition-all duration-300`}>
       <div className="flex justify-between items-center">
         <div>
           <h3 className="text-white font-medium">Round {roundNumber}</h3>
           <p className="text-gray-400 text-sm">{label}</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-gray-500">
+          <p className={`text-xs ${isNearingClose ? 'text-yellow-500 font-medium' : 'text-gray-500'}`}>
             {isClosed ? "Closed" : "Closes in"}
           </p>
-          <p className={`font-mono font-medium ${roundNumber === 1 ? "text-accent" : "text-gray-300"}`}>
+          <p className={`font-mono font-medium text-lg ${getTimerColor()} ${isNearingClose ? 'animate-pulse' : ''}`}>
             {countdown}
           </p>
         </div>
