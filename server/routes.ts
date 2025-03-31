@@ -9,6 +9,12 @@ import crypto from "crypto";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app);
+  
+  // Handle service worker requests with the correct MIME type
+  app.get("/service-worker.js", (_req, res, next) => {
+    res.setHeader("Content-Type", "application/javascript");
+    next();
+  });
 
   // API Routes
   

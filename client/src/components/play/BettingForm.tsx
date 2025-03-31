@@ -1,115 +1,121 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback, FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Button } from '@/components/ui/Button';
-import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
+import { useToast } from '@/hooks/use-toast';
 
-export function BettingForm({ onBetPlaced }) {
-  const [number, setNumber] = useState('');
+interface BetData {
+  number: number;
+  amount: number;
+  round: number;
+}
+
+interface BettingFormProps {
+  selectedNumbers: number[];
+  selectedRound: number;
+  onResetSelection: () => void;
+  onAddToCart: (amount: number) => void;
+}
+
+export default function BettingForm({ 
+  selectedNumbers, 
+  selectedRound, 
+  onResetSelection, 
+  onAddToCart 
+}: BettingFormProps) {
   const [amount, setAmount] = useState('');
-  const [round, setRound] = useState(1);
   const { user } = useAuth();
+  const { toast } = useToast();
 
-  const placeBetMutation = useMutation({
-    mutationFn: async (betData) => {
-      const response = await fetch('/api/bets', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(betData)
+  // Show current selection
+  const selectedNumbersText = selectedNumbers.length > 0 
+    ? selectedNumbers.sort((a, b) => a - b).join(', ') 
+    : 'None';
+
+  const handleAddToCart = useCallback(() => {
+    if (selectedNumbers.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select at least one number",
       });
-      if (!response.ok) {
-        const errorData = await response.json();
-        const errorMessage = errorData.message || 'Failed to place bet';
-        throw new Error(errorMessage);
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      setNumber('');
-      setAmount('');
-      onBetPlaced();
-      toast.success('Bet placed successfully');
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to place bet');
-    }
-  });
-
-  const handleSubmit = useCallback((e) => {
-    e.preventDefault();
-    if (!user) {
-      toast.error('Please login to place bets');
       return;
     }
 
     const betAmount = parseInt(amount);
-    const betNumber = parseInt(number);
-
     if (isNaN(betAmount) || betAmount < 5) {
-      toast.error('Minimum bet amount is 5');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Minimum bet amount is 5",
+      });
       return;
     }
 
-    if (isNaN(betNumber) || betNumber < 0 || betNumber > 99) {
-      toast.error('Please enter a valid number between 0 and 99');
-      return;
-    }
-
-    placeBetMutation.mutate({
-      number: betNumber,
-      amount: betAmount,
-      round
+    onAddToCart(betAmount);
+    setAmount('');
+    toast({
+      title: "Added to Cart",
+      description: `${selectedNumbers.length} number(s) added to cart`,
     });
-  }, [number, amount, round, user, placeBetMutation, onBetPlaced]);
+  }, [selectedNumbers, amount, toast, onAddToCart]);
+
+  const handleResetSelection = () => {
+    onResetSelection();
+    toast({
+      title: "Selection Reset",
+      description: "Number selection has been cleared",
+    });
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-1">Bet Number (0-99)</label>
-        <input
-          type="number"
-          min="0"
-          max="99"
-          value={number}
-          onChange={(e) => setNumber(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
-        />
+    <div className="bg-gray-800 rounded-xl p-4 mb-8 shadow-md">
+      <h3 className="text-lg font-medium mb-3 text-white">Place Your Bet</h3>
+      
+      <div className="mb-4">
+        <div className="text-gray-300 mb-1 text-sm">Selected Numbers:</div>
+        <div className="bg-gray-700 p-2 rounded-md text-accent font-medium min-h-[36px]">
+          {selectedNumbersText}
+        </div>
       </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Amount (min. 5)</label>
+      
+      <div className="mb-4">
+        <label className="block text-gray-300 mb-1 text-sm">Bet Amount Per Number (min. 5)</label>
         <input
           type="number"
           min="5"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="w-full p-2 border rounded"
-          required
+          className="w-full p-2 border border-gray-600 bg-gray-700 text-white rounded-md"
+          placeholder="Enter amount"
         />
       </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Round</label>
-        <select
-          value={round}
-          onChange={(e) => setRound(parseInt(e.target.value))}
-          className="w-full p-2 border rounded"
-        >
-          <option value={1}>Round 1</option>
-          <option value={2}>Round 2</option>
-        </select>
+      
+      <div className="mb-4">
+        <div className="text-gray-300 mb-1 text-sm">Selected Round:</div>
+        <div className="bg-gray-700 p-2 rounded-md text-accent font-medium">
+          Round {selectedRound} ({selectedRound === 1 ? '15:30' : '16:30'} IST)
+        </div>
       </div>
-
-      <Button
-        type="submit"
-        disabled={placeBetMutation.isPending}
-        className="w-full"
-      >
-        {placeBetMutation.isPending ? 'Placing Bet...' : 'Place Bet'}
-      </Button>
-    </form>
+      
+      <div className="flex space-x-3">
+        <Button
+          type="button"
+          onClick={handleResetSelection}
+          variant="outline"
+          className="flex-1"
+        >
+          Reset
+        </Button>
+        <Button
+          type="button"
+          onClick={handleAddToCart}
+          className="flex-1 bg-accent hover:bg-accent/90"
+          disabled={selectedNumbers.length === 0}
+        >
+          Add to Cart
+        </Button>
+      </div>
+    </div>
   );
 }
