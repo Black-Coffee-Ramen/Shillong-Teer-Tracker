@@ -5,15 +5,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import NumberGrid from "@/components/play/NumberGrid";
 import BettingForm from "@/components/play/BettingForm";
-import BettingCart from "@/components/play/BettingCart";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock } from "lucide-react";
-
-interface BetItem {
-  number: number;
-  amount: number;
-  round: number;
-}
 
 export default function PlayPage() {
   const [selectedRound, setSelectedRound] = useState<number>(1);
@@ -23,7 +16,6 @@ export default function PlayPage() {
   const [isClosed, setIsClosed] = useState<boolean>(false);
   const [isNearingClose, setIsNearingClose] = useState<boolean>(false);
   const [isSunday, setIsSunday] = useState<boolean>(false);
-  const [cartItems, setCartItems] = useState<BetItem[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
   const [_, navigate] = useLocation();
@@ -118,61 +110,6 @@ export default function PlayPage() {
   // Reset selection
   const resetSelection = () => {
     setSelectedNumbers([]);
-  };
-  
-  // Add to cart
-  const addToCart = (amount: number) => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please login to place bets",
-        variant: "destructive"
-      });
-      navigate("/auth");
-      return;
-    }
-    
-    if (selectedNumbers.length === 0 || amount <= 0) {
-      return;
-    }
-    
-    const newCartItems = selectedNumbers.map(number => ({
-      number,
-      amount,
-      round: selectedRound
-    }));
-    
-    setCartItems(prev => [...prev, ...newCartItems]);
-    resetSelection();
-    
-    toast({
-      title: "Added to Cart",
-      description: `${selectedNumbers.length} number(s) added`,
-    });
-  };
-  
-  // Remove from cart
-  const removeFromCart = (index: number) => {
-    setCartItems(prev => prev.filter((_, i) => i !== index));
-  };
-  
-  // Clear cart
-  const clearCart = () => {
-    setCartItems([]);
-  };
-  
-  // Checkout
-  const handleCheckout = () => {
-    if (cartItems.length === 0) return;
-    
-    // Process bets from cart
-    const placeBetEvent = new CustomEvent('place-bet-from-cart', {
-      detail: { cartItems }
-    });
-    document.dispatchEvent(placeBetEvent);
-    
-    // Clear cart after checkout
-    clearCart();
   };
   
   // Format date and time for display
@@ -276,39 +213,12 @@ export default function PlayPage() {
                 />
               </div>
               
-              {/* Simplified Betting Form */}
-              <div className="betting-form-container bg-gray-800 rounded-xl p-4 mb-4 shadow-md">
-                <h3 className="text-white text-lg font-medium mb-3">Place Your Bet</h3>
-                
-                <div className="mb-4">
-                  <div className="text-white mb-1">Selected Numbers:</div>
-                  <div className="bg-gray-700 p-3 rounded-md text-white font-medium">
-                    {selectedNumbers.length > 0 
-                      ? selectedNumbers.sort((a, b) => a - b).join(', ') 
-                      : 'No numbers selected'}
-                  </div>
-                </div>
-                
-                <BettingForm 
-                  selectedNumbers={selectedNumbers}
-                  selectedRound={selectedRound}
-                  onResetSelection={resetSelection}
-                  onAddToCart={addToCart}
-                />
-              </div>
-              
-              {/* Shopping Cart - Simplified */}
-              {cartItems.length > 0 && (
-                <div className="mb-4">
-                  <BettingCart
-                    cartItems={cartItems}
-                    onRemoveItem={removeFromCart}
-                    onClearCart={clearCart}
-                    onCheckout={handleCheckout}
-                    selectedRound={selectedRound}
-                  />
-                </div>
-              )}
+              {/* Direct Betting Form */}
+              <BettingForm 
+                selectedNumbers={selectedNumbers}
+                selectedRound={selectedRound}
+                onResetSelection={resetSelection}
+              />
             </>
           )}
         </>

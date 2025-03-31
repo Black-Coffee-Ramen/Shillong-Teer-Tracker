@@ -1,8 +1,9 @@
-import React, { useState, useCallback, FormEvent } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import React, { useState, useCallback } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface BetData {
   number: number;
@@ -14,25 +15,43 @@ interface BettingFormProps {
   selectedNumbers: number[];
   selectedRound: number;
   onResetSelection: () => void;
-  onAddToCart: (amount: number) => void;
 }
 
 export default function BettingForm({ 
   selectedNumbers, 
   selectedRound, 
-  onResetSelection, 
-  onAddToCart 
+  onResetSelection
 }: BettingFormProps) {
   const [amount, setAmount] = useState('');
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Show current selection
   const selectedNumbersText = selectedNumbers.length > 0 
     ? selectedNumbers.sort((a, b) => a - b).join(', ') 
     : 'None';
 
-  const handleAddToCart = useCallback(() => {
+  // Create a mutation for placing bets directly
+  const placeBetMutation = useMutation({
+    mutationFn: async (betData: BetData) => {
+      return await apiRequest('POST', '/api/bets', betData);
+    },
+    onSuccess: () => {
+      // Invalidate relevant queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/bets'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to place bet",
+      });
+    }
+  });
+
+  const handlePlaceBet = useCallback(() => {
     if (selectedNumbers.length === 0) {
       toast({
         variant: "destructive",
@@ -52,13 +71,34 @@ export default function BettingForm({
       return;
     }
 
-    onAddToCart(betAmount);
-    setAmount('');
-    toast({
-      title: "Added to Cart",
-      description: `${selectedNumbers.length} number(s) added to cart`,
+    // Place a bet for each selected number
+    let successCount = 0;
+    const totalNumbers = selectedNumbers.length;
+
+    selectedNumbers.forEach((number, index) => {
+      placeBetMutation.mutate(
+        {
+          number,
+          amount: betAmount,
+          round: selectedRound
+        },
+        {
+          onSuccess: () => {
+            successCount++;
+            if (index === totalNumbers - 1) {
+              // Last bet placed
+              toast({
+                title: "Bets Placed",
+                description: `Successfully placed ${successCount} out of ${totalNumbers} bets`,
+              });
+              setAmount('');
+              onResetSelection();
+            }
+          }
+        }
+      );
     });
-  }, [selectedNumbers, amount, toast, onAddToCart]);
+  }, [selectedNumbers, amount, selectedRound, toast, placeBetMutation, onResetSelection]);
 
   const handleResetSelection = () => {
     onResetSelection();
@@ -67,6 +107,9 @@ export default function BettingForm({
       description: "Number selection has been cleared",
     });
   };
+
+  const totalBetAmount = selectedNumbers.length * parseInt(amount || '0');
+  const potentialWinnings = totalBetAmount * 80; // 80x multiplier
 
   return (
     <div className="bg-gray-800 rounded-xl p-4 mb-8 shadow-md">
@@ -97,6 +140,20 @@ export default function BettingForm({
           Round {selectedRound} ({selectedRound === 1 ? '15:30' : '16:30'} IST)
         </div>
       </div>
+
+      {/* Display summary before placing bet */}
+      {selectedNumbers.length > 0 && amount && !isNaN(parseInt(amount)) && (
+        <div className="mb-4 p-3 bg-gray-700/50 rounded-lg">
+          <div className="flex justify-between mb-1">
+            <span className="text-gray-300">Total bet amount:</span>
+            <span className="text-white font-medium">{totalBetAmount.toFixed(2)} ₹</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-300">Potential winnings:</span>
+            <span className="text-accent font-medium">{potentialWinnings.toFixed(2)} ₹</span>
+          </div>
+        </div>
+      )}
       
       <div className="flex space-x-3">
         <Button
@@ -109,11 +166,19 @@ export default function BettingForm({
         </Button>
         <Button
           type="button"
-          onClick={handleAddToCart}
+          onClick={handlePlaceBet}
           className="flex-1 bg-accent hover:bg-accent/90"
-          disabled={selectedNumbers.length === 0}
+          disabled={selectedNumbers.length === 0 || !amount || isNaN(parseInt(amount)) || placeBetMutation.isPending}
         >
-          Add to Cart
+          {placeBetMutation.isPending ? (
+            <span className="flex items-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Placing Bet...
+            </span>
+          ) : "Place Bet"}
         </Button>
       </div>
     </div>
