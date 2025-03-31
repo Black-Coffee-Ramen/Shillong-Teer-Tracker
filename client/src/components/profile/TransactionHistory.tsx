@@ -110,7 +110,7 @@ export default function TransactionHistory() {
             </p>
           </div>
         </div>
-        <p className={`font-mono font-medium ${transaction.amount > 0 ? 'text-green-500' : 'text-accent'}`}>
+        <p className={`font-mono font-medium ${transaction.amount > 0 ? 'text-green-500' : transaction.type === 'withdraw' ? 'text-white' : 'text-accent'}`}>
           {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
         </p>
       </div>
@@ -153,7 +153,7 @@ export default function TransactionHistory() {
               </div>
             )
           ) : (
-            <div className="text-gray-400 text-center py-8">No transactions found</div>
+            <div className="text-white text-center py-8">No transactions found</div>
           )}
         </div>
         
@@ -165,13 +165,13 @@ export default function TransactionHistory() {
               size="sm"
               onClick={goToPrevPage}
               disabled={currentPage === 1}
-              className="text-gray-400"
+              className="text-white"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               Prev
             </Button>
             
-            <span className="text-sm text-gray-400">
+            <span className="text-sm text-white">
               Page {currentPage} of {totalPages}
             </span>
             
@@ -180,7 +180,7 @@ export default function TransactionHistory() {
               size="sm"
               onClick={goToNextPage}
               disabled={currentPage === totalPages}
-              className="text-gray-400"
+              className="text-white"
             >
               Next
               <ChevronRight className="h-4 w-4 ml-1" />
@@ -194,7 +194,7 @@ export default function TransactionHistory() {
         <DialogContent className="bg-secondary text-white max-w-md">
           <DialogHeader>
             <DialogTitle className="text-white font-poppins font-semibold text-lg">Transaction Details</DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogDescription className="text-white">
               Transaction ID: {selectedTransaction?.id}
             </DialogDescription>
           </DialogHeader>
@@ -209,43 +209,43 @@ export default function TransactionHistory() {
               
               <div className="text-center">
                 <h3 className="text-white text-lg font-medium">{getTransactionTitle(selectedTransaction.type)}</h3>
-                <p className={`font-mono font-bold text-2xl mt-1 ${selectedTransaction.amount > 0 ? 'text-green-500' : 'text-accent'}`}>
+                <p className={`font-mono font-bold text-2xl mt-1 ${selectedTransaction.amount > 0 ? 'text-green-500' : selectedTransaction.type === 'withdraw' ? 'text-white' : 'text-accent'}`}>
                   {selectedTransaction.amount > 0 ? '+' : ''}{formatCurrency(selectedTransaction.amount)}
                 </p>
-                <p className="text-gray-400 text-sm mt-1">
+                <p className="text-white text-sm mt-1">
                   {format(new Date(selectedTransaction.date), "MMMM d, yyyy 'at' h:mm a")}
                 </p>
               </div>
               
               <div className="bg-gray-800 rounded-lg p-4 space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Type:</span>
+                  <span className="text-white">Type:</span>
                   <span className="text-white font-medium">{selectedTransaction.type}</span>
                 </div>
                 
                 {selectedTransaction.type === "bet" && (
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Number:</span>
+                    <span className="text-white">Number:</span>
                     <span className="text-white font-medium">{selectedTransaction.metadata?.number || "N/A"}</span>
                   </div>
                 )}
                 
                 {selectedTransaction.type === "bet" && (
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Round:</span>
+                    <span className="text-white">Round:</span>
                     <span className="text-white font-medium">{selectedTransaction.metadata?.round || "N/A"}</span>
                   </div>
                 )}
                 
                 {selectedTransaction.type === "withdraw" && selectedTransaction.metadata?.method && (
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Method:</span>
+                    <span className="text-white">Method:</span>
                     <span className="text-white font-medium capitalize">{selectedTransaction.metadata.method}</span>
                   </div>
                 )}
                 
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Status:</span>
+                  <span className="text-white">Status:</span>
                   <span className="text-green-500 font-medium">Completed</span>
                 </div>
               </div>

@@ -70,7 +70,7 @@ export default function BettingCart({
           <div className="divide-y divide-gray-700">
             {round1Items.length > 0 && (
               <div className="py-2">
-                <p className="text-gray-400 text-xs mb-2">Round 1 (15:30 IST)</p>
+                <p className="text-white text-xs mb-2">Round 1 (15:30 IST)</p>
                 <div className="grid grid-cols-4 gap-2">
                   {round1Items.map((item, index) => (
                     <div 
@@ -88,7 +88,7 @@ export default function BettingCart({
                       <p className="text-white text-center font-mono font-medium text-lg">
                         {formatTwoDigits(item.number)}
                       </p>
-                      <p className="text-gray-400 text-xs text-center mt-1">
+                      <p className="text-white text-xs text-center mt-1">
                         {formatCurrency(item.amount)}
                       </p>
                     </div>
@@ -99,7 +99,7 @@ export default function BettingCart({
             
             {round2Items.length > 0 && (
               <div className="py-2">
-                <p className="text-gray-400 text-xs mb-2">Round 2 (16:30 IST)</p>
+                <p className="text-white text-xs mb-2">Round 2 (16:30 IST)</p>
                 <div className="grid grid-cols-4 gap-2">
                   {round2Items.map((item, index) => (
                     <div 
@@ -117,7 +117,7 @@ export default function BettingCart({
                       <p className="text-white text-center font-mono font-medium text-lg">
                         {formatTwoDigits(item.number)}
                       </p>
-                      <p className="text-gray-400 text-xs text-center mt-1">
+                      <p className="text-white text-xs text-center mt-1">
                         {formatCurrency(item.amount)}
                       </p>
                     </div>
@@ -129,14 +129,14 @@ export default function BettingCart({
           
           <div className="mt-3 pt-3 border-t border-gray-700">
             <div className="flex justify-between mb-1">
-              <p className="text-gray-400 text-sm">Total Amount:</p>
+              <p className="text-white text-sm">Total Amount:</p>
               <p className="text-white font-mono font-medium">
                 {formatCurrency(totalAmount)}
               </p>
             </div>
             <div className="flex justify-between mb-3">
-              <p className="text-gray-400 text-sm">Potential Winning:</p>
-              <p className="text-accent font-mono font-medium">
+              <p className="text-white text-sm">Potential Winning:</p>
+              <p className="text-green-400 font-mono font-medium">
                 {formatCurrency(potentialWinnings)}
               </p>
             </div>

@@ -32,10 +32,10 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
       
       {/* Selected Numbers */}
       <div className="mt-4 mb-2">
-        <p className="text-gray-400 text-sm mb-2">Selected Numbers:</p>
+        <p className="text-white text-sm mb-2">Selected Numbers:</p>
         <div className="flex flex-wrap gap-2">
           {selectedNumbers.length === 0 ? (
-            <div className="text-gray-500 text-sm italic">No numbers selected yet</div>
+            <div className="text-white text-sm italic">No numbers selected yet</div>
           ) : (
             selectedNumbers.map(num => (
               <div key={num} className="bg-accent rounded-full px-3 py-1 text-white text-sm font-mono flex items-center">
@@ -44,7 +44,7 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
                   className="ml-2 text-white text-xs"
                   onClick={() => onNumberSelect(num)}
                 >
-                  <i className="ri-close-line"></i>
+                  ×
                 </button>
               </div>
             ))

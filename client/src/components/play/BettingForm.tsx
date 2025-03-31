@@ -80,7 +80,7 @@ export default function BettingForm({
       </div>
       
       <div className="mb-4">
-        <label className="block text-gray-300 mb-1 text-sm">Bet Amount Per Number (min. 5)</label>
+        <label className="block text-white mb-1 text-sm">Bet Amount Per Number (min. 5)</label>
         <input
           type="number"
           min="5"
@@ -92,8 +92,8 @@ export default function BettingForm({
       </div>
       
       <div className="mb-4">
-        <div className="text-gray-300 mb-1 text-sm">Selected Round:</div>
-        <div className="bg-gray-700 p-2 rounded-md text-accent font-medium">
+        <div className="text-white mb-1 text-sm">Selected Round:</div>
+        <div className="bg-gray-700 p-2 rounded-md text-white font-medium">
           Round {selectedRound} ({selectedRound === 1 ? '15:30' : '16:30'} IST)
         </div>
       </div>
