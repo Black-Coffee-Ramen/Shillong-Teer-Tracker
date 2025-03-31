@@ -116,14 +116,14 @@ export default function BettingForm({
       <h3 className="text-lg font-medium mb-3 text-white">Place Your Bet</h3>
       
       <div className="mb-4">
-        <div className="text-gray-300 mb-1 text-sm">Selected Numbers:</div>
-        <div className="bg-gray-700 p-2 rounded-md text-accent font-medium min-h-[36px]">
+        <div className="text-white mb-1 text-sm">Selected Numbers:</div>
+        <div className="bg-gray-700 p-2 rounded-md text-white font-medium min-h-[36px]">
           {selectedNumbersText}
         </div>
       </div>
       
       <div className="mb-4">
-        <label className="block text-gray-300 mb-1 text-sm">Bet Amount Per Number (min. 5)</label>
+        <label className="block text-white mb-1 text-sm">Bet Amount Per Number (min. 5)</label>
         <input
           type="number"
           min="5"
@@ -135,8 +135,8 @@ export default function BettingForm({
       </div>
       
       <div className="mb-4">
-        <div className="text-gray-300 mb-1 text-sm">Selected Round:</div>
-        <div className="bg-gray-700 p-2 rounded-md text-accent font-medium">
+        <div className="text-white mb-1 text-sm">Selected Round:</div>
+        <div className="bg-gray-700 p-2 rounded-md text-white font-medium">
           Round {selectedRound} ({selectedRound === 1 ? '15:30' : '16:30'} IST)
         </div>
       </div>
@@ -145,12 +145,12 @@ export default function BettingForm({
       {selectedNumbers.length > 0 && amount && !isNaN(parseInt(amount)) && (
         <div className="mb-4 p-3 bg-gray-700/50 rounded-lg">
           <div className="flex justify-between mb-1">
-            <span className="text-gray-300">Total bet amount:</span>
+            <span className="text-white">Total bet amount:</span>
             <span className="text-white font-medium">{totalBetAmount.toFixed(2)} ₹</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-300">Potential winnings:</span>
-            <span className="text-accent font-medium">{potentialWinnings.toFixed(2)} ₹</span>
+            <span className="text-white">Potential winnings:</span>
+            <span className="text-white font-medium">{potentialWinnings.toFixed(2)} ₹</span>
           </div>
         </div>
       )}
