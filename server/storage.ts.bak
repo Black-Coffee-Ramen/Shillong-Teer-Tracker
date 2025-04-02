@@ -12,7 +12,6 @@ export interface IStorage {
   
   placeBet(bet: InsertBet): Promise<Bet>;
   getUserBets(userId: number): Promise<Bet[]>;
-  updateBet(id: number, updates: Partial<Bet>): Promise<Bet | undefined>;
   
   getResults(date?: Date): Promise<Result[]>;
   getResultByDate(date: Date): Promise<Result | undefined>;
@@ -169,16 +168,6 @@ export class MemStorage implements IStorage {
     return Array.from(this.bets.values())
       .filter(bet => bet.userId === userId)
       .sort((a, b) => b.date.getTime() - a.date.getTime());
-  }
-  
-  async updateBet(id: number, updates: Partial<Bet>): Promise<Bet | undefined> {
-    const bet = this.bets.get(id);
-    if (!bet) return undefined;
-    
-    const updatedBet = { ...bet, ...updates };
-    this.bets.set(id, updatedBet);
-    
-    return updatedBet;
   }
   
   async getResults(date?: Date): Promise<Result[]> {

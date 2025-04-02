@@ -13,12 +13,19 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Download, Upload, Plus, Save, Trash2 } from "lucide-react";
+import { Download, Upload, Plus, Save, Trash2, Award, AlertTriangle } from "lucide-react";
 
 interface ResultEntry {
   date: string;
   round1: number | null;
   round2: number | null;
+}
+
+interface ProcessWinsResponse {
+  resultId: number;
+  resultDate: string;
+  totalWins: number;
+  winDetails: any[];
 }
 
 export default function ResultsManager() {
@@ -30,6 +37,7 @@ export default function ResultsManager() {
   });
   const [isImporting, setIsImporting] = useState(false);
   const [csvData, setCsvData] = useState<string>("");
+  const [processingWins, setProcessingWins] = useState(false);
   
   // Fetch all results
   const { data: results, isLoading } = useQuery<any[]>({
@@ -250,6 +258,36 @@ export default function ResultsManager() {
     document.body.removeChild(link);
   };
   
+  // Process Wins Mutation
+  const processWinsMutation = useMutation<ProcessWinsResponse, Error, number>({
+    mutationFn: async (resultId: number) => {
+      return await apiRequest('POST', "/api/process-wins", { resultId });
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: `Processed ${data.totalWins} wins successfully`,
+      });
+      setProcessingWins(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to process wins",
+      });
+      setProcessingWins(false);
+    }
+  });
+
+  // Handle Process Wins
+  const handleProcessWins = (resultId: number) => {
+    if (!resultId) return;
+    
+    setProcessingWins(true);
+    processWinsMutation.mutate(resultId);
+  };
+
   // Format date for display
   const formatDisplayDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -410,20 +448,35 @@ export default function ResultsManager() {
                       />
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="text-red-500 hover:text-red-400 hover:bg-red-950/30"
-                        onClick={() => {
-                          // Here we could add delete functionality if needed
-                          toast({
-                            title: "Info",
-                            description: "Delete functionality not implemented yet",
-                          });
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex justify-end space-x-1">
+                        {/* Process Wins Button - only show if result has at least one round */}
+                        {(result.round1 !== null || result.round2 !== null) && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            className="text-green-500 hover:text-green-400 hover:bg-green-950/30"
+                            onClick={() => handleProcessWins(result.id)}
+                            disabled={processingWins}
+                          >
+                            <Award className="h-4 w-4" />
+                          </Button>
+                        )}
+
+                        {/* Delete button (not implemented) */}
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-red-500 hover:text-red-400 hover:bg-red-950/30"
+                          onClick={() => {
+                            toast({
+                              title: "Info",
+                              description: "Delete functionality not implemented yet",
+                            });
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

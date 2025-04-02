@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
-import { insertBetSchema, insertResultSchema, insertTransactionSchema } from "@shared/schema";
+import { insertBetSchema, insertResultSchema, insertTransactionSchema, Bet } from "@shared/schema";
 import crypto from "crypto";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -17,6 +17,152 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // API Routes
+  
+  // Process wins for new results
+  app.post("/api/process-wins", async (req, res) => {
+    if (!req.isAuthenticated() || req.user?.username !== "admin") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+    
+    try {
+      const { resultId } = req.body;
+      if (!resultId) {
+        return res.status(400).json({ message: "Result ID is required" });
+      }
+      
+      // Get the result
+      const results = await storage.getResults();
+      const result = results.find(r => r.id === parseInt(resultId));
+      
+      if (!result) {
+        return res.status(404).json({ message: "Result not found" });
+      }
+      
+      // Skip if result doesn't have data
+      if (result.round1 === null && result.round2 === null) {
+        return res.status(400).json({ message: "Result has no data" });
+      }
+      
+      // Get date of the result for filtering bets
+      const resultDate = new Date(result.date);
+      resultDate.setHours(0, 0, 0, 0);
+      
+      // Processed wins to track
+      const processedWins = [];
+      
+      // Get all bets from all users
+      // In a real implementation, we'd query just for the specific date
+      // but for our in-memory setup we'll fetch all and filter
+      const allBets: Bet[] = [];
+      const users = await storage.getUser(1); // Get admin user
+      if (users) {
+        const userBets = await storage.getUserBets(users.id);
+        allBets.push(...userBets);
+      }
+      
+      // Process round 1 wins if we have a result
+      if (result.round1 !== null) {
+        const round1Bets = allBets.filter(bet => {
+          const betDate = new Date(bet.date);
+          betDate.setHours(0, 0, 0, 0);
+          return betDate.getTime() === resultDate.getTime() && bet.round === 1;
+        });
+        
+        // Process each bet in round 1
+        for (const bet of round1Bets) {
+          if (bet.number === result.round1) {
+            // Calculate win amount (80x multiplier)
+            const winAmount = bet.amount * 80;
+            
+            // Mark bet as a win
+            await storage.updateBet(bet.id, {
+              isWin: true,
+              winAmount: winAmount
+            });
+            
+            // Add win amount to user balance
+            const user = await storage.getUser(bet.userId);
+            if (user) {
+              await storage.updateUserBalance(user.id, winAmount);
+              
+              // Record transaction
+              await storage.createTransaction({
+                userId: user.id,
+                amount: winAmount,
+                type: "win",
+                description: `Win on number ${bet.number} for Round 1`
+              });
+              
+              processedWins.push({
+                betId: bet.id,
+                userId: bet.userId,
+                number: bet.number,
+                amount: bet.amount,
+                winAmount: winAmount,
+                round: 1
+              });
+            }
+          }
+        }
+      }
+      
+      // Process round 2 wins if we have a result
+      if (result.round2 !== null) {
+        const round2Bets = allBets.filter(bet => {
+          const betDate = new Date(bet.date);
+          betDate.setHours(0, 0, 0, 0);
+          return betDate.getTime() === resultDate.getTime() && bet.round === 2;
+        });
+        
+        // Process each bet in round 2
+        for (const bet of round2Bets) {
+          if (bet.number === result.round2) {
+            // Calculate win amount (80x multiplier)
+            const winAmount = bet.amount * 80;
+            
+            // Mark bet as a win
+            await storage.updateBet(bet.id, {
+              isWin: true,
+              winAmount: winAmount
+            });
+            
+            // Add win amount to user balance
+            const user = await storage.getUser(bet.userId);
+            if (user) {
+              await storage.updateUserBalance(user.id, winAmount);
+              
+              // Record transaction
+              await storage.createTransaction({
+                userId: user.id,
+                amount: winAmount,
+                type: "win",
+                description: `Win on number ${bet.number} for Round 2`
+              });
+              
+              processedWins.push({
+                betId: bet.id,
+                userId: bet.userId,
+                number: bet.number,
+                amount: bet.amount,
+                winAmount: winAmount,
+                round: 2
+              });
+            }
+          }
+        }
+      }
+      
+      res.json({
+        resultId: result.id,
+        resultDate: result.date,
+        totalWins: processedWins.length,
+        winDetails: processedWins
+      });
+    } catch (error) {
+      console.error("Error processing wins:", error);
+      res.status(500).json({ message: "Error processing wins" });
+    }
+  });
   
   // Results API
   app.get("/api/results", async (req, res) => {
@@ -45,11 +191,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     try {
-      const resultData = insertResultSchema.parse(req.body);
+      // Convert string date to Date object before validation
+      const data = req.body;
+      if (data.date && typeof data.date === 'string') {
+        data.date = new Date(data.date);
+      }
+      
+      const resultData = insertResultSchema.parse(data);
       
       // Check if result for this date already exists
-      // Ensure resultData.date is a valid Date
-      const resultDate = resultData.date ? new Date(resultData.date) : new Date();
+      const resultDate = resultData.date || new Date();
       const existingResult = await storage.getResultByDate(resultDate);
       
       if (existingResult) {
