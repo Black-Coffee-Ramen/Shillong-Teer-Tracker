@@ -174,7 +174,7 @@ export default function PlayPage() {
             <p className="text-white">Round {selectedRound} closes in:</p>
             <p className={`font-mono font-bold text-xl ${
               isSunday || isClosed ? 'text-red-400' :
-              isNearingClose ? 'text-yellow-400 animate-pulse' : 'text-accent'
+              isNearingClose ? 'text-yellow-400 animate-pulse' : 'text-white'
             }`}>
               {isSunday ? "CLOSED" : countdown}
             </p>

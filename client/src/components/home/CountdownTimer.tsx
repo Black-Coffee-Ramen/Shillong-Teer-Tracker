@@ -68,7 +68,7 @@ export default function CountdownTimer({ targetHour, targetMinute, label, roundN
   const getTimerColor = () => {
     if (isClosed) return "text-red-500";
     if (isNearingClose) return "text-yellow-500"; 
-    return roundNumber === 1 ? "text-accent" : "text-gray-300";
+    return "text-white"; // Always use white for better visibility
   };
   
   return (
