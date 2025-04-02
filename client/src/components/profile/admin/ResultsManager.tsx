@@ -60,7 +60,12 @@ export default function ResultsManager() {
   // Create Result Mutation
   const createResultMutation = useMutation({
     mutationFn: async (data: ResultEntry) => {
-      return await apiRequest('POST', "/api/results", data);
+      // Ensure we're sending a proper date format for the server
+      const formattedData = {
+        ...data,
+        date: new Date(data.date).toISOString()
+      };
+      return await apiRequest('POST', "/api/results", formattedData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/results"] });
@@ -80,6 +85,7 @@ export default function ResultsManager() {
         title: "Error",
         description: error.message || "Failed to create result",
       });
+      console.error("Result creation error:", error);
     }
   });
   
