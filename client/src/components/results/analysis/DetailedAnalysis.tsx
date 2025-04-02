@@ -427,10 +427,10 @@ export default function DetailedAnalysis({ onBack }: DetailedAnalysisProps) {
       
       <div className="bg-gray-800 rounded-lg p-4 mb-4">
         <h4 className="text-white text-sm mb-3">Pattern Tips</h4>
-        <ul className="text-gray-300 text-sm space-y-2">
-          <li>• <span className="text-accent">Even-Even/Odd-Odd</span>: Both digits share the same parity (both even or both odd)</li>
-          <li>• <span className="text-accent">Low-Low</span>: Both digits are below 5 (0-4)</li>
-          <li>• <span className="text-accent">High-High</span>: Both digits are 5 or above (5-9)</li>
+        <ul className="text-white text-sm space-y-2">
+          <li>• <span className="text-white font-medium">Even-Even/Odd-Odd</span>: Both digits share the same parity (both even or both odd)</li>
+          <li>• <span className="text-white font-medium">Low-Low</span>: Both digits are below 5 (0-4)</li>
+          <li>• <span className="text-white font-medium">High-High</span>: Both digits are 5 or above (5-9)</li>
           <li>• Look for patterns that occur less frequently, as they may be due for an appearance</li>
         </ul>
       </div>
@@ -483,7 +483,7 @@ export default function DetailedAnalysis({ onBack }: DetailedAnalysisProps) {
         
         <div className="mt-5">
           <h4 className="text-white text-sm mb-3">Trend Insights</h4>
-          <ul className="text-gray-300 text-sm space-y-2">
+          <ul className="text-white text-sm space-y-2">
             <li>• Look for numbers that have been consistently high or low recently</li>
             <li>• Watch for alternate patterns between rounds 1 and 2</li>
             <li>• Numbers that haven't appeared in several days might be due</li>

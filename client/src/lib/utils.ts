@@ -14,33 +14,37 @@ export function formatTwoDigits(num: number): string {
 }
 
 export function getFormattedDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('en-IN', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    timeZone: 'Asia/Kolkata'
   }).format(date);
 }
 
 export function getFormattedTime(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('en-IN', {
     hour: 'numeric',
     minute: 'numeric',
-    hour12: true
+    hour12: true,
+    timeZone: 'Asia/Kolkata'
   }).format(date);
 }
 
 export function calculateTimeRemaining(targetHour: number, targetMinute: number): string {
-  const now = new Date();
-  const target = new Date(now);
+  // Get IST time
+  const options = { timeZone: 'Asia/Kolkata' };
+  const nowIST = new Date(new Date().toLocaleString('en-US', options));
+  const targetIST = new Date(nowIST);
   
-  target.setHours(targetHour, targetMinute, 0, 0);
+  targetIST.setHours(targetHour, targetMinute, 0, 0);
   
   // If the target time has already passed today, set target to tomorrow
-  if (now > target) {
-    target.setDate(target.getDate() + 1);
+  if (nowIST > targetIST) {
+    targetIST.setDate(targetIST.getDate() + 1);
   }
   
-  const diff = target.getTime() - now.getTime();
+  const diff = targetIST.getTime() - nowIST.getTime();
   
   // Format the time remaining
   const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -51,9 +55,11 @@ export function calculateTimeRemaining(targetHour: number, targetMinute: number)
 }
 
 export function isRoundClosed(targetHour: number, targetMinute: number): boolean {
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
+  // Get IST time
+  const options = { timeZone: 'Asia/Kolkata' };
+  const nowIST = new Date(new Date().toLocaleString('en-US', options));
+  const currentHour = nowIST.getHours();
+  const currentMinute = nowIST.getMinutes();
   
   return (currentHour > targetHour) || (currentHour === targetHour && currentMinute >= targetMinute);
 }

@@ -261,7 +261,7 @@ export default function ResultsManager() {
   // Process Wins Mutation
   const processWinsMutation = useMutation<ProcessWinsResponse, Error, number>({
     mutationFn: async (resultId: number) => {
-      return await apiRequest('POST', "/api/process-wins", { resultId });
+      return await apiRequest<ProcessWinsResponse>('POST', "/api/process-wins", { resultId });
     },
     onSuccess: (data) => {
       toast({
