@@ -67,7 +67,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Direct update endpoint for results by ID
+  // Direct update endpoint for results by ID (PUT for full update)
   app.put("/api/results/:id", async (req, res) => {
     if (!req.isAuthenticated() || req.user?.username !== "admin") {
       return res.status(403).json({ message: "Unauthorized" });
@@ -85,6 +85,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         round1: round1 !== undefined ? round1 : null,
         round2: round2 !== undefined ? round2 : null
       });
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Result not found" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating result:", error);
+      res.status(500).json({ message: "Error updating result" });
+    }
+  });
+  
+  // PATCH endpoint for partial updates to results
+  app.patch("/api/results/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user?.username !== "admin") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+    
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+      
+      // Extract only the fields that are present in the request body
+      const updates: Partial<typeof req.body> = {};
+      if ('round1' in req.body) {
+        updates.round1 = req.body.round1 !== null && req.body.round1 !== undefined ? 
+          parseInt(req.body.round1) : null;
+      }
+      
+      if ('round2' in req.body) {
+        updates.round2 = req.body.round2 !== null && req.body.round2 !== undefined ? 
+          parseInt(req.body.round2) : null;
+      }
+      
+      if ('date' in req.body) {
+        updates.date = new Date(req.body.date);
+      }
+      
+      const updated = await storage.updateResult(id, updates);
       
       if (!updated) {
         return res.status(404).json({ message: "Result not found" });

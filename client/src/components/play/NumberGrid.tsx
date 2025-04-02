@@ -19,9 +19,14 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
   // Extract previously bet numbers when bets data changes
   useEffect(() => {
     if (bets && bets.length > 0) {
-      const betNumbers = bets.map(bet => bet.number);
-      // Remove duplicates
-      const uniqueBetNumbers = [...new Set(betNumbers)];
+      // Use an object to track unique numbers
+      const uniqueNumbersObj: Record<number, boolean> = {};
+      bets.forEach(bet => {
+        uniqueNumbersObj[bet.number] = true;
+      });
+      
+      // Convert object keys to array of numbers
+      const uniqueBetNumbers = Object.keys(uniqueNumbersObj).map(n => parseInt(n));
       setPreviouslyBetNumbers(uniqueBetNumbers);
     }
   }, [bets]);
@@ -45,7 +50,7 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
               onClick={() => onNumberSelect(num)}
               className={cn(
                 "betting-number relative bg-gray-800 hover:bg-gray-700 text-white rounded-md py-2 flex items-center justify-center font-mono transition-all",
-                isSelected && "bg-accent hover:bg-accent/90",
+                isSelected && "bg-orange-600 hover:bg-orange-700 border-2 border-orange-400",
                 isPreviouslyBet && !isSelected && "border-2 border-green-500"
               )}
             >
@@ -61,7 +66,7 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
       {/* Key for indicators */}
       <div className="flex items-center gap-4 mb-4">
         <div className="flex items-center">
-          <div className="w-4 h-4 bg-accent rounded-sm mr-2"></div>
+          <div className="w-4 h-4 bg-orange-600 border-2 border-orange-400 rounded-sm mr-2"></div>
           <span className="text-white text-xs">Selected</span>
         </div>
         <div className="flex items-center">
@@ -78,7 +83,7 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
             <div className="text-white text-sm italic">No numbers selected yet</div>
           ) : (
             selectedNumbers.map(num => (
-              <div key={num} className="bg-accent rounded-full px-3 py-1 text-white text-sm font-mono flex items-center">
+              <div key={num} className="bg-orange-600 border-2 border-orange-400 rounded-full px-3 py-1 text-white text-sm font-mono flex items-center">
                 {formatNumber(num)}
                 <button 
                   className="ml-2 text-white text-xs"

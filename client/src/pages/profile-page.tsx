@@ -9,10 +9,11 @@ import TransactionHistory from "@/components/profile/TransactionHistory";
 import AccountSettings from "@/components/profile/settings/AccountSettings";
 import SupportChat from "@/components/profile/support/SupportChat";
 import PrivacyPolicy from "@/components/profile/privacy/PrivacyPolicy";
-import { Settings, HelpCircle, Shield, LogOut, Loader2, RefreshCw } from "lucide-react";
+import ResultsManager from "@/components/profile/admin/ResultsManager";
+import { Settings, HelpCircle, Shield, LogOut, Loader2, RefreshCw, Database } from "lucide-react";
 import { Bet } from "@shared/schema";
 
-type ScreenView = 'main' | 'settings' | 'support' | 'privacy';
+type ScreenView = 'main' | 'settings' | 'support' | 'privacy' | 'admin';
 
 export default function ProfilePage() {
   const { user, logoutMutation } = useAuth();
@@ -133,6 +134,25 @@ export default function ProfilePage() {
     );
   }
   
+  // Admin view
+  if (currentView === 'admin') {
+    return (
+      <div className="container mx-auto px-4 py-4">
+        <div className="mb-4">
+          <Button 
+            variant="outline" 
+            onClick={() => setCurrentView('main')}
+            className="text-white"
+          >
+            &larr; Back to Profile
+          </Button>
+          <h1 className="text-2xl font-semibold text-white mt-4 mb-6">Admin Dashboard</h1>
+        </div>
+        <ResultsManager />
+      </div>
+    );
+  }
+
   // Main profile view
   return (
     <div className="container mx-auto px-4 py-4">
@@ -225,6 +245,20 @@ export default function ProfilePage() {
             </div>
             <span className="text-gray-500">&rarr;</span>
           </button>
+          
+          {/* Admin button - only show for admin users */}
+          {user.username === 'admin' && (
+            <button 
+              className="w-full py-3 flex justify-between items-center text-white"
+              onClick={() => setCurrentView('admin')}
+            >
+              <div className="flex items-center">
+                <Database className="h-5 w-5 mr-3 text-accent" />
+                <span>Admin Dashboard</span>
+              </div>
+              <span className="text-gray-500">&rarr;</span>
+            </button>
+          )}
           
           <Button
             variant="ghost"
