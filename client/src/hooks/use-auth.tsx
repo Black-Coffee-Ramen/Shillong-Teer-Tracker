@@ -37,17 +37,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refetchOnReconnect: true,
   });
 
-  const loginMutation = useMutation({
+  const loginMutation = useMutation<SelectUser, Error, LoginData>({
     mutationFn: async (credentials: LoginData) => {
       try {
-        const res = await apiRequest("POST", "/api/login", credentials);
-        return await res.json();
+        // apiRequest already parses the JSON response
+        const userData = await apiRequest<SelectUser>("POST", "/api/login", credentials);
+        return userData;
       } catch (error) {
         // Format the error message nicely for the user
         let message = (error as Error).message;
-        if (message.includes("Invalid username or password")) {
+        
+        // More user-friendly error messages
+        if (message.includes("Invalid username or password") || message.includes("username") || message.includes("password")) {
           message = "The username or password you entered is incorrect.";
+        } else if (message.includes("401") || message.includes("unauthorized")) {
+          message = "Your session has expired. Please log in again.";
+        } else if (message.includes("500")) {
+          message = "We're experiencing technical difficulties. Please try again later.";
+        } else if (!message || message === "Failed to fetch") {
+          message = "Network error. Please check your internet connection.";
         }
+        
+        console.error("Login error:", error);
         throw new Error(message);
       }
     },
@@ -68,17 +79,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  const registerMutation = useMutation({
+  const registerMutation = useMutation<SelectUser, Error, InsertUser>({
     mutationFn: async (credentials: InsertUser) => {
       try {
-        const res = await apiRequest("POST", "/api/register", credentials);
-        return await res.json();
+        // apiRequest already parses the JSON response
+        const userData = await apiRequest<SelectUser>("POST", "/api/register", credentials);
+        return userData;
       } catch (error) {
         // Clean up the error message for better user experience
         let message = (error as Error).message;
-        if (message.includes("Username already exists")) {
+        
+        // More user-friendly error messages for different scenarios
+        if (message.includes("Username already exists") || message.includes("already taken")) {
           message = "This username is already taken. Please choose another one.";
+        } else if (message.includes("Email already exists")) {
+          message = "This email is already registered. Please use another email or try logging in.";
+        } else if (message.includes("Password") && message.includes("requirements")) {
+          message = "Your password doesn't meet the security requirements. It should be at least 6 characters long.";
+        } else if (message.includes("Username") && message.includes("requirements")) {
+          message = "Your username doesn't meet the requirements. It should be at least 3 characters long.";
+        } else if (message.includes("500")) {
+          message = "We're experiencing technical difficulties. Please try again later.";
+        } else if (!message || message === "Failed to fetch") {
+          message = "Network error. Please check your internet connection.";
         }
+        
+        console.error("Registration error:", error);
         throw new Error(message);
       }
     },
@@ -99,9 +125,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  const logoutMutation = useMutation({
+  const logoutMutation = useMutation<void, Error, void>({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/logout");
+      try {
+        await apiRequest("POST", "/api/logout");
+      } catch (error) {
+        // Even if the logout fails server-side, we still want to clear local data
+        console.error("Logout error (will still clear local session):", error);
+        
+        // Clear local session data regardless of server response
+        queryClient.setQueryData(["/api/user"], null);
+        queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+        
+        // Check if this was a network error
+        const errorMessage = (error as Error).message;
+        if (!errorMessage || errorMessage === "Failed to fetch" || errorMessage.includes("network")) {
+          // If it's a network error, assume the user is offline and just clear local data
+          throw new Error("You've been logged out locally, but changes may not be synced with the server until you reconnect");
+        }
+        
+        throw error;
+      }
     },
     onSuccess: () => {
       // Clear all cached user data when logging out
@@ -116,11 +160,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Logout failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      // In most cases, we still want the user to feel logged out
+      // even if there was a server error
+      if (error.message.includes("You've been logged out locally")) {
+        toast({
+          title: "Logged out",
+          description: error.message,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Logout issue",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     },
   });
 

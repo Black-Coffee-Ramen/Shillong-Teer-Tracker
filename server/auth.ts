@@ -138,45 +138,124 @@ export function setupAuth(app: Express) {
 
   app.post("/api/login", (req, res, next) => {
     try {
-      // Validate login input
+      // Enhanced login schema with better validation
       const loginSchema = z.object({
-        username: z.string().min(1, "Username is required"),
-        password: z.string().min(1, "Password is required"),
+        username: z.string()
+          .min(1, "Username is required")
+          .refine(val => val.trim().length > 0, "Username cannot be empty"),
+        password: z.string()
+          .min(1, "Password is required")
+          .refine(val => val.trim().length > 0, "Password cannot be empty"),
       });
       
       loginSchema.parse(req.body);
       
       passport.authenticate("local", (err: Error | null, user: Express.User | false, info: any) => {
-        if (err) return next(err);
-        if (!user) return res.status(401).json({ message: "Invalid username or password" });
+        if (err) {
+          console.error("Authentication error:", err);
+          return res.status(500).json({ 
+            message: "An error occurred during login. Please try again later." 
+          });
+        }
+        
+        if (!user) {
+          // Provide a more secure but helpful message (not revealing if username exists)
+          return res.status(401).json({ 
+            message: "Invalid username or password", 
+            errors: [{ 
+              path: ["credentials"], 
+              message: "The username or password you entered is incorrect" 
+            }]
+          });
+        }
         
         req.login(user, (err) => {
-          if (err) return next(err);
+          if (err) {
+            console.error("Session error during login:", err);
+            return res.status(500).json({ 
+              message: "Could not create login session. Please try again." 
+            });
+          }
+          
           // Don't send password to client
           const { password, ...userWithoutPassword } = user;
+          
+          // Set the last login time (if you want to track this)
+          // This is a good place to update any user metadata
+          
           res.status(200).json(userWithoutPassword);
         });
       })(req, res, next);
     } catch (error) {
+      console.error("Login validation error:", error);
+      
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
+        // Format validation errors in a more consistent way
+        return res.status(400).json({ 
+          message: "Please check your login information", 
+          errors: error.errors.map(err => ({
+            path: err.path,
+            message: err.message
+          }))
+        });
       }
-      next(error);
+      
+      // For any other errors, return a generic message
+      res.status(500).json({ 
+        message: "Login failed due to a technical issue. Please try again." 
+      });
     }
   });
 
   app.post("/api/logout", (req, res, next) => {
+    // Check if the user is actually logged in
+    if (!req.isAuthenticated()) {
+      return res.status(200).json({ 
+        message: "You were already logged out" 
+      });
+    }
+    
     req.logout((err) => {
-      if (err) return next(err);
-      res.sendStatus(200);
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ 
+          message: "Error during logout. You may still be logged in." 
+        });
+      }
+      
+      // Destroy the session after logout for better security
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destruction error:", err);
+          return res.status(500).json({ 
+            message: "Error clearing your session. You have been logged out, but some data may remain." 
+          });
+        }
+        
+        res.status(200).json({ 
+          message: "You have been successfully logged out" 
+        });
+      });
     });
   });
 
   app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    // Don't send password to client
-    const { password, ...userWithoutPassword } = req.user;
-    res.json(userWithoutPassword);
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ 
+        message: "You are not logged in or your session has expired" 
+      });
+    }
+    
+    try {
+      // Don't send password to client
+      const { password, ...userWithoutPassword } = req.user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error retrieving user data:", error);
+      res.status(500).json({ 
+        message: "Error retrieving your user profile data" 
+      });
+    }
   });
   
   // Create an admin user if it doesn't exist

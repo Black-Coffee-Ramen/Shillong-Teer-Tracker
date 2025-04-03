@@ -89,6 +89,10 @@ export default function AuthPage() {
     });
   };
 
+  // Get any form validation errors
+  const loginErrors = loginForm.formState.errors;
+  const registerErrors = registerForm.formState.errors;
+
   return (
     <div className="min-h-screen bg-primary flex items-center justify-center p-4">
       <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8 rounded-lg overflow-hidden">
@@ -105,14 +109,25 @@ export default function AuthPage() {
             <TabsContent value="login">
               <Form {...loginForm}>
                 <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-6">
+                  {loginMutation.error && (
+                    <div className="bg-destructive/20 text-destructive-foreground px-4 py-3 rounded-md text-sm" role="alert">
+                      {loginMutation.error.message}
+                    </div>
+                  )}
+                  
                   <FormField
                     control={loginForm.control}
                     name="username"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Username</FormLabel>
+                        <FormLabel className="text-white">Username</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter your username" {...field} className="bg-gray-800 border-gray-700" />
+                          <Input 
+                            placeholder="Enter your username" 
+                            {...field} 
+                            className="bg-gray-800 border-gray-700 text-white" 
+                            autoComplete="username"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -124,20 +139,22 @@ export default function AuthPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Password</FormLabel>
+                        <FormLabel className="text-white">Password</FormLabel>
                         <div className="relative">
                           <FormControl>
                             <Input 
                               type={showLoginPassword ? "text" : "password"} 
                               placeholder="Enter your password" 
                               {...field} 
-                              className="bg-gray-800 border-gray-700 pr-10" 
+                              className="bg-gray-800 border-gray-700 pr-10 text-white" 
+                              autoComplete="current-password"
                             />
                           </FormControl>
                           <button 
                             type="button"
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
                             onClick={() => setShowLoginPassword(!showLoginPassword)}
+                            aria-label={showLoginPassword ? "Hide password" : "Show password"}
                           >
                             {showLoginPassword ? (
                               <EyeOff className="h-4 w-4" />
@@ -153,14 +170,17 @@ export default function AuthPage() {
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-accent hover:bg-accent/90"
-                    disabled={loginMutation.isPending}
+                    className="w-full bg-accent hover:bg-accent/90 text-white"
+                    disabled={loginMutation.isPending || Object.keys(loginErrors).length > 0}
                   >
                     {loginMutation.isPending ? (
-                      <>
-                        <i className="ri-loader-4-line animate-spin mr-2"></i>
+                      <div className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
                         Logging in...
-                      </>
+                      </div>
                     ) : (
                       "Login"
                     )}
@@ -172,14 +192,25 @@ export default function AuthPage() {
             <TabsContent value="register">
               <Form {...registerForm}>
                 <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                  {registerMutation.error && (
+                    <div className="bg-destructive/20 text-destructive-foreground px-4 py-3 rounded-md text-sm" role="alert">
+                      {registerMutation.error.message}
+                    </div>
+                  )}
+                  
                   <FormField
                     control={registerForm.control}
                     name="username"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Username</FormLabel>
+                        <FormLabel className="text-white">Username</FormLabel>
                         <FormControl>
-                          <Input placeholder="Choose a username" {...field} className="bg-gray-800 border-gray-700" />
+                          <Input 
+                            placeholder="Choose a username" 
+                            {...field} 
+                            className="bg-gray-800 border-gray-700 text-white"
+                            autoComplete="username"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -191,20 +222,22 @@ export default function AuthPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Password</FormLabel>
+                        <FormLabel className="text-white">Password</FormLabel>
                         <div className="relative">
                           <FormControl>
                             <Input 
                               type={showRegisterPassword ? "text" : "password"} 
                               placeholder="Create a password" 
                               {...field} 
-                              className="bg-gray-800 border-gray-700 pr-10" 
+                              className="bg-gray-800 border-gray-700 pr-10 text-white"
+                              autoComplete="new-password"
                             />
                           </FormControl>
                           <button 
                             type="button"
                             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
                             onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                            aria-label={showRegisterPassword ? "Hide password" : "Show password"}
                           >
                             {showRegisterPassword ? (
                               <EyeOff className="h-4 w-4" />
@@ -214,6 +247,7 @@ export default function AuthPage() {
                           </button>
                         </div>
                         <FormMessage />
+                        <p className="text-xs text-gray-400 mt-1">Must be at least 6 characters with letters and numbers</p>
                       </FormItem>
                     )}
                   />
@@ -223,9 +257,14 @@ export default function AuthPage() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name (Optional)</FormLabel>
+                        <FormLabel className="text-white">Full Name (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter your full name" {...field} className="bg-gray-800 border-gray-700" />
+                          <Input 
+                            placeholder="Enter your full name" 
+                            {...field} 
+                            className="bg-gray-800 border-gray-700 text-white"
+                            autoComplete="name"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -237,9 +276,15 @@ export default function AuthPage() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email (Optional)</FormLabel>
+                        <FormLabel className="text-white">Email (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter your email" {...field} className="bg-gray-800 border-gray-700" />
+                          <Input 
+                            placeholder="Enter your email" 
+                            {...field} 
+                            className="bg-gray-800 border-gray-700 text-white"
+                            autoComplete="email"
+                            type="email"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -248,14 +293,17 @@ export default function AuthPage() {
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-accent hover:bg-accent/90"
-                    disabled={registerMutation.isPending}
+                    className="w-full bg-accent hover:bg-accent/90 text-white"
+                    disabled={registerMutation.isPending || Object.keys(registerErrors).length > 0}
                   >
                     {registerMutation.isPending ? (
-                      <>
-                        <i className="ri-loader-4-line animate-spin mr-2"></i>
+                      <div className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
                         Creating Account...
-                      </>
+                      </div>
                     ) : (
                       "Create Account"
                     )}

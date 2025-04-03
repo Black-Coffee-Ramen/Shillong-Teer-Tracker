@@ -8,22 +8,52 @@ async function throwIfResNotOk(res: Response) {
       const contentType = res.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         const errorData = await res.json();
+        
+        // Handle different error responses
         if (errorData.message) {
           errorMessage = errorData.message;
-          // If there are validation errors, include the first one
-          if (errorData.errors && errorData.errors.length > 0) {
-            errorMessage += `: ${errorData.errors[0].message}`;
+          
+          // If there are validation errors, include them in a more user-friendly way
+          if (errorData.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+            // Format validation errors more nicely
+            if (errorData.errors[0].path && errorData.errors[0].message) {
+              // For structured errors with path and message
+              const fieldName = errorData.errors[0].path.slice(-1)[0];
+              errorMessage = `${fieldName}: ${errorData.errors[0].message}`;
+            } else if (typeof errorData.errors[0] === 'string') {
+              // For simple string errors
+              errorMessage += `: ${errorData.errors[0]}`;
+            } else if (errorData.errors[0].message) {
+              // For errors with just a message
+              errorMessage += `: ${errorData.errors[0].message}`;
+            }
           }
+        } else if (typeof errorData === 'string') {
+          errorMessage = errorData;
         } else {
           errorMessage = JSON.stringify(errorData);
         }
       } else {
         errorMessage = await res.text();
       }
+      
+      // Add more context based on status code
+      if (res.status === 401) {
+        errorMessage = errorMessage || 'You need to log in to access this feature';
+      } else if (res.status === 403) {
+        errorMessage = errorMessage || 'You do not have permission to perform this action';
+      } else if (res.status === 404) {
+        errorMessage = errorMessage || 'The requested resource was not found';
+      } else if (res.status === 500) {
+        errorMessage = 'Server error. Please try again later.';
+      }
+      
     } catch (e) {
       // Fallback to status text if JSON parsing fails
       errorMessage = res.statusText;
     }
+    
+    // Throw a more descriptive error
     throw new Error(errorMessage || `Error ${res.status}`);
   }
 }
