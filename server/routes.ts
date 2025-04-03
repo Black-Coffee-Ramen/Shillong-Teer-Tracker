@@ -64,8 +64,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (result.round1 !== null) {
         const round1Bets = allBets.filter(bet => {
           const betDate = new Date(bet.date);
-          betDate.setHours(0, 0, 0, 0);
-          return betDate.getTime() === resultDate.getTime() && bet.round === 1;
+          // Check if the bet was placed on the same date
+          const isSameDate = betDate.toDateString() === resultDate.toDateString();
+          
+          // Check if the bet was placed before the round 1 result time (15:30 IST)
+          const betTime = betDate.getHours() * 60 + betDate.getMinutes();
+          const round1CutoffTime = 15 * 60 + 30; // 15:30 in minutes
+          const isBeforeRound1 = betTime < round1CutoffTime;
+          
+          // Only consider bets that were placed before the round 1 cutoff time
+          return isSameDate && bet.round === 1 && isBeforeRound1;
         });
         
         // Process each bet in round 1
@@ -110,8 +118,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (result.round2 !== null) {
         const round2Bets = allBets.filter(bet => {
           const betDate = new Date(bet.date);
-          betDate.setHours(0, 0, 0, 0);
-          return betDate.getTime() === resultDate.getTime() && bet.round === 2;
+          // Check if the bet was placed on the same date
+          const isSameDate = betDate.toDateString() === resultDate.toDateString();
+          
+          // Check if the bet was placed before the round 2 result time (16:30 IST)
+          const betTime = betDate.getHours() * 60 + betDate.getMinutes();
+          const round2CutoffTime = 16 * 60 + 30; // 16:30 in minutes
+          const isBeforeRound2 = betTime < round2CutoffTime;
+          
+          // Only consider bets that were placed before the round 2 cutoff time
+          return isSameDate && bet.round === 2 && isBeforeRound2;
         });
         
         // Process each bet in round 2

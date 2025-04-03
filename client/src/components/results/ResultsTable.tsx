@@ -11,6 +11,7 @@ import DetailedAnalysis from "./analysis/DetailedAnalysis";
 export default function ResultsTable() {
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
   const [showAnalysis, setShowAnalysis] = useState<boolean>(false);
+  const [notificationsShown, setNotificationsShown] = useState<string[]>([]);
   const { user } = useAuth();
   const { addNotification } = useNotification();
   
@@ -108,17 +109,29 @@ export default function ResultsTable() {
   useEffect(() => {
     if (!selectedDateResult || !userBets || !user) return;
     
-    // Check both rounds
-    [1, 2].forEach(round => {
+    // Function to check and show notifications for a specific round
+    const checkAndNotifyForRound = (round: number) => {
       const resultNumber = round === 1 ? selectedDateResult.round1 : selectedDateResult.round2;
       if (resultNumber === null || resultNumber === undefined) return;
+      
+      // Create unique notification key based on result ID, date, and round
+      const notificationKey = `${selectedDateResult.id}-${round}`;
+      
+      // Skip if we've already shown notifications for this result
+      if (notificationsShown.includes(notificationKey)) return;
       
       // Get bets for this date and round
       const matchingBets = userBets.filter(bet => {
         const betDate = new Date(bet.date);
         const resultDate = new Date(selectedDateResult.date);
-        return format(betDate, 'yyyy-MM-dd') === format(resultDate, 'yyyy-MM-dd') && 
-               bet.round === round;
+        const isSameDate = format(betDate, 'yyyy-MM-dd') === format(resultDate, 'yyyy-MM-dd');
+        
+        // Only consider bets placed BEFORE the result time
+        const isBeforeResult = round === 1 
+          ? betDate.getHours() < 15 || (betDate.getHours() === 15 && betDate.getMinutes() < 30)
+          : betDate.getHours() < 16 || (betDate.getHours() === 16 && betDate.getMinutes() < 30);
+        
+        return isSameDate && bet.round === round && isBeforeResult;
       });
       
       // Check for exact matches
@@ -157,8 +170,25 @@ export default function ResultsTable() {
           "near-miss"
         );
       }
-    });
-  }, [selectedDateResult, userBets, user, addNotification]);
+      
+      // Mark this notification as shown
+      return notificationKey;
+    };
+    
+    // Check both rounds
+    const newShownNotifications: string[] = [];
+    
+    const round1Key = checkAndNotifyForRound(1);
+    if (round1Key) newShownNotifications.push(round1Key);
+    
+    const round2Key = checkAndNotifyForRound(2);
+    if (round2Key) newShownNotifications.push(round2Key);
+    
+    // Update shown notifications if we have new ones
+    if (newShownNotifications.length > 0) {
+      setNotificationsShown(prev => [...prev, ...newShownNotifications]);
+    }
+  }, [selectedDateResult, userBets, user, addNotification, notificationsShown]);
   
   return (
     <>
