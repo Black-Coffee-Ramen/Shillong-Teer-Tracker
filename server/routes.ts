@@ -539,7 +539,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "completed"
       });
       
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         transaction: {
           id: transaction.id,
