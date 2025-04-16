@@ -77,6 +77,23 @@ export function setupAuth(app: Express) {
   app.post("/api/register", async (req, res, next) => {
     try {
       // Enhanced registration schema with better validation messages
+      // const registrationSchema = insertUserSchema.extend({
+      //   username: z.string()
+      //     .min(3, "Username must be at least 3 characters")
+      //     .max(50, "Username cannot exceed 50 characters")
+      //     .trim()
+      //     .refine(val => /^[a-zA-Z0-9_]+$/.test(val), {
+      //       message: "Username can only contain letters, numbers, and underscores",
+      //     }),
+      //   password: z.string()
+      //     .min(6, "Password must be at least 6 characters")
+      //     .refine(val => /[A-Za-z]/.test(val) && /[0-9]/.test(val), {
+      //       message: "Password must contain at least one letter and one number",
+      //     }),
+      //   email: z.string().email("Please enter a valid email").optional().nullish(),
+      //   name: z.string().min(2, "Name must be at least 2 characters").optional().nullish()
+      // });
+
       const registrationSchema = insertUserSchema.extend({
         username: z.string()
           .min(3, "Username must be at least 3 characters")
@@ -90,9 +107,10 @@ export function setupAuth(app: Express) {
           .refine(val => /[A-Za-z]/.test(val) && /[0-9]/.test(val), {
             message: "Password must contain at least one letter and one number",
           }),
-        email: z.string().email("Please enter a valid email").optional().nullish(),
-        name: z.string().min(2, "Name must be at least 2 characters").optional().nullish()
+        email: z.string().email("Please enter a valid email"),
+        name: z.string().min(2, "Name must be at least 2 characters")
       });
+
 
       const userData = registrationSchema.parse(req.body);
       
