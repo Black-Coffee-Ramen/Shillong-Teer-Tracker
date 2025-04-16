@@ -1,0 +1,30 @@
+# Shillong Teer Application Documentation
+
+## Introduction
+
+The Shillong Teer Application is a comprehensive platform for Shillong Teer betting, featuring direct betting functionality, results management, administrative capabilities, user management, and advanced analytics. The application is designed as a Progressive Web App (PWA) with offline capabilities and can be converted to an Android APK for distribution on the Google Play Store.
+
+### What is Shillong Teer?
+
+Shillong Teer is a traditional archery lottery game played in Meghalaya, India. Players bet on numbers (00-99) representing the last two digits of the total number of arrows that hit the target in each round.
+
+### Key Features
+
+- Direct betting system without cart functionality
+- Real-time results viewing and historical results analysis
+- User account management with secure authentication
+- Wallet for managing funds
+- Admin panel for updating results and managing users
+- Detailed analytics and AI-driven predictions
+- Progressive Web App with offline capabilities
+- Android APK conversion support
+
+### How to Use This Documentation
+
+This documentation is structured for both beginners and advanced users:
+
+- **For beginners**: Start with the Introduction and System Overview sections to understand the application's purpose and structure.
+- **For developers**: The Technology Stack, Project Structure, and Core Components sections provide detailed information about the codebase.
+- **For administrators**: The Admin Features and Deployment Guide sections provide information on managing the application.
+
+Navigate through the documentation using the following sections to find the information you need.

@@ -1,0 +1,66 @@
+## Project Structure
+
+The project follows a structured organization of files and directories:
+
+```
+/
+├── attached_assets/      # Imported assets from user
+├── client/               # Frontend code
+│   ├── src/              # Source files
+│   │   ├── components/   # React components
+│   │   ├── hooks/        # Custom React hooks
+│   │   ├── lib/          # Utility functions and libraries
+│   │   ├── pages/        # Main application pages
+│   │   ├── App.tsx       # Main application component
+│   │   └── main.tsx      # Entry point
+├── public/               # Static assets and service worker
+├── scripts/              # Build and utility scripts
+├── server/               # Backend code
+│   ├── auth.ts           # Authentication setup
+│   ├── index.ts          # Server entry point
+│   ├── routes.ts         # API routes
+│   ├── storage.ts        # Data storage implementation
+│   └── vite.ts           # Vite server configuration
+├── shared/               # Shared code between client and server
+│   └── schema.ts         # Database schema and types
+├── drizzle.config.ts     # Drizzle ORM configuration
+├── package.json          # Project dependencies and scripts
+├── vite.config.ts        # Vite configuration
+└── workbox-config.js     # Service worker configuration
+```
+
+### Important Files and Directories
+
+#### Root Directory
+- drizzle.config.ts: Configuration for Drizzle ORM
+- package.json: Project configuration and dependencies
+- vite.config.ts: Vite build configuration
+- workbox-config.js: Service worker configuration for PWA
+- theme.json: UI theme configuration
+
+#### Client Directory
+- src/components/: React components organized by feature
+- src/hooks/: Custom React hooks for shared functionality
+- src/lib/: Utility functions and shared code
+- src/pages/: Main application pages that correspond to routes
+- src/App.tsx: Application entry point with routing
+- src/main.tsx: React initialization
+
+#### Server Directory
+- auth.ts: Authentication configuration using Passport.js
+- index.ts: Express server initialization
+- routes.ts: API route definitions
+- storage.ts: Storage implementation
+- vite.ts: Vite server setup for development
+
+#### Shared Directory
+- schema.ts: Data models, validation schemas, and types
+
+#### Public Directory
+- service-worker.js: PWA service worker
+- manifest.json: Web app manifest for PWA
+- icons/: App icons for various platforms
+
+#### Scripts Directory
+- build-android-apk.js: Script for building Android APK
+- update-assetlinks.js: Script for updating Digital Asset Links

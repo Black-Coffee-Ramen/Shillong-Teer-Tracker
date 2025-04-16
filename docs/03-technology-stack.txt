@@ -1,0 +1,62 @@
+## Technology Stack
+
+### Frontend
+- React: UI library for building the user interface
+- TypeScript: Type-safe JavaScript for improved developer experience
+- TanStack Query (React Query): Data fetching and state management library
+- Shadcn UI: Component library for consistent UI design
+- Tailwind CSS: Utility-first CSS framework for styling
+- Wouter: Lightweight routing library
+- React Hook Form: Form handling with validation
+- Zod: Schema validation library
+- Service Workers: For PWA functionality and offline support
+- IndexedDB: Client-side storage for offline data
+
+### Backend
+- Express.js: Web server framework for handling API requests
+- Passport.js: Authentication middleware
+- TypeScript: Type-safe JavaScript for improved developer experience
+- Zod: Schema validation for API requests
+
+### Storage
+- MemoryStore: In-memory storage solution
+- Express Session: Session management for authentication
+
+### Build & Tools
+- Vite: Build tool and development server
+- tsx: TypeScript execution environment
+- Drizzle ORM: ORM for database interactions
+- @bubblewrap/cli: Tool for creating Android APKs from PWAs
+
+### Dependencies Overview
+
+Key npm packages used in the project:
+
+#### Frontend Dependencies
+- @hookform/resolvers: Form validation resolvers
+- @radix-ui/*: UI component primitives
+- @tanstack/react-query: Data fetching and caching
+- class-variance-authority: Utility for conditional styling
+- clsx: Utility for conditional class names
+- date-fns: Date utility library
+- framer-motion: Animation library
+- lucide-react: Icon library
+- react-hook-form: Form handling
+- recharts: Chart library for analytics
+- tailwind-merge: Utility for merging Tailwind classes
+- tailwindcss-animate: Animation utilities for Tailwind
+- zod: Schema validation
+
+#### Backend Dependencies
+- express: Web server framework
+- express-session: Session management
+- passport: Authentication middleware
+- passport-local: Local authentication strategy
+- memorystore: Session storage
+
+#### Development Dependencies
+- typescript: JavaScript with syntax for types
+- vite: Build tool
+- drizzle-kit: Database migration tool
+- drizzle-orm: ORM for database interactions
+- drizzle-zod: Integration between Drizzle and Zod

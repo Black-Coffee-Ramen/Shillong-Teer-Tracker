@@ -1,0 +1,738 @@
+## Results Management
+
+The results system handles the recording, display, and analysis of Shillong Teer results.
+
+### Key Files
+
+- client/src/components/results/ResultsTable.tsx: Table displaying results
+- client/src/components/results/analysis/DetailedAnalysis.tsx: Advanced results analysis
+- client/src/pages/results-page.tsx: Page for viewing results
+- client/src/components/profile/admin/ResultsManager.tsx: Admin interface for updating results
+- server/routes.ts: API endpoints for results
+
+### Results Flow
+
+1. Results Entry (Admin):
+   - Admin enters results for rounds
+   - Results are validated and stored
+   - System automatically processes winning bets
+
+2. Results Display:
+   - Latest results are prominently displayed
+   - Historical results can be browsed by date
+   - Results are formatted for easy reading
+
+3. Results Analysis:
+   - Frequency analysis shows common numbers
+   - Patterns analysis identifies trends
+   - Hot and cold numbers are highlighted
+   - Charts and visualizations display historical data
+
+### Results Table Component (client/src/components/results/ResultsTable.tsx)
+
+```tsx
+interface ResultsTableProps {
+  results: Result[];
+  isLoading?: boolean;
+}
+
+export default function ResultsTable({ results, isLoading = false }: ResultsTableProps) {
+  if (isLoading) {
+    return <div className="p-8 flex justify-center"><Spinner size="lg" /></div>;
+  }
+  
+  if (results.length === 0) {
+    return (
+      <div className="text-center p-8 text-white">
+        <p>No results found.</p>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="overflow-x-auto rounded-lg border border-gray-800">
+      <table className="w-full text-white">
+        <thead className="bg-gray-800">
+          <tr>
+            <th className="p-3 text-left">Date</th>
+            <th className="p-3 text-center">Round 1</th>
+            <th className="p-3 text-center">Round 2</th>
+          </tr>
+        </thead>
+        <tbody>
+          {results.map((result) => (
+            <tr 
+              key={result.id} 
+              className="border-t border-gray-800 bg-gray-900 hover:bg-gray-800"
+            >
+              <td className="p-3">
+                {getFormattedDate(new Date(result.date))}
+              </td>
+              <td className="p-3 text-center font-bold">
+                {result.round1 !== null 
+                  ? result.round1.toString().padStart(2, '0') 
+                  : '-'}
+              </td>
+              <td className="p-3 text-center font-bold">
+                {result.round2 !== null 
+                  ? result.round2.toString().padStart(2, '0') 
+                  : '-'}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+```
+
+### Detailed Analysis Component (client/src/components/results/analysis/DetailedAnalysis.tsx)
+
+```tsx
+interface DetailedAnalysisProps {
+  results: Result[];
+}
+
+export default function DetailedAnalysis({ results }: DetailedAnalysisProps) {
+  const [activeTab, setActiveTab] = useState<string>("frequency");
+  
+  // Filter valid results with both rounds
+  const validResults = results.filter(
+    (r) => r.round1 !== null && r.round2 !== null
+  );
+  
+  // Map for frequency analysis
+  const frequencyMap = useMemo(() => {
+    const map = new Map<number, number>();
+    
+    // Initialize all numbers (0-99) with zero frequency
+    for (let i = 0; i < 100; i++) {
+      map.set(i, 0);
+    }
+    
+    // Count occurrences in results
+    validResults.forEach((result) => {
+      if (result.round1 !== null) {
+        map.set(result.round1, (map.get(result.round1) || 0) + 1);
+      }
+      if (result.round2 !== null) {
+        map.set(result.round2, (map.get(result.round2) || 0) + 1);
+      }
+    });
+    
+    return map;
+  }, [validResults]);
+  
+  // Get top numbers with highest frequency
+  const topNumbers = useMemo(() => {
+    return Array.from(frequencyMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+  }, [frequencyMap]);
+  
+  // Get cold numbers with lowest frequency
+  const coldNumbers = useMemo(() => {
+    return Array.from(frequencyMap.entries())
+      .sort((a, b) => a[1] - b[1])
+      .slice(0, 10);
+  }, [frequencyMap]);
+  
+  // Create data for frequency chart
+  const frequencyChartData = useMemo(() => {
+    return Array.from(frequencyMap.entries())
+      .map(([number, frequency]) => ({
+        number: number.toString().padStart(2, '0'),
+        frequency,
+      }))
+      .sort((a, b) => parseInt(a.number) - parseInt(b.number));
+  }, [frequencyMap]);
+  
+  return (
+    <div className="bg-gray-900 rounded-lg p-4 mt-6">
+      <h2 className="text-2xl font-bold mb-4 text-white">Detailed Analysis</h2>
+      
+      <Tabs defaultValue="frequency" className="w-full">
+        <TabsList className="w-full">
+          <TabsTrigger value="frequency">Frequency Analysis</TabsTrigger>
+          <TabsTrigger value="patterns">Patterns & Trends</TabsTrigger>
+          <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="frequency" className="mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-xl font-semibold mb-3 text-white">Hot Numbers</h3>
+              <div className="grid grid-cols-5 gap-2">
+                {topNumbers.map(([number, frequency]) => (
+                  <div 
+                    key={number} 
+                    className="bg-orange-500 text-white p-2 rounded-md text-center"
+                  >
+                    <div className="text-lg font-bold">{number.toString().padStart(2, '0')}</div>
+                    <div className="text-sm">{frequency} times</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-xl font-semibold mb-3 text-white">Cold Numbers</h3>
+              <div className="grid grid-cols-5 gap-2">
+                {coldNumbers.map(([number, frequency]) => (
+                  <div 
+                    key={number} 
+                    className="bg-blue-500 text-white p-2 rounded-md text-center"
+                  >
+                    <div className="text-lg font-bold">{number.toString().padStart(2, '0')}</div>
+                    <div className="text-sm">{frequency} times</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-8">
+            <h3 className="text-xl font-semibold mb-3 text-white">Frequency Distribution</h3>
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={frequencyChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                  <XAxis dataKey="number" interval={9} tick={{ fill: '#fff' }} />
+                  <YAxis tick={{ fill: '#fff' }} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#333', border: 'none' }} 
+                    labelStyle={{ color: '#fff' }}
+                  />
+                  <Bar dataKey="frequency" fill="#ff6b00" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="patterns" className="mt-4">
+          {/* Patterns analysis content */}
+        </TabsContent>
+        
+        <TabsContent value="suggestions" className="mt-4">
+          {/* Suggestions content */}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+```
+
+### Results Manager Component (client/src/components/profile/admin/ResultsManager.tsx)
+
+```tsx
+export default function ResultsManager() {
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const { toast } = useToast();
+  
+  // Form schema for results
+  const resultSchema = z.object({
+    date: z.date(),
+    round1: z.coerce.number().min(0).max(99).nullable(),
+    round2: z.coerce.number().min(0).max(99).nullable(),
+  });
+  
+  // Query to get result for selected date
+  const { data: existingResult, isLoading } = useQuery({
+    queryKey: ['/api/results', selectedDate.toISOString().split('T')[0]],
+    queryFn: async () => {
+      const formattedDate = selectedDate.toISOString().split('T')[0];
+      const res = await fetch(`/api/results/${formattedDate}`);
+      if (!res.ok) {
+        if (res.status === 404) {
+          return null;
+        }
+        throw new Error('Failed to fetch result');
+      }
+      return await res.json();
+    },
+  });
+  
+  // Form for results
+  const form = useForm<z.infer<typeof resultSchema>>({
+    resolver: zodResolver(resultSchema),
+    defaultValues: {
+      date: selectedDate,
+      round1: existingResult?.round1 || null,
+      round2: existingResult?.round2 || null,
+    },
+  });
+  
+  // Update form when existing result changes
+  useEffect(() => {
+    if (existingResult) {
+      form.reset({
+        date: new Date(existingResult.date),
+        round1: existingResult.round1,
+        round2: existingResult.round2,
+      });
+    } else {
+      form.reset({
+        date: selectedDate,
+        round1: null,
+        round2: null,
+      });
+    }
+  }, [existingResult, selectedDate, form]);
+  
+  // Mutation for saving results
+  const saveResultMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof resultSchema>) => {
+      const payload = {
+        ...data,
+        date: data.date.toISOString(),
+      };
+      
+      const url = '/api/admin/results';
+      const method = existingResult ? 'PATCH' : 'POST';
+      
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(existingResult ? { ...payload, id: existingResult.id } : payload),
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to save result');
+      }
+      
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Result saved',
+        description: 'The result was saved successfully',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/results'] });
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/results', selectedDate.toISOString().split('T')[0]] 
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Failed to save result',
+        description: error.message,
+      });
+    },
+  });
+  
+  // Process winning bets mutation
+  const processWinningBetsMutation = useMutation({
+    mutationFn: async () => {
+      if (!existingResult) {
+        throw new Error('No result to process');
+      }
+      
+      const res = await fetch('/api/admin/process-winners', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ resultId: existingResult.id }),
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to process winners');
+      }
+      
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: 'Winners processed',
+        description: `Processed ${data.processed} bets, found ${data.winners} winners`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Failed to process winners',
+        description: error.message,
+      });
+    },
+  });
+  
+  // Handle form submission
+  const onSubmit = (data: z.infer<typeof resultSchema>) => {
+    saveResultMutation.mutate(data);
+  };
+  
+  return (
+    <div className="bg-gray-900 rounded-lg p-6">
+      <h2 className="text-2xl font-bold mb-6 text-white">Manage Results</h2>
+      
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3 text-white">Select Date</h3>
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          onSelect={(date) => date && setSelectedDate(date)}
+          className="bg-gray-800 text-white rounded-md p-2"
+        />
+      </div>
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="round1"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Round 1 Result</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="Enter result (0-99)"
+                    min={0}
+                    max={99}
+                    {...field}
+                    value={field.value?.toString() || ''}
+                    onChange={(e) => 
+                      field.onChange(e.target.value ? parseInt(e.target.value) : null)
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="round2"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-white">Round 2 Result</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="Enter result (0-99)"
+                    min={0}
+                    max={99}
+                    {...field}
+                    value={field.value?.toString() || ''}
+                    onChange={(e) => 
+                      field.onChange(e.target.value ? parseInt(e.target.value) : null)
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <div className="flex space-x-4">
+            <Button 
+              type="submit" 
+              disabled={saveResultMutation.isPending}
+            >
+              {saveResultMutation.isPending ? (
+                <Spinner className="mr-2" />
+              ) : null}
+              Save Result
+            </Button>
+            
+            {existingResult && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => processWinningBetsMutation.mutate()}
+                disabled={processWinningBetsMutation.isPending}
+              >
+                {processWinningBetsMutation.isPending ? (
+                  <Spinner className="mr-2" />
+                ) : null}
+                Process Winners
+              </Button>
+            )}
+          </div>
+        </form>
+      </Form>
+    </div>
+  );
+}
+```
+
+### CSV Import/Export
+
+Administrators can import or export results using CSV files:
+
+```tsx
+// CSV import component (simplified)
+function CsvImport() {
+  const [file, setFile] = useState<File | null>(null);
+  const { toast } = useToast();
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+    }
+  };
+  
+  const handleImport = async () => {
+    if (!file) {
+      toast({
+        variant: 'destructive',
+        title: 'No file selected',
+        description: 'Please select a CSV file to import',
+      });
+      return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const res = await fetch('/api/admin/import-results', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to import results');
+      }
+      
+      const data = await res.json();
+      
+      toast({
+        title: 'Import successful',
+        description: `Imported ${data.imported} results`,
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/results'] });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Import failed',
+        description: error instanceof Error ? error.message : 'Failed to import results',
+      });
+    }
+  };
+  
+  return (
+    <div>
+      <h3 className="text-lg font-semibold mb-3 text-white">Import Results</h3>
+      <div className="flex items-center space-x-2">
+        <Input
+          type="file"
+          accept=".csv"
+          onChange={handleFileChange}
+        />
+        <Button onClick={handleImport}>Import</Button>
+      </div>
+      <p className="text-sm text-gray-400 mt-2">
+        CSV format: date,round1,round2 (e.g., 2025-04-01,42,78)
+      </p>
+    </div>
+  );
+}
+
+// CSV export component (simplified)
+function CsvExport() {
+  const [startDate, setStartDate] = useState<Date>(
+    new Date(new Date().setDate(new Date().getDate() - 30))
+  );
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  
+  const handleExport = async () => {
+    try {
+      const formattedStartDate = startDate.toISOString().split('T')[0];
+      const formattedEndDate = endDate.toISOString().split('T')[0];
+      
+      const res = await fetch(
+        `/api/admin/export-results?start=${formattedStartDate}&end=${formattedEndDate}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'text/csv',
+          },
+        }
+      );
+      
+      if (!res.ok) {
+        throw new Error('Failed to export results');
+      }
+      
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `shillong-teer-results-${formattedStartDate}-to-${formattedEndDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export error:', error);
+    }
+  };
+  
+  return (
+    <div>
+      <h3 className="text-lg font-semibold mb-3 text-white">Export Results</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <Label className="text-white">Start Date</Label>
+          <DatePicker
+            selected={startDate}
+            onChange={(date) => date && setStartDate(date)}
+            selectsStart
+            startDate={startDate}
+            endDate={endDate}
+            className="w-full"
+          />
+        </div>
+        <div>
+          <Label className="text-white">End Date</Label>
+          <DatePicker
+            selected={endDate}
+            onChange={(date) => date && setEndDate(date)}
+            selectsEnd
+            startDate={startDate}
+            endDate={endDate}
+            minDate={startDate}
+            className="w-full"
+          />
+        </div>
+      </div>
+      <Button onClick={handleExport}>Export to CSV</Button>
+    </div>
+  );
+}
+```
+
+### Server-Side API (server/routes.ts)
+
+```typescript
+// Get all results
+app.get('/api/results', async (req, res) => {
+  try {
+    const results = await storage.getResults();
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching results:', error);
+    res.status(500).json({ message: 'Failed to fetch results' });
+  }
+});
+
+// Get result by date
+app.get('/api/results/:date', async (req, res) => {
+  try {
+    const date = new Date(req.params.date);
+    
+    if (isNaN(date.getTime())) {
+      return res.status(400).json({ message: 'Invalid date format' });
+    }
+    
+    const result = await storage.getResultByDate(date);
+    
+    if (!result) {
+      return res.status(404).json({ message: 'Result not found' });
+    }
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Error fetching result:', error);
+    res.status(500).json({ message: 'Failed to fetch result' });
+  }
+});
+
+// Admin: Create or update result
+app.post('/api/admin/results', async (req, res) => {
+  try {
+    // Ensure user is admin
+    if (!req.isAuthenticated() || (req.user as any).role !== 'admin') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    
+    // Validate request body
+    const resultData = insertResultSchema.parse(req.body);
+    
+    // Check if result already exists for this date
+    const existingResult = await storage.getResultByDate(new Date(resultData.date));
+    
+    if (existingResult) {
+      return res.status(409).json({ 
+        message: 'Result already exists for this date',
+        existingResult,
+      });
+    }
+    
+    // Create result
+    const result = await storage.createResult(resultData);
+    
+    res.status(201).json(result);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: 'Validation failed', errors: error.errors });
+    }
+    console.error('Error creating result:', error);
+    res.status(500).json({ message: 'Failed to create result' });
+  }
+});
+
+// Admin: Update result
+app.patch('/api/admin/results', async (req, res) => {
+  try {
+    // Ensure user is admin
+    if (!req.isAuthenticated() || (req.user as any).role !== 'admin') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    
+    // Validate request body
+    const { id, ...updates } = req.body;
+    
+    if (!id) {
+      return res.status(400).json({ message: 'Result ID is required' });
+    }
+    
+    // Update result
+    const result = await storage.updateResult(id, updates);
+    
+    if (!result) {
+      return res.status(404).json({ message: 'Result not found' });
+    }
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Error updating result:', error);
+    res.status(500).json({ message: 'Failed to update result' });
+  }
+});
+
+// Admin: Process winners
+app.post('/api/admin/process-winners', async (req, res) => {
+  try {
+    // Ensure user is admin
+    if (!req.isAuthenticated() || (req.user as any).role !== 'admin') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+    
+    const { resultId } = req.body;
+    
+    if (!resultId) {
+      return res.status(400).json({ message: 'Result ID is required' });
+    }
+    
+    // Process winners
+    const { processed, winners } = await processWinners(resultId);
+    
+    res.json({ processed, winners });
+  } catch (error) {
+    console.error('Error processing winners:', error);
+    res.status(500).json({ message: 'Failed to process winners' });
+  }
+});
+```

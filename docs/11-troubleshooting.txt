@@ -1,0 +1,349 @@
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### Authentication Issues
+
+##### Problem: Users cannot log in
+- **Symptoms**: Login form submits but returns to login page with an error, or no error is displayed but login doesn't succeed.
+- **Possible Causes**:
+  - Session configuration issues
+  - Password validation errors
+  - Database connection issues
+  - Cookie settings
+- **Solution**:
+  1. Check browser console for errors
+  2. Verify API responses in Network tab
+  3. Ensure session configuration is correct in `server/auth.ts`
+  4. Check password validation in `server/auth.ts`
+  5. Verify database connection
+
+##### Problem: Sessions expire too quickly
+- **Symptoms**: Users are frequently logged out even during active use.
+- **Possible Causes**:
+  - Short session timeout
+  - Session cookie not persisting
+- **Solution**:
+  1. Increase session maxAge in `server/auth.ts`
+  2. Set proper cookie options in the session configuration
+  ```typescript
+  app.use(
+    session({
+      secret: process.env.SESSION_SECRET || "your-secret-key",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        secure: process.env.NODE_ENV === "production",
+      },
+      store: new MemoryStore({
+        checkPeriod: 86400000, // 24 hours
+      }),
+    })
+  );
+  ```
+
+##### Problem: Authentication errors not showing in the UI
+- **Symptoms**: Login fails but no error message is displayed to the user.
+- **Possible Causes**:
+  - Error handling not implemented on frontend
+  - Network errors not caught
+- **Solution**:
+  1. Implement error handling in login form:
+  ```typescript
+  const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+    try {
+      await loginMutation.mutateAsync(values);
+    } catch (error) {
+      if (error instanceof Error) {
+        toast({
+          variant: 'destructive',
+          title: 'Login failed',
+          description: error.message,
+        });
+      }
+    }
+  };
+  ```
+  2. Parse error responses correctly in `use-auth.tsx` hook
+
+#### Betting Issues
+
+##### Problem: Bets cannot be placed
+- **Symptoms**: Bet form submits but returns an error, or the submission appears to work but the bet is not recorded.
+- **Possible Causes**:
+  - Time validation issues
+  - Balance validation issues
+  - API errors
+  - Authorization issues
+- **Solution**:
+  1. Check browser console for errors
+  2. Verify API responses in Network tab
+  3. Check if the round is closed with `isRoundClosed` function
+  4. Verify user has sufficient balance
+  5. Check authorization with `req.isAuthenticated()`
+
+##### Problem: Winnings not calculated correctly
+- **Symptoms**: Users win bets but receive incorrect amounts.
+- **Possible Causes**:
+  - Calculation logic errors
+  - Data type issues with decimal values
+  - Missing or incorrect multiplier
+- **Solution**:
+  1. Verify win calculation logic in `server/routes.ts`
+  2. Ensure proper decimal handling with `Number(value)` or `parseFloat(value)`
+  3. Check the multiplier value (80x)
+  ```typescript
+  // Example fix for calculation
+  const winAmount = Number(bet.amount) * 80;
+  ```
+
+##### Problem: Near-miss notifications not showing
+- **Symptoms**: Users don't receive notifications for near-miss numbers.
+- **Possible Causes**:
+  - Near-miss logic errors
+  - Notification system issues
+- **Solution**:
+  1. Check near-miss logic in result processing
+  2. Verify notification system is working correctly
+  3. Implement proper notification tracking to prevent duplicates
+
+#### Offline Issues
+
+##### Problem: App doesn't work offline
+- **Symptoms**: Features are unavailable or app shows errors when offline.
+- **Possible Causes**:
+  - Service worker not registered
+  - Cache configuration issues
+  - IndexedDB not set up correctly
+- **Solution**:
+  1. Check service worker registration in browser DevTools (Application tab)
+  2. Verify cache configuration in `public/service-worker.js`
+  3. Check IndexedDB implementation in `client/src/hooks/use-offline-db.tsx`
+  4. Ensure critical assets are precached
+
+##### Problem: Data not syncing after reconnection
+- **Symptoms**: Offline actions are not sent to the server when connection is restored.
+- **Possible Causes**:
+  - Background sync not triggered
+  - Sync errors not handled
+  - Data format inconsistencies
+- **Solution**:
+  1. Verify background sync registration:
+  ```javascript
+  navigator.serviceWorker.ready.then((registration) => {
+    registration.sync.register('sync-bets');
+  });
+  ```
+  2. Check sync implementation in service worker
+  3. Improve error handling in sync functions
+  4. Ensure data format is consistent between offline and online modes
+
+##### Problem: Service worker registration failing
+- **Symptoms**: Service worker fails to register with an "unsupported MIME type" error.
+- **Possible Causes**:
+  - Incorrect Content-Type header
+  - Path issues
+  - Build process issues
+- **Solution**:
+  1. Ensure service worker is served with correct MIME type (application/javascript)
+  2. Check service worker path in registration
+  3. Verify build process correctly copies service worker file
+  4. Add proper MIME type handling in server:
+  ```typescript
+  app.get('/service-worker.js', (req, res) => {
+    res.set('Content-Type', 'application/javascript');
+    res.sendFile(path.join(__dirname, '../public/service-worker.js'));
+  });
+  ```
+
+#### Results Management Issues
+
+##### Problem: Results not showing in the UI
+- **Symptoms**: Results page is empty or shows loading indefinitely.
+- **Possible Causes**:
+  - API errors
+  - Data format issues
+  - Query issues
+- **Solution**:
+  1. Check browser console for errors
+  2. Verify API responses in Network tab
+  3. Check date formatting in API calls
+  4. Verify data is returned from storage correctly
+
+##### Problem: CSV import not working
+- **Symptoms**: CSV import fails or imports incorrect data.
+- **Possible Causes**:
+  - CSV format issues
+  - File handling errors
+  - Validation issues
+- **Solution**:
+  1. Check the CSV format (columns, delimiters, etc.)
+  2. Verify file upload handling in API
+  3. Improve validation and error handling in import process
+  4. Provide clear guidance on expected CSV format
+
+#### Notification Issues
+
+##### Problem: Multiple duplicate notifications
+- **Symptoms**: Same notification appears multiple times.
+- **Possible Causes**:
+  - Notification tracking not implemented
+  - Multiple calls to notification function
+- **Solution**:
+  1. Implement notification deduplication with a tracking system:
+  ```typescript
+  const seenNotifications = new Set<string>();
+  
+  function showUniqueNotification(message: string, type: string) {
+    const notificationId = `${message}-${type}-${Date.now()}`;
+    if (!seenNotifications.has(notificationId)) {
+      seenNotifications.add(notificationId);
+      showNotification(message, type);
+      
+      // Clean up old notifications (keep only last 100)
+      if (seenNotifications.size > 100) {
+        const iterator = seenNotifications.values();
+        seenNotifications.delete(iterator.next().value);
+      }
+    }
+  }
+  ```
+  2. Use a notification queue to manage notifications
+  3. Add delay between notifications
+
+##### Problem: Push notifications not working
+- **Symptoms**: Push notifications are not received on devices.
+- **Possible Causes**:
+  - Permission not granted
+  - Service worker issues
+  - Push subscription errors
+- **Solution**:
+  1. Check notification permission status
+  2. Verify push subscription in the browser
+  3. Check service worker event handling for push events
+  4. Implement proper push notification flow:
+  ```javascript
+  // Request permission
+  async function requestNotificationPermission() {
+    const permission = await Notification.requestPermission();
+    return permission === 'granted';
+  }
+  
+  // Subscribe to push notifications
+  async function subscribeToPush() {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+    });
+    
+    // Send subscription to server
+    await fetch('/api/push/subscribe', {
+      method: 'POST',
+      body: JSON.stringify(subscription),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
+  ```
+
+### Debugging Tools
+
+#### Browser DevTools
+
+1. **Console**: Check for JavaScript errors and logs
+   - Open DevTools (F12 or Right-click > Inspect)
+   - Go to the Console tab
+   - Look for errors (red) and warnings (yellow)
+   - Filter by error level or message content
+
+2. **Network Panel**: Inspect API requests and responses
+   - Open DevTools
+   - Go to the Network tab
+   - Filter by XHR/Fetch requests
+   - Check status codes, request/response headers, and payload
+   - Look for 4xx and 5xx errors
+
+3. **Application Panel**: Examine service worker, cache, and IndexedDB
+   - Open DevTools
+   - Go to the Application tab
+   - Check Service Workers section for registration and status
+   - Examine Cache Storage for cached assets
+   - Check IndexedDB for stored data
+   - Verify Local Storage and Session Storage
+
+4. **React DevTools**: Debug component state and props
+   - Install React DevTools browser extension
+   - Open DevTools
+   - Go to the Components tab
+   - Inspect component hierarchy, props, and state
+   - Use the profiler to identify performance issues
+
+#### Server-Side Debugging
+
+1. **Express logs**:
+   - Check server console output
+   - Look for request logs and error messages
+   - Check for stack traces
+
+2. **API testing with curl**:
+   - Test API endpoints directly with curl:
+   ```bash
+   curl -X POST http://localhost:5000/api/login -H "Content-Type: application/json" -d '{"username":"test","password":"password123"}'
+   ```
+
+3. **Session debugging**:
+   - Add temporary logging for session data:
+   ```typescript
+   app.use((req, res, next) => {
+     console.log('Session data:', req.session);
+     console.log('Is authenticated:', req.isAuthenticated());
+     next();
+   });
+   ```
+
+### Performance Issues
+
+#### Slow Page Loads
+
+##### Problem: Pages take a long time to load
+- **Symptoms**: Noticeable delay when navigating between pages.
+- **Possible Causes**:
+  - Large bundle size
+  - Unoptimized assets
+  - Excessive API calls
+  - Rendering performance issues
+- **Solution**:
+  1. Check bundle size and split code:
+  ```typescript
+  // Use dynamic imports for code splitting
+  const ResultsAnalysis = React.lazy(() => import('./components/results/analysis/DetailedAnalysis'));
+  ```
+  2. Optimize images and other assets
+  3. Implement pagination for large data sets
+  4. Use React.memo and useMemo for expensive computations
+
+#### Memory Leaks
+
+##### Problem: App becomes slow or crashes after extended use
+- **Symptoms**: Increasing memory usage, degraded performance over time.
+- **Possible Causes**:
+  - Uncleared event listeners
+  - Infinite re-renders
+  - Uncancelled subscriptions
+- **Solution**:
+  1. Clean up event listeners in useEffect:
+  ```typescript
+  useEffect(() => {
+    window.addEventListener('online', handleOnline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
+  ```
+  2. Cancel subscriptions and timers
+  3. Use appropriate dependency arrays in useEffect
+  4. Use React DevTools Profiler to identify re-render issues

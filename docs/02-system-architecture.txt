@@ -1,0 +1,28 @@
+## System Architecture
+
+The Shillong Teer application follows a client-server architecture with a React-based frontend and Express.js backend.
+
+### High-Level Architecture
+
+```
+┌─────────────────┐      ┌──────────────────┐     ┌─────────────────┐
+│   Client Side   │      │   Server Side    │     │   Data Storage  │
+│   (React PWA)   │<────>│   (Express.js)   │<───>│  (MemoryStore)  │
+└─────────────────┘      └──────────────────┘     └─────────────────┘
+```
+
+### Data Flow
+
+1. User Interactions: Users interact with the React frontend to place bets, view results, and manage their accounts.
+2. API Requests: The frontend communicates with the backend via RESTful API calls.
+3. Data Processing: The backend processes requests, interacts with the storage layer, and returns responses.
+4. Data Storage: User data, bets, results, and transactions are stored in the MemoryStore.
+5. Offline Capability: The PWA uses Service Workers and IndexedDB to enable offline functionality.
+
+### Component Interaction
+
+- Frontend components use React hooks to manage state and React Query for data fetching.
+- Authentication state is managed through a custom useAuth hook that interacts with the backend.
+- API requests are handled through a centralized API client that manages authentication and error handling.
+- Backend routes are organized by functionality (auth, bets, results, etc.) and interact with the storage layer.
+- Storage methods handle CRUD operations and manage relationships between data models.

@@ -1,0 +1,133 @@
+## Android APK Conversion
+
+The PWA can be converted to an Android APK for distribution on Google Play using Trusted Web Activities (TWA).
+
+### Key Files
+
+- scripts/build-android-apk.js: Script for building the APK
+- scripts/update-assetlinks.js: Script for updating asset links
+- PWA-APK-GUIDE.md: Guide for converting PWA to APK
+- ANDROID-CONVERSION-GUIDE.md: Detailed conversion instructions
+
+### Conversion Process
+
+1. PWA Preparation:
+   - Ensure PWA meets requirements
+   - Configure proper icons and splash screens
+   - Set up web app manifest
+
+2. Trusted Web Activities:
+   - Use @bubblewrap/cli for TWA
+   - Configure AndroidManifest.xml
+   - Set up Digital Asset Links
+
+3. Build Process:
+   - Run build script
+   - Sign the APK
+   - Test on devices
+
+4. Google Play Submission:
+   - Prepare store listing
+   - Upload signed APK
+   - Follow Play Store guidelines
+
+### Prerequisites
+
+Before converting your PWA to an Android APK, ensure you have:
+
+1. A fully functional PWA with:
+   - Valid web app manifest
+   - Service worker for offline functionality
+   - Responsive design for mobile devices
+   - HTTPS-enabled hosting
+
+2. Development environment with:
+   - Node.js (v14+)
+   - Java Development Kit (JDK 8+)
+   - Android SDK and NDK (can be installed via Android Studio)
+   - Bubblewrap CLI
+
+### Digital Asset Links
+
+Digital Asset Links are required to associate your website with your Android app:
+
+```json
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.shillongteer.app",
+      "sha256_cert_fingerprints": ["YOUR:CERTIFICATE:FINGERPRINT"]
+    }
+  }
+]
+```
+
+This file must be hosted at `https://your-domain.com/.well-known/assetlinks.json`.
+
+### Step-by-Step Guide
+
+1. **Prepare your PWA**:
+   - Test your PWA thoroughly to ensure it works correctly
+   - Verify the web app manifest is properly configured
+   - Ensure service worker is registered and working
+   - Test offline functionality
+
+2. **Build your PWA**:
+   ```bash
+   npm run build
+   ```
+
+3. **Install required tools**:
+   - Install Bubblewrap CLI
+
+4. **Run the APK build script**:
+   ```bash
+   node scripts/build-android-apk.js
+   ```
+
+5. **Update Digital Asset Links**:
+   ```bash
+   node scripts/update-assetlinks.js "YOUR:CERTIFICATE:FINGERPRINT"
+   ```
+
+6. **Deploy the asset links file** to your web server at `/.well-known/assetlinks.json`
+
+7. **Test the APK** on Android devices:
+   ```bash
+   adb install dist/shillong-teer.apk
+   ```
+
+8. **Prepare for Google Play submission**:
+   - Create app store listing
+   - Prepare screenshots and descriptions
+   - Complete content rating questionnaire
+   - Set pricing and distribution options
+
+9. **Submit to Google Play**:
+   - Upload the signed APK
+   - Complete the submission process
+   - Wait for review and approval
+
+### Troubleshooting
+
+1. **Chrome URL Handling Issues**:
+   - Ensure the Digital Asset Links file is correctly formatted
+   - Verify it's accessible at the correct URL
+   - Check that the fingerprint matches the APK signature
+
+2. **APK Won't Install**:
+   - Make sure you're using the signed APK (`app-release-signed.apk`)
+   - Check for previous installations that might need to be uninstalled
+   - Verify the APK is correctly signed
+
+3. **TWA Shows Browser UI**:
+   - Verify the Digital Asset Links setup
+   - Check that your site is using HTTPS
+   - Ensure the package name in the asset links matches the APK
+
+4. **Google Play Rejection**:
+   - Ensure your app complies with Play Store policies
+   - Add appropriate privacy policy
+   - Include proper app permissions

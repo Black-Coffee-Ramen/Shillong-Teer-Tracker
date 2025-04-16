@@ -1,0 +1,146 @@
+## Database Schema
+
+The application uses a data model defined in `shared/schema.ts` for consistency between the frontend and backend.
+
+### Core Models
+
+#### Users
+```typescript
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+  name: text("name"),
+  email: text("email"),
+  balance: decimal("balance", { precision: 10, scale: 2 }).notNull().default("0"),
+  role: text("role").notNull().default("user"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+```
+
+- id: Unique identifier for users
+- username: Unique username for login
+- password: Hashed password for authentication
+- name: User's full name (optional)
+- email: User's email address (optional)
+- balance: User's wallet balance
+- role: User role (admin, user, etc.)
+- createdAt: Timestamp for account creation
+
+#### Bets
+```typescript
+export const bets = pgTable("bets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  numbers: text("numbers").array().notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  round: integer("round").notNull(),
+  date: timestamp("date").notNull().defaultNow(),
+  status: text("status").notNull().default("pending"),
+  winAmount: decimal("win_amount", { precision: 10, scale: 2 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+```
+
+- id: Unique identifier for bets
+- userId: Reference to the user who placed the bet
+- numbers: Array of numbers selected for the bet
+- amount: Amount bet on each number
+- round: Round number (1 or 2)
+- date: Date when the bet was placed
+- status: Status of the bet (pending, won, lost)
+- winAmount: Amount won (if applicable)
+- createdAt: Timestamp for bet creation
+
+#### Results
+```typescript
+export const results = pgTable("results", {
+  id: serial("id").primaryKey(),
+  date: timestamp("date").notNull().unique(),
+  round1: integer("round1"),
+  round2: integer("round2"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+```
+
+- id: Unique identifier for results
+- date: Date of the result
+- round1: Number from the first round
+- round2: Number from the second round (optional)
+- createdAt: Timestamp when the result was recorded
+- updatedAt: Timestamp when the result was last updated
+
+#### Transactions
+```typescript
+export const transactions = pgTable("transactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  type: text("type").notNull(),
+  reference: text("reference"),
+  status: text("status").notNull().default("completed"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+```
+
+- id: Unique identifier for transactions
+- userId: Reference to the user associated with the transaction
+- amount: Transaction amount
+- type: Transaction type (deposit, withdrawal, bet, win, etc.)
+- reference: Reference to related entity (bet ID, etc.)
+- status: Status of the transaction (completed, pending, failed)
+- createdAt: Timestamp when the transaction was recorded
+
+### Schema Validation
+
+The application uses Zod for schema validation:
+
+```typescript
+export const insertUserSchema = createInsertSchema(users).pick({
+  username: true,
+  password: true,
+  name: true,
+  email: true,
+  role: true,
+});
+
+export const insertBetSchema = createInsertSchema(bets).pick({
+  userId: true,
+  numbers: true,
+  amount: true,
+  round: true,
+  date: true,
+  status: true,
+});
+
+export const insertResultSchema = createInsertSchema(results).pick({
+  date: true,
+  round1: true,
+  round2: true,
+});
+
+export const insertTransactionSchema = createInsertSchema(transactions).pick({
+  userId: true,
+  amount: true,
+  type: true,
+  reference: true,
+  status: true,
+});
+```
+
+### Type Definitions
+
+The application uses TypeScript types derived from the schema:
+
+```typescript
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertBet = z.infer<typeof insertBetSchema>;
+export type InsertResult = z.infer<typeof insertResultSchema>;
+export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+
+export type User = typeof users.$inferSelect;
+export type Bet = typeof bets.$inferSelect;
+export type Result = typeof results.$inferSelect;
+export type Transaction = typeof transactions.$inferSelect;
+```
