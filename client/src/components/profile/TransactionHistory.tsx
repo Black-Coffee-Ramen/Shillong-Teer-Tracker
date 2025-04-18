@@ -35,23 +35,33 @@ export default function TransactionHistory() {
   useEffect(() => {
     if (!transactions) return;
     
-    // For each transaction, extract metadata from description
+    // For each transaction, process metadata
     const updatedTransactions = transactions.map(transaction => {
       let updatedTransaction = {...transaction};
       
-      // Handle bet and win transactions
-      if ((transaction.type === "bet" || transaction.type === "win") && transaction.description) {
-        // Try to extract from description first
+      // Parse JSON metadata if it exists
+      if (transaction.metadata && typeof transaction.metadata === 'string') {
+        try {
+          updatedTransaction.metadata = JSON.parse(transaction.metadata);
+        } catch (error) {
+          console.error("Error parsing metadata JSON:", error);
+          updatedTransaction.metadata = null;
+        }
+      }
+      
+      // If metadata is not available, try to extract from description
+      if ((!updatedTransaction.metadata || !updatedTransaction.metadata.number) && 
+          (transaction.type === "bet" || transaction.type === "win") && 
+          transaction.description) {
         const numberMatch = transaction.description.match(/number (\d+)/);
         const roundMatch = transaction.description.match(/Round (\d+)/);
         
         if (numberMatch && roundMatch) {
-          const metadata = {
-            ...transaction.metadata,
+          updatedTransaction.metadata = {
+            ...(updatedTransaction.metadata || {}),
             number: parseInt(numberMatch[1]),
             round: parseInt(roundMatch[1])
           };
-          updatedTransaction = { ...transaction, metadata };
         }
       }
       
@@ -59,10 +69,7 @@ export default function TransactionHistory() {
       if (transaction.type === "deposit" && transaction.razorpayPaymentId) {
         // If there's a payment ID but status is null/undefined, mark as completed
         if (!transaction.status) {
-          updatedTransaction = { 
-            ...transaction, 
-            status: "completed"
-          };
+          updatedTransaction.status = "completed";
         }
       }
       
