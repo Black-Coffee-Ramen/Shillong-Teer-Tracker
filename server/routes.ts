@@ -54,18 +54,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // In a real implementation, we'd query just for the specific date
       // but for our in-memory setup we'll fetch all and filter
       const allBets: Bet[] = [];
-      const users = await storage.getUser(1); // Get admin user
-      if (users) {
-        const userBets = await storage.getUserBets(users.id);
-        allBets.push(...userBets);
+      
+      // Get all bets for all active users (user ID 1 is admin, 2 is user)
+      for (let userId = 1; userId <= 5; userId++) {
+        const user = await storage.getUser(userId);
+        if (user) {
+          console.log(`Processing bets for user ${userId}: ${user.username}`);
+          const userBets = await storage.getUserBets(userId);
+          console.log(`Found ${userBets.length} bets for user ${userId}`);
+          allBets.push(...userBets);
+        }
       }
+      
+      console.log(`Total bets to process: ${allBets.length}`);
+      console.log(`Result data: Round1=${result.round1}, Round2=${result.round2}`);
       
       // Process round 1 wins if we have a result
       if (result.round1 !== null) {
+        console.log(`Processing Round 1 bets for result number ${result.round1}`);
+        
         const round1Bets = allBets.filter(bet => {
           const betDate = new Date(bet.date);
+          
           // Check if the bet was placed on the same date
           const isSameDate = betDate.toDateString() === resultDate.toDateString();
+          
+          // Check if bet is for round 1
+          const isRound1 = bet.round === 1;
           
           // Check if the bet was placed before the round 1 result time (15:30 IST)
           const betTime = betDate.getHours() * 60 + betDate.getMinutes();
@@ -73,14 +88,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const isBeforeRound1 = betTime < round1CutoffTime;
           
           // Only consider bets that were placed before the round 1 cutoff time
-          return isSameDate && bet.round === 1 && isBeforeRound1;
+          const shouldInclude = isSameDate && isRound1 && isBeforeRound1;
+          
+          console.log(`Bet #${bet.id} - Number: ${bet.number}, Round: ${bet.round}, Date: ${betDate.toISOString()}`);
+          console.log(`  - isSameDate: ${isSameDate}, isRound1: ${isRound1}, isBeforeRound1: ${isBeforeRound1}`);
+          console.log(`  - INCLUDE IN PROCESSING: ${shouldInclude}`);
+          
+          return shouldInclude;
         });
+        
+        console.log(`Found ${round1Bets.length} Round 1 bets to process`);
         
         // Process each bet in round 1
         for (const bet of round1Bets) {
+          console.log(`Checking bet #${bet.id} - Number: ${bet.number} against result: ${result.round1}`);
+          
           if (bet.number === result.round1) {
+            console.log(`WIN MATCH FOUND! Bet #${bet.id} matches Round 1 result: ${result.round1}`);
+            
             // Calculate win amount (80x multiplier)
             const winAmount = bet.amount * 80;
+            console.log(`Win amount: ${bet.amount} x 80 = ${winAmount}`);
             
             // Mark bet as a win
             await storage.updateBet(bet.id, {
@@ -91,15 +119,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Add win amount to user balance
             const user = await storage.getUser(bet.userId);
             if (user) {
+              console.log(`Crediting win to user ${user.id} (${user.username})`);
               await storage.updateUserBalance(user.id, winAmount);
               
               // Record transaction
-              await storage.createTransaction({
+              const transaction = await storage.createTransaction({
                 userId: user.id,
                 amount: winAmount,
                 type: "win",
-                description: `Win on number ${bet.number} for Round 1`
+                description: `Win on number ${bet.number} for Round 1`,
+                metadata: JSON.stringify({
+                  number: bet.number,
+                  round: 1
+                })
               });
+              
+              console.log(`Created win transaction #${transaction.id} for user ${user.id}`);
               
               processedWins.push({
                 betId: bet.id,
@@ -110,16 +145,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 round: 1
               });
             }
+          } else {
+            console.log(`No match for bet #${bet.id} (${bet.number} ≠ ${result.round1})`);
           }
         }
       }
       
       // Process round 2 wins if we have a result
       if (result.round2 !== null) {
+        console.log(`Processing Round 2 bets for result number ${result.round2}`);
+        
         const round2Bets = allBets.filter(bet => {
           const betDate = new Date(bet.date);
+          
           // Check if the bet was placed on the same date
           const isSameDate = betDate.toDateString() === resultDate.toDateString();
+          
+          // Check if bet is for round 2
+          const isRound2 = bet.round === 2;
           
           // Check if the bet was placed before the round 2 result time (16:30 IST)
           const betTime = betDate.getHours() * 60 + betDate.getMinutes();
@@ -127,14 +170,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const isBeforeRound2 = betTime < round2CutoffTime;
           
           // Only consider bets that were placed before the round 2 cutoff time
-          return isSameDate && bet.round === 2 && isBeforeRound2;
+          const shouldInclude = isSameDate && isRound2 && isBeforeRound2;
+          
+          console.log(`Bet #${bet.id} - Number: ${bet.number}, Round: ${bet.round}, Date: ${betDate.toISOString()}`);
+          console.log(`  - isSameDate: ${isSameDate}, isRound2: ${isRound2}, isBeforeRound2: ${isBeforeRound2}`);
+          console.log(`  - INCLUDE IN PROCESSING: ${shouldInclude}`);
+          
+          return shouldInclude;
         });
+        
+        console.log(`Found ${round2Bets.length} Round 2 bets to process`);
         
         // Process each bet in round 2
         for (const bet of round2Bets) {
+          console.log(`Checking bet #${bet.id} - Number: ${bet.number} against result: ${result.round2}`);
+          
           if (bet.number === result.round2) {
+            console.log(`WIN MATCH FOUND! Bet #${bet.id} matches Round 2 result: ${result.round2}`);
+            
             // Calculate win amount (80x multiplier)
             const winAmount = bet.amount * 80;
+            console.log(`Win amount: ${bet.amount} x 80 = ${winAmount}`);
             
             // Mark bet as a win
             await storage.updateBet(bet.id, {
@@ -145,15 +201,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Add win amount to user balance
             const user = await storage.getUser(bet.userId);
             if (user) {
+              console.log(`Crediting win to user ${user.id} (${user.username})`);
               await storage.updateUserBalance(user.id, winAmount);
               
               // Record transaction
-              await storage.createTransaction({
+              const transaction = await storage.createTransaction({
                 userId: user.id,
                 amount: winAmount,
                 type: "win",
-                description: `Win on number ${bet.number} for Round 2`
+                description: `Win on number ${bet.number} for Round 2`,
+                metadata: JSON.stringify({
+                  number: bet.number,
+                  round: 2
+                })
               });
+              
+              console.log(`Created win transaction #${transaction.id} for user ${user.id}`);
               
               processedWins.push({
                 betId: bet.id,
@@ -164,6 +227,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 round: 2
               });
             }
+          } else {
+            console.log(`No match for bet #${bet.id} (${bet.number} ≠ ${result.round2})`);
           }
         }
       }
@@ -340,7 +405,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: user.id,
         amount: -betData.amount,
         type: "bet",
-        description: `Bet placed on number ${betData.number} for Round ${betData.round}`
+        description: `Bet placed on number ${betData.number} for Round ${betData.round}`,
+        metadata: JSON.stringify({
+          number: betData.number,
+          round: betData.round
+        })
       });
       
       res.status(201).json(bet);

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, doublePrecision, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -40,6 +40,7 @@ export const transactions = pgTable("transactions", {
   razorpayPaymentId: text("razorpay_payment_id"),
   razorpaySignature: text("razorpay_signature"),
   status: text("status").default("pending"), // pending, completed, failed
+  metadata: json("metadata").$type<Record<string, any>>(), // Additional data like bet number, round, etc.
 });
 
 // Insert Schemas
@@ -72,6 +73,7 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   razorpayPaymentId: true,
   razorpaySignature: true,
   status: true,
+  metadata: true,
 });
 
 // Types

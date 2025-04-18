@@ -3,13 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Transaction } from "@shared/schema";
 
 // Extend Transaction type to include possible metadata
-interface ExtendedTransaction extends Transaction {
-  metadata?: {
-    number?: number;
-    round?: number;
-    method?: string;
-    [key: string]: any;
-  };
+interface ExtendedTransaction extends Omit<Transaction, 'metadata'> {
+  metadata: Record<string, any> | null;
 }
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/utils";
