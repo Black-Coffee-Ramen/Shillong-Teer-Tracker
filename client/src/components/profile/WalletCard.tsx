@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNotification } from "@/hooks/use-notification";
+import { Transaction } from "@shared/schema";
 
 // Define Razorpay interface
 declare global {
@@ -151,6 +152,44 @@ export default function WalletCard() {
     }
   });
   
+  // Get user's transactions to check for recent wins
+  const { data: transactions = [] } = useQuery<Transaction[]>({
+    queryKey: ["/api/transactions"],
+    enabled: !!user
+  });
+  
+  // Check if user has recent wins (within the last 2 hours)
+  const hasRecentWins = useMemo(() => {
+    if (!transactions) return false;
+    
+    const twoHoursAgo = new Date();
+    twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
+    
+    return transactions.some(
+      (transaction: Transaction) => transaction.type === "win" && 
+      new Date(transaction.date).getTime() > twoHoursAgo.getTime()
+    );
+  }, [transactions]);
+  
+  // Calculate when withdrawal will be available again
+  const withdrawalAvailableTime = useMemo(() => {
+    if (!transactions) return null;
+    
+    const winTransactions = transactions.filter((t: Transaction) => t.type === "win");
+    if (winTransactions.length === 0) return null;
+    
+    // Find most recent win
+    const mostRecentWin = winTransactions.reduce((latest: Transaction, current: Transaction) => {
+      return new Date(current.date) > new Date(latest.date) ? current : latest;
+    }, winTransactions[0]);
+    
+    // Add 2 hours to the win time
+    const availableTime = new Date(mostRecentWin.date);
+    availableTime.setHours(availableTime.getHours() + 2);
+    
+    return availableTime;
+  }, [transactions]);
+
   const withdrawMutation = useMutation({
     mutationFn: async (withdrawalData: {
       amount: number;
@@ -379,7 +418,21 @@ export default function WalletCard() {
             <i className="ri-add-line mr-1"></i> Deposit
           </Button>
           <Button
-            onClick={() => setIsWithdrawModalOpen(true)}
+            onClick={() => {
+              if (hasRecentWins) {
+                const timeUntil = withdrawalAvailableTime ? 
+                  new Date(withdrawalAvailableTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 
+                  '2 hours';
+                
+                toast({
+                  title: "Withdrawal Restricted",
+                  description: `Withdrawals are restricted for 2 hours after winning. Available after ${timeUntil}.`,
+                  variant: "destructive"
+                });
+              } else {
+                setIsWithdrawModalOpen(true);
+              }
+            }}
             className="bg-accent hover:bg-accent/90 text-white py-2 rounded-lg font-medium flex items-center justify-center"
             disabled={!user || user.balance < 500}
           >
@@ -515,6 +568,13 @@ export default function WalletCard() {
               onChange={(e) => setWithdrawAmount(Number(e.target.value))}
             />
             <p className="text-gray-500 text-xs mt-1">Minimum withdrawal: ₹500</p>
+            
+            {/* Information about withdrawal restriction */}
+            <div className="mt-2 bg-gray-800/50 border border-yellow-600/30 rounded-md p-2">
+              <p className="text-xs text-gray-300">
+                <span className="text-yellow-500">ℹ️</span> Withdrawals are restricted for 2 hours after any win to prevent fraud and ensure compliance with regulations.
+              </p>
+            </div>
           </div>
           
           <div className="mb-4">

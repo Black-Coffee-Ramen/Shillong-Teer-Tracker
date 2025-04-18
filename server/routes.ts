@@ -575,6 +575,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Insufficient funds" });
       }
       
+      // Check if user has any win transactions in the last 2 hours
+      const userTransactions = await storage.getUserTransactions(req.user.id);
+      const twoHoursAgo = new Date();
+      twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
+      
+      const recentWins = userTransactions.filter(
+        transaction => transaction.type === "win" && 
+        new Date(transaction.date).getTime() > twoHoursAgo.getTime()
+      );
+      
+      if (recentWins.length > 0) {
+        return res.status(400).json({ 
+          message: "Withdrawals are restricted for 2 hours after winning. Please try again later.",
+          restrictedUntil: new Date(Math.max(...recentWins.map(win => new Date(win.date).getTime())) + 2 * 60 * 60 * 1000)
+        });
+      }
+      
       // Update user balance
       const updatedUser = await storage.updateUserBalance(req.user.id, -amount);
       if (!updatedUser) {
