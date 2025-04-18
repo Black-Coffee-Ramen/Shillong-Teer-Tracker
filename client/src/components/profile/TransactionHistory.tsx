@@ -28,6 +28,35 @@ export default function TransactionHistory() {
     refetchInterval: 30000, // Refetch every 30 seconds
   });
   
+  // Query for bets to cross-reference with transactions
+  const { data: bets } = useQuery({
+    queryKey: ["/api/bets"],
+  });
+  
+  // Process transaction data to add metadata for numbers and rounds
+  useEffect(() => {
+    if (transactions && bets) {
+      // For each bet transaction, find the corresponding bet to get number and round info
+      const processedTransactions = transactions.map(transaction => {
+        if (transaction.type === "bet" && transaction.description) {
+          // Try to extract from description first
+          const numberMatch = transaction.description.match(/number (\d+)/);
+          const roundMatch = transaction.description.match(/Round (\d+)/);
+          
+          if (numberMatch && roundMatch) {
+            const metadata = {
+              ...transaction.metadata,
+              number: parseInt(numberMatch[1]),
+              round: parseInt(roundMatch[1])
+            };
+            return { ...transaction, metadata };
+          }
+        }
+        return transaction;
+      });
+    }
+  }, [transactions, bets]);
+  
   // Set up auto-refresh for transaction data
   useEffect(() => {
     const interval = setInterval(() => {
@@ -246,7 +275,13 @@ export default function TransactionHistory() {
                 
                 <div className="flex justify-between">
                   <span className="text-white">Status:</span>
-                  <span className="text-green-500 font-medium">Completed</span>
+                  {selectedTransaction.status === "failed" ? (
+                    <span className="text-red-500 font-medium">Failed</span>
+                  ) : selectedTransaction.status === "pending" ? (
+                    <span className="text-yellow-500 font-medium">Pending</span>
+                  ) : (
+                    <span className="text-green-500 font-medium">Completed</span>
+                  )}
                 </div>
               </div>
             </div>
