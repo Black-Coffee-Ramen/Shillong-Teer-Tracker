@@ -28,8 +28,8 @@ const registerSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
   name: z.string().min(2, "Name must be at least 2 characters").optional(),
   email: z.string().email("Please enter a valid email").optional(),
-  agreeTerms: z.literal(true, {
-    errorMap: () => ({ message: "You must agree to the terms and disclaimer to continue" }),
+  agreeTerms: z.boolean().refine(val => val === true, {
+    message: "You must agree to the terms and disclaimer to continue",
   }),
 });
 
@@ -61,6 +61,7 @@ export default function AuthPage() {
       password: "",
       name: "",
       email: "",
+      agreeTerms: false,
     },
   });
 
@@ -84,7 +85,10 @@ export default function AuthPage() {
       return;
     }
     
-    registerMutation.mutate(values, {
+    // Remove agreeTerms from submission data as it's not part of the user schema
+    const { agreeTerms, ...userInfo } = values;
+    
+    registerMutation.mutate(userInfo, {
       onSuccess: () => {
         // Toast notification is handled in the mutation
         navigate("/");
@@ -170,6 +174,19 @@ export default function AuthPage() {
                       </FormItem>
                     )}
                   />
+                  
+                  {/* Login Disclaimer Notice */}
+                  <div className="mt-2 mb-4">
+                    <div className="bg-gray-800/70 border border-yellow-600/30 rounded-md p-3">
+                      <div className="text-xs text-gray-300">
+                        <p className="flex items-center mb-1">
+                          <span className="text-yellow-500 mr-1">⚠️</span>
+                          <span className="text-yellow-400 font-medium">Disclaimer</span>
+                        </p>
+                        <p>By logging in, you confirm that you are at least 18 years old and accept that this app is intended solely for participating in Shillong Teer, a legally recognized traditional archery-based game.</p>
+                      </div>
+                    </div>
+                  </div>
                   
                   <Button 
                     type="submit" 
@@ -293,6 +310,49 @@ export default function AuthPage() {
                       </FormItem>
                     )}
                   />
+                  
+                  {/* Disclaimer and Age Verification */}
+                  <div className="mt-4 mb-4">
+                    <div className="bg-gray-800/70 border border-yellow-600/30 rounded-md p-4 mb-3">
+                      <h3 className="text-yellow-400 text-sm font-medium flex items-center mb-2">
+                        <span className="text-yellow-500 mr-1">⚠️</span> Disclaimer
+                      </h3>
+                      <div className="text-xs text-gray-300 space-y-2">
+                        <p>This app is intended solely for participating in Shillong Teer, a legally recognized traditional archery-based number game.</p>
+                        <p>Please note:</p>
+                        <ul className="list-disc pl-4 space-y-1">
+                          <li>This game involves monetary risk and may be addictive.</li>
+                          <li>Play responsibly and only if you are confident and aware of the rules.</li>
+                          <li>We do not promote gambling or betting of any kind beyond the scope of Shillong Teer.</li>
+                          <li>Users must be 18 years or older to use this app.</li>
+                          <li>If you feel like you're losing control or getting addicted, please take a break or seek help.</li>
+                        </ul>
+                      </div>
+                    </div>
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="agreeTerms"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="mt-1"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm text-gray-300">
+                              I am at least 18 years old and I accept the terms and disclaimer
+                            </FormLabel>
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   
                   <Button 
                     type="submit" 
