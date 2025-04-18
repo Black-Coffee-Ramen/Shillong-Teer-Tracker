@@ -33,29 +33,49 @@ export default function TransactionHistory() {
     queryKey: ["/api/bets"],
   });
   
+  // Store processed transactions
+  const [processedTransactions, setProcessedTransactions] = useState<ExtendedTransaction[]>([]);
+
   // Process transaction data to add metadata for numbers and rounds
   useEffect(() => {
-    if (transactions && bets) {
-      // For each bet transaction, find the corresponding bet to get number and round info
-      const processedTransactions = transactions.map(transaction => {
-        if (transaction.type === "bet" && transaction.description) {
-          // Try to extract from description first
-          const numberMatch = transaction.description.match(/number (\d+)/);
-          const roundMatch = transaction.description.match(/Round (\d+)/);
-          
-          if (numberMatch && roundMatch) {
-            const metadata = {
-              ...transaction.metadata,
-              number: parseInt(numberMatch[1]),
-              round: parseInt(roundMatch[1])
-            };
-            return { ...transaction, metadata };
-          }
+    if (!transactions) return;
+    
+    // For each transaction, extract metadata from description
+    const updatedTransactions = transactions.map(transaction => {
+      let updatedTransaction = {...transaction};
+      
+      // Handle bet and win transactions
+      if ((transaction.type === "bet" || transaction.type === "win") && transaction.description) {
+        // Try to extract from description first
+        const numberMatch = transaction.description.match(/number (\d+)/);
+        const roundMatch = transaction.description.match(/Round (\d+)/);
+        
+        if (numberMatch && roundMatch) {
+          const metadata = {
+            ...transaction.metadata,
+            number: parseInt(numberMatch[1]),
+            round: parseInt(roundMatch[1])
+          };
+          updatedTransaction = { ...transaction, metadata };
         }
-        return transaction;
-      });
-    }
-  }, [transactions, bets]);
+      }
+      
+      // Handle deposit transactions with payment status
+      if (transaction.type === "deposit" && transaction.razorpayPaymentId) {
+        // If there's a payment ID but status is null/undefined, mark as completed
+        if (!transaction.status) {
+          updatedTransaction = { 
+            ...transaction, 
+            status: "completed"
+          };
+        }
+      }
+      
+      return updatedTransaction;
+    });
+    
+    setProcessedTransactions(updatedTransactions);
+  }, [transactions]);
   
   // Set up auto-refresh for transaction data
   useEffect(() => {
@@ -97,14 +117,14 @@ export default function TransactionHistory() {
   };
   
   // Calculate total pages
-  const totalPages = transactions ? Math.ceil(transactions.length / itemsPerPage) : 0;
+  const totalPages = processedTransactions ? Math.ceil(processedTransactions.length / itemsPerPage) : 0;
   
   // Get current page of transactions
   const getCurrentPageItems = () => {
-    if (!transactions) return [];
+    if (!processedTransactions || processedTransactions.length === 0) return [];
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return transactions.slice(startIndex, endIndex);
+    return processedTransactions.slice(startIndex, endIndex);
   };
   
   // Handle pagination
@@ -133,15 +153,36 @@ export default function TransactionHistory() {
             {getTransactionIcon(transaction.type)}
           </div>
           <div>
-            <p className="text-white text-sm">{getTransactionTitle(transaction.type)}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-white text-sm">{getTransactionTitle(transaction.type)}</p>
+              
+              {/* Status indicator */}
+              {transaction.status === "failed" && (
+                <span className="bg-red-500/20 text-red-500 text-xs px-1.5 py-0.5 rounded">Failed</span>
+              )}
+              {transaction.status === "pending" && (
+                <span className="bg-yellow-500/20 text-yellow-500 text-xs px-1.5 py-0.5 rounded">Pending</span>
+              )}
+            </div>
+            
             <p className="text-white text-xs">
               {format(new Date(transaction.date), "MMM d, yyyy · h:mm a")}
             </p>
           </div>
         </div>
-        <p className={`font-mono font-medium ${transaction.amount > 0 ? 'text-green-500' : transaction.type === 'withdraw' ? 'text-white' : 'text-accent'}`}>
-          {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
-        </p>
+        <div className="text-right">
+          <p className={`font-mono font-medium ${transaction.amount > 0 ? 'text-green-500' : transaction.type === 'withdraw' ? 'text-white' : 'text-accent'}`}>
+            {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+          </p>
+          
+          {/* Show round and number for bet and win transactions */}
+          {(transaction.type === "bet" || transaction.type === "win") && transaction.metadata?.number && (
+            <p className="text-xs text-gray-400">
+              #{transaction.metadata.number} · 
+              {transaction.metadata.round === 1 ? "1st" : "2nd"} Round
+            </p>
+          )}
+        </div>
       </div>
     ));
   };
@@ -171,14 +212,14 @@ export default function TransactionHistory() {
             <div className="flex justify-center items-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-accent" />
             </div>
-          ) : transactions && transactions.length > 0 ? (
+          ) : processedTransactions && processedTransactions.length > 0 ? (
             showAllTransactions ? (
               <div className="space-y-1">
                 {renderTransactionList(getCurrentPageItems())}
               </div>
             ) : (
               <div className="space-y-1">
-                {renderTransactionList(transactions.slice(0, 5))}
+                {renderTransactionList(processedTransactions.slice(0, 5))}
               </div>
             )
           ) : (
@@ -252,17 +293,17 @@ export default function TransactionHistory() {
                   <span className="text-white font-medium">{selectedTransaction.type}</span>
                 </div>
                 
-                {selectedTransaction.type === "bet" && (
+                {(selectedTransaction.type === "bet" || selectedTransaction.type === "win") && (
                   <div className="flex justify-between">
                     <span className="text-white">Number:</span>
                     <span className="text-white font-medium">{selectedTransaction.metadata?.number || "N/A"}</span>
                   </div>
                 )}
                 
-                {selectedTransaction.type === "bet" && (
+                {(selectedTransaction.type === "bet" || selectedTransaction.type === "win") && (
                   <div className="flex justify-between">
                     <span className="text-white">Round:</span>
-                    <span className="text-white font-medium">{selectedTransaction.metadata?.round || "N/A"}</span>
+                    <span className="text-white font-medium">{selectedTransaction.metadata?.round === 1 ? "1st Round (15:30)" : selectedTransaction.metadata?.round === 2 ? "2nd Round (16:30)" : "N/A"}</span>
                   </div>
                 )}
                 
