@@ -75,12 +75,18 @@ export default function ResultsManager() {
       };
       return await apiRequest('POST', "/api/results", formattedData);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/results"] });
       toast({
         title: "Success",
         description: "New result created successfully",
       });
+      
+      // Automatically process wins for new results
+      if (data.id && (data.round1 !== null || data.round2 !== null)) {
+        handleProcessWins(data.id);
+      }
+      
       setNewResult({
         date: new Date().toISOString().split('T')[0],
         round1: null,
@@ -99,7 +105,15 @@ export default function ResultsManager() {
   
   // Handle Result Update
   const handleUpdateResult = (id: number, updates: Partial<ResultEntry>) => {
-    updateResultMutation.mutate({ id, updates });
+    updateResultMutation.mutate({ 
+      id, 
+      updates 
+    }, {
+      onSuccess: () => {
+        // Automatically process wins when updating results
+        handleProcessWins(id);
+      }
+    });
   };
   
   // Handle New Result Creation
@@ -197,7 +211,14 @@ export default function ResultsManager() {
       
       // Process all import operations
       Promise.all(importPromises)
-        .then(() => {
+        .then((results) => {
+          // After import, process wins for all imported results
+          results.forEach(result => {
+            if (result.id && (result.round1 !== null || result.round2 !== null)) {
+              handleProcessWins(result.id);
+            }
+          });
+          
           toast({
             title: "Import Complete",
             description: `Successfully imported ${importPromises.length} results`,
