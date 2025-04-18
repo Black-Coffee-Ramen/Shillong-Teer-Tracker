@@ -28,6 +28,9 @@ const registerSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
   name: z.string().min(2, "Name must be at least 2 characters").optional(),
   email: z.string().email("Please enter a valid email").optional(),
+  agreeTerms: z.literal(true, {
+    errorMap: () => ({ message: "You must agree to the terms and disclaimer to continue" }),
+  }),
 });
 
 export default function AuthPage() {

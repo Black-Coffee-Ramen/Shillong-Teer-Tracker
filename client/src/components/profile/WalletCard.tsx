@@ -69,11 +69,11 @@ export default function WalletCard() {
   // Create Razorpay order
   const createOrderMutation = useMutation({
     mutationFn: async (amount: number) => {
-      const res = await apiRequest("POST", "/api/payment/create-order", { 
+      // apiRequest already returns the parsed JSON response
+      return await apiRequest("POST", "/api/payment/create-order", { 
         amount, 
         currency: "INR" 
       });
-      return res.json();
     },
     onSuccess: (data) => {
       if (isRazorpayReady) {
@@ -103,8 +103,8 @@ export default function WalletCard() {
       razorpay_signature: string;
       transactionId: number;
     }) => {
-      const res = await apiRequest("POST", "/api/payment/verify", paymentData);
-      return res.json();
+      // apiRequest already returns the parsed JSON response
+      return await apiRequest("POST", "/api/payment/verify", paymentData);
     },
     onSuccess: (data) => {
       toast({
@@ -131,10 +131,10 @@ export default function WalletCard() {
   // Direct deposit (testing only)
   const depositMutation = useMutation({
     mutationFn: async (amount: number) => {
-      const res = await apiRequest("POST", "/api/transactions/deposit", { amount });
-      return res.json();
+      // apiRequest already returns the parsed JSON response, so we don't need to call .json() again
+      return await apiRequest("POST", "/api/transactions/deposit", { amount });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Deposit Successful (Test Mode)",
         description: `${formatCurrency(depositAmount)} has been added to your wallet.`,
@@ -157,8 +157,8 @@ export default function WalletCard() {
       method: "bank" | "upi";
       details: any;
     }) => {
-      const res = await apiRequest("POST", "/api/transactions/withdraw", withdrawalData);
-      return res.json();
+      // apiRequest already returns the parsed JSON response
+      return await apiRequest("POST", "/api/transactions/withdraw", withdrawalData);
     },
     onSuccess: () => {
       toast({
