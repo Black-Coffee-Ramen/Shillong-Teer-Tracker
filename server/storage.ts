@@ -245,7 +245,8 @@ export class MemStorage implements IStorage {
       status: transaction.status || null,
       razorpayOrderId: transaction.razorpayOrderId || null,
       razorpayPaymentId: transaction.razorpayPaymentId || null,
-      razorpaySignature: transaction.razorpaySignature || null
+      razorpaySignature: transaction.razorpaySignature || null,
+      metadata: transaction.metadata || null
     };
     
     this.transactions.set(id, newTransaction);
