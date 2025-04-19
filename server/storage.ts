@@ -233,6 +233,12 @@ export class MemStorage implements IStorage {
     return updatedResult;
   }
   
+  async deleteResult(id: number): Promise<boolean> {
+    if (!this.results.has(id)) return false;
+    
+    return this.results.delete(id);
+  }
+  
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const id = this.currentTransactionId++;
     const newTransaction: Transaction = {

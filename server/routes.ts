@@ -103,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const bet of round1Bets) {
           console.log(`Checking bet #${bet.id} - Number: ${bet.number} against result: ${result.round1}`);
           
-          if (bet.number === result.round1) {
+          if (bet.number === result.round1 && !bet.isWin) {
             console.log(`WIN MATCH FOUND! Bet #${bet.id} matches Round 1 result: ${result.round1}`);
             
             // Calculate win amount (80x multiplier)
@@ -136,6 +136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               console.log(`Created win transaction #${transaction.id} for user ${user.id}`);
               
+              // Show notification for the user
               processedWins.push({
                 betId: bet.id,
                 userId: bet.userId,
@@ -185,7 +186,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const bet of round2Bets) {
           console.log(`Checking bet #${bet.id} - Number: ${bet.number} against result: ${result.round2}`);
           
-          if (bet.number === result.round2) {
+          if (bet.number === result.round2 && !bet.isWin) {
             console.log(`WIN MATCH FOUND! Bet #${bet.id} matches Round 2 result: ${result.round2}`);
             
             // Calculate win amount (80x multiplier)
@@ -218,6 +219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               console.log(`Created win transaction #${transaction.id} for user ${user.id}`);
               
+              // Show notification for the user
               processedWins.push({
                 betId: bet.id,
                 userId: bet.userId,
@@ -367,6 +369,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating result:", error);
       res.status(500).json({ message: "Error updating result" });
+    }
+  });
+  
+  // DELETE endpoint for removing results
+  app.delete("/api/results/:id", async (req, res) => {
+    if (!req.isAuthenticated() || req.user?.username !== "admin") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+    
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+      
+      const success = await storage.deleteResult(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Result not found or could not be deleted" });
+      }
+      
+      res.status(200).json({ message: "Result deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting result:", error);
+      res.status(500).json({ message: "Error deleting result" });
     }
   });
   
