@@ -147,39 +147,39 @@ export default function TransactionHistory() {
     return items.map(transaction => (
       <div 
         key={transaction.id} 
-        className="border-b border-gray-700 py-3 flex justify-between items-center cursor-pointer hover:bg-gray-800/50 px-2 rounded-md transition-colors"
+        className="border-b border-gray-200 py-3 flex justify-between items-center cursor-pointer hover:bg-gray-50 px-2 rounded-md transition-colors"
         onClick={() => setSelectedTransaction(transaction)}
       >
         <div className="flex items-center">
-          <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center mr-3">
+          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mr-3">
             {getTransactionIcon(transaction.type)}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <p className="text-white text-sm">{getTransactionTitle(transaction.type)}</p>
+              <p className="text-gray-800 text-sm">{getTransactionTitle(transaction.type)}</p>
               
               {/* Status indicator */}
               {transaction.status === "failed" && (
-                <span className="bg-red-500/20 text-red-500 text-xs px-1.5 py-0.5 rounded">Failed</span>
+                <span className="bg-red-100 text-red-600 text-xs px-1.5 py-0.5 rounded">Failed</span>
               )}
               {transaction.status === "pending" && (
-                <span className="bg-yellow-500/20 text-yellow-500 text-xs px-1.5 py-0.5 rounded">Pending</span>
+                <span className="bg-yellow-100 text-yellow-600 text-xs px-1.5 py-0.5 rounded">Pending</span>
               )}
             </div>
             
-            <p className="text-white text-xs">
+            <p className="text-gray-600 text-xs">
               {format(new Date(transaction.date), "MMM d, yyyy · h:mm a")}
             </p>
           </div>
         </div>
         <div className="text-right">
-          <p className={`font-mono font-medium ${transaction.amount > 0 ? 'text-green-500' : transaction.type === 'withdraw' ? 'text-white' : 'text-accent'}`}>
+          <p className={`font-mono font-medium ${transaction.amount > 0 ? 'text-green-600' : transaction.type === 'withdraw' ? 'text-gray-800' : 'text-purple-700'}`}>
             {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
           </p>
           
           {/* Show round and number for bet and win transactions */}
           {(transaction.type === "bet" || transaction.type === "win") && transaction.metadata?.number && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500">
               #{transaction.metadata.number} · 
               {transaction.metadata.round === 1 ? "1st" : "2nd"} Round
             </p>
@@ -191,15 +191,15 @@ export default function TransactionHistory() {
   
   return (
     <>
-      <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
+      <div className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-200">
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-white font-poppins font-semibold">
+          <h2 className="text-gray-800 font-poppins font-semibold">
             {showAllTransactions ? "All Transactions" : "Recent Transactions"}
           </h2>
           <Button 
             variant="ghost" 
             size="sm"
-            className="text-xs text-accent hover:text-accent/80"
+            className="text-xs text-purple-700 hover:text-purple-800"
             onClick={() => {
               setShowAllTransactions(!showAllTransactions);
               setCurrentPage(1);
@@ -212,7 +212,7 @@ export default function TransactionHistory() {
         <div className="overflow-hidden">
           {isLoading ? (
             <div className="flex justify-center items-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-accent" />
+              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
             </div>
           ) : processedTransactions && processedTransactions.length > 0 ? (
             showAllTransactions ? (
@@ -225,25 +225,25 @@ export default function TransactionHistory() {
               </div>
             )
           ) : (
-            <div className="text-white text-center py-8">No transactions found</div>
+            <div className="text-gray-700 text-center py-8">No transactions found</div>
           )}
         </div>
         
         {/* Pagination controls - only show when viewing all transactions */}
         {showAllTransactions && totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-700">
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-200">
             <Button
               variant="ghost"
               size="sm"
               onClick={goToPrevPage}
               disabled={currentPage === 1}
-              className="text-white"
+              className="text-gray-700"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               Prev
             </Button>
             
-            <span className="text-sm text-white">
+            <span className="text-sm text-gray-700">
               Page {currentPage} of {totalPages}
             </span>
             
@@ -252,7 +252,7 @@ export default function TransactionHistory() {
               size="sm"
               onClick={goToNextPage}
               disabled={currentPage === totalPages}
-              className="text-white"
+              className="text-gray-700"
             >
               Next
               <ChevronRight className="h-4 w-4 ml-1" />
@@ -263,10 +263,10 @@ export default function TransactionHistory() {
       
       {/* Transaction detail modal */}
       <Dialog open={!!selectedTransaction} onOpenChange={(open) => !open && setSelectedTransaction(null)}>
-        <DialogContent className="bg-secondary text-white max-w-md">
+        <DialogContent className="bg-white text-gray-800 max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white font-poppins font-semibold text-lg">Transaction Details</DialogTitle>
-            <DialogDescription className="text-white">
+            <DialogTitle className="text-gray-800 font-poppins font-semibold text-lg">Transaction Details</DialogTitle>
+            <DialogDescription className="text-gray-600">
               Transaction ID: {selectedTransaction?.id}
             </DialogDescription>
           </DialogHeader>
@@ -274,56 +274,56 @@ export default function TransactionHistory() {
           {selectedTransaction && (
             <div className="space-y-4">
               <div className="flex justify-center mb-2">
-                <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
                   {getTransactionIcon(selectedTransaction.type)}
                 </div>
               </div>
               
               <div className="text-center">
-                <h3 className="text-white text-lg font-medium">{getTransactionTitle(selectedTransaction.type)}</h3>
-                <p className={`font-mono font-bold text-2xl mt-1 ${selectedTransaction.amount > 0 ? 'text-green-500' : selectedTransaction.type === 'withdraw' ? 'text-white' : 'text-accent'}`}>
+                <h3 className="text-gray-800 text-lg font-medium">{getTransactionTitle(selectedTransaction.type)}</h3>
+                <p className={`font-mono font-bold text-2xl mt-1 ${selectedTransaction.amount > 0 ? 'text-green-600' : selectedTransaction.type === 'withdraw' ? 'text-gray-800' : 'text-purple-700'}`}>
                   {selectedTransaction.amount > 0 ? '+' : ''}{formatCurrency(selectedTransaction.amount)}
                 </p>
-                <p className="text-white text-sm mt-1">
+                <p className="text-gray-600 text-sm mt-1">
                   {format(new Date(selectedTransaction.date), "MMMM d, yyyy 'at' h:mm a")}
                 </p>
               </div>
               
-              <div className="bg-gray-800 rounded-lg p-4 space-y-2">
+              <div className="bg-gray-50 rounded-lg p-4 space-y-2 border border-gray-200">
                 <div className="flex justify-between">
-                  <span className="text-white">Type:</span>
-                  <span className="text-white font-medium">{selectedTransaction.type}</span>
+                  <span className="text-gray-700">Type:</span>
+                  <span className="text-gray-800 font-medium capitalize">{selectedTransaction.type}</span>
                 </div>
                 
                 {(selectedTransaction.type === "bet" || selectedTransaction.type === "win") && (
                   <div className="flex justify-between">
-                    <span className="text-white">Number:</span>
-                    <span className="text-white font-medium">{selectedTransaction.metadata?.number || "N/A"}</span>
+                    <span className="text-gray-700">Number:</span>
+                    <span className="text-gray-800 font-medium">{selectedTransaction.metadata?.number || "N/A"}</span>
                   </div>
                 )}
                 
                 {(selectedTransaction.type === "bet" || selectedTransaction.type === "win") && (
                   <div className="flex justify-between">
-                    <span className="text-white">Round:</span>
-                    <span className="text-white font-medium">{selectedTransaction.metadata?.round === 1 ? "1st Round (15:30)" : selectedTransaction.metadata?.round === 2 ? "2nd Round (16:30)" : "N/A"}</span>
+                    <span className="text-gray-700">Round:</span>
+                    <span className="text-gray-800 font-medium">{selectedTransaction.metadata?.round === 1 ? "1st Round (15:30)" : selectedTransaction.metadata?.round === 2 ? "2nd Round (16:30)" : "N/A"}</span>
                   </div>
                 )}
                 
                 {selectedTransaction.type === "withdraw" && selectedTransaction.metadata?.method && (
                   <div className="flex justify-between">
-                    <span className="text-white">Method:</span>
-                    <span className="text-white font-medium capitalize">{selectedTransaction.metadata.method}</span>
+                    <span className="text-gray-700">Method:</span>
+                    <span className="text-gray-800 font-medium capitalize">{selectedTransaction.metadata.method}</span>
                   </div>
                 )}
                 
                 <div className="flex justify-between">
-                  <span className="text-white">Status:</span>
+                  <span className="text-gray-700">Status:</span>
                   {selectedTransaction.status === "failed" ? (
-                    <span className="text-red-500 font-medium">Failed</span>
+                    <span className="text-red-600 font-medium">Failed</span>
                   ) : selectedTransaction.status === "pending" ? (
-                    <span className="text-yellow-500 font-medium">Pending</span>
+                    <span className="text-yellow-600 font-medium">Pending</span>
                   ) : (
-                    <span className="text-green-500 font-medium">Completed</span>
+                    <span className="text-green-600 font-medium">Completed</span>
                   )}
                 </div>
               </div>

@@ -25,7 +25,7 @@ export default function PrivacyPolicy({ onBack }: PrivacyPolicyProps) {
           <Shield className="h-8 w-8 text-purple-700" />
         </div>
         <h3 className="text-lg font-medium text-gray-800">Shillong Teer India Privacy Policy</h3>
-        <p className="text-sm text-gray-500">Last Updated: May 13, 2025</p>
+        <p className="text-sm text-gray-500">Last Updated: March 30, 2025</p>
       </div>
       
       <div className="space-y-6 text-gray-700 text-sm overflow-y-auto pr-1 max-h-[65vh]">
@@ -181,9 +181,9 @@ export default function PrivacyPolicy({ onBack }: PrivacyPolicyProps) {
             If you have any questions about this Privacy Policy, please contact us:
           </p>
           <ul className="list-disc pl-6 space-y-1">
-            <li>By email: privacy@shillongteerindia.in</li>
-            <li>By phone: +91-9958992358</li>
-            <li>By mail: Shillong Teer India, 123 Main Street, Shillong, Meghalaya, 793001, India</li>
+            <li>By email: privacy@shillongteerindia.com</li>
+            <li>By phone: +91-9876543210</li>
+            <li>By mail: Privacy Officer, Shillong Teer India, 123 Main Street, Shillong, Meghalaya, 793001, India</li>
           </ul>
         </section>
       </div>

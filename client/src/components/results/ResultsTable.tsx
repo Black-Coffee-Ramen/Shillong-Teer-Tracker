@@ -12,6 +12,7 @@ export default function ResultsTable() {
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
   const [showAnalysis, setShowAnalysis] = useState<boolean>(false);
   const [notificationsShown, setNotificationsShown] = useState<string[]>([]);
+  const [resultsLimit, setResultsLimit] = useState<number>(10); // Number of results to display
   const { user } = useAuth();
   const { addNotification } = useNotification();
   
@@ -63,7 +64,7 @@ export default function ResultsTable() {
   const recentResults = results?.filter(result => {
     const resultDate = new Date(result.date);
     return format(resultDate, 'yyyy-MM-dd') !== selectedDate;
-  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
+  }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, resultsLimit);
   
   // Calculate frequent numbers from results data
   const frequentNumbers: Array<[number, number]> = useMemo(() => {
@@ -330,8 +331,21 @@ export default function ResultsTable() {
               </table>
             </div>
             
-            <button className="w-full border border-primary text-primary hover:bg-primary/5 py-2 rounded-lg mt-4 text-sm">
-              Load More Results
+            <button 
+              onClick={() => setResultsLimit(prev => prev + 10)}
+              className="w-full border border-purple-700 text-purple-700 hover:bg-purple-100 py-2 rounded-lg mt-4 text-sm flex items-center justify-center gap-2"
+              disabled={!results || results.length <= resultsLimit}
+            >
+              {results && results.length > resultsLimit ? (
+                <>
+                  <span>Load More Results</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </>
+              ) : (
+                <span>No More Results Available</span>
+              )}
             </button>
           </div>
           

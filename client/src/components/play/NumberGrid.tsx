@@ -60,32 +60,38 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
           </div>
         </div>
         
-        {/* Modern grid */}
+        {/* Modern grid with the pattern 00,10,20... in rows */}
         <div className="grid grid-cols-10 gap-1.5">
-          {Array.from({ length: 100 }, (_, i) => i).map(num => {
-            const isSelected = selectedNumbers.includes(num);
-            const isPreviouslyBet = previouslyBetNumbers.includes(num);
-            
-            return (
-              <button
-                key={num}
-                onClick={() => onNumberSelect(num)}
-                className={cn(
-                  "w-8 h-8 text-sm rounded flex items-center justify-center transition-colors relative",
-                  isSelected 
-                    ? "bg-primary text-white hover:bg-primary/90" 
-                    : isPreviouslyBet
-                      ? "bg-gray-100 text-gray-800 hover:bg-gray-200 border border-primary/30"
-                      : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                )}
-              >
-                {formatNumber(num)}
-                {isPreviouslyBet && !isSelected && (
-                  <span className="absolute -top-1 -right-1 bg-primary/60 rounded-full w-1.5 h-1.5"></span>
-                )}
-              </button>
-            );
-          })}
+          {Array.from({ length: 10 }, (_, row) => (
+            // For each row, create 10 columns (0-9) with the pattern
+            Array.from({ length: 10 }, (_, col) => {
+              // Calculate the number based on row and column
+              const num = row + (col * 10);
+              // Check if selected or previously bet
+              const isSelected = selectedNumbers.includes(num);
+              const isPreviouslyBet = previouslyBetNumbers.includes(num);
+              
+              return (
+                <button
+                  key={num}
+                  onClick={() => onNumberSelect(num)}
+                  className={cn(
+                    "w-8 h-8 text-sm rounded flex items-center justify-center transition-colors relative",
+                    isSelected 
+                      ? "bg-purple-700 text-white hover:bg-purple-800" 
+                      : isPreviouslyBet
+                        ? "bg-gray-100 text-gray-800 hover:bg-gray-200 border border-purple-300"
+                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                  )}
+                >
+                  {formatNumber(num)}
+                  {isPreviouslyBet && !isSelected && (
+                    <span className="absolute -top-1 -right-1 bg-purple-500 rounded-full w-1.5 h-1.5"></span>
+                  )}
+                </button>
+              );
+            })
+          )).flat()
         </div>
       </div>
       
