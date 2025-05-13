@@ -3,10 +3,11 @@ import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { useOfflineBets } from "@/hooks/use-offline-data";
 import NumberGrid from "@/components/play/NumberGrid";
 import BettingForm from "@/components/play/BettingForm";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, WifiOff } from "lucide-react";
 
 export default function PlayPage() {
   const [selectedRound, setSelectedRound] = useState<number>(1);
@@ -130,51 +131,71 @@ export default function PlayPage() {
   
   return (
     <div className="container mx-auto px-4 py-4">
-      {/* Round Selection Tabs - Simplified UI */}
-      <div className="flex mb-4 bg-gray-800 rounded-lg p-1">
-        <button 
-          className={cn(
-            "flex-1 py-2 rounded-md text-white",
-            selectedRound === 1 ? "bg-accent" : "bg-gray-700"
-          )}
-          onClick={() => setSelectedRound(1)}
-        >
-          <div className="text-center">
-            <p className="font-medium">Round 1 (15:30)</p>
-          </div>
-        </button>
-        <button 
-          className={cn(
-            "flex-1 py-2 rounded-md text-white ml-2",
-            selectedRound === 2 ? "bg-accent" : "bg-gray-700"
-          )}
-          onClick={() => setSelectedRound(2)}
-        >
-          <div className="text-center">
-            <p className="font-medium">Round 2 (16:30)</p>
-          </div>
-        </button>
+      {/* Page Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Place Your Bet</h1>
+        <p className="text-sm text-gray-500">Select your numbers and betting amount</p>
       </div>
-      
-      {/* Date/Time and Countdown - Simplified UI */}
-      <div className="bg-gray-800 rounded-xl p-4 mb-4 shadow-md">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            <Calendar className="h-5 w-5 text-accent mr-2" />
-            <p className="text-white">{formattedDate}</p>
-          </div>
-          <div className="flex items-center">
-            <Clock className="h-5 w-5 text-accent mr-2" />
-            <p className="text-white">{formattedTime}</p>
-          </div>
+
+      {/* Round Selection Tabs */}
+      <div className="card-modern p-5 mb-5">
+        <h3 className="section-title mb-3">Select Round</h3>
+        <div className="grid grid-cols-2 gap-4 mb-3">
+          <button 
+            className={cn(
+              "py-3 px-4 rounded-md text-sm font-medium flex items-center justify-center transition-colors",
+              selectedRound === 1 
+                ? "bg-primary text-white shadow-sm" 
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            )}
+            onClick={() => setSelectedRound(1)}
+          >
+            <div className="flex items-center">
+              <div className="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center mr-2">
+                <span className="font-medium">1</span>
+              </div>
+              <span>Round 1 (15:30)</span>
+            </div>
+          </button>
+          <button 
+            className={cn(
+              "py-3 px-4 rounded-md text-sm font-medium flex items-center justify-center transition-colors",
+              selectedRound === 2 
+                ? "bg-primary text-white shadow-sm" 
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            )}
+            onClick={() => setSelectedRound(2)}
+          >
+            <div className="flex items-center">
+              <div className="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center mr-2">
+                <span className="font-medium">2</span>
+              </div>
+              <span>Round 2 (16:30)</span>
+            </div>
+          </button>
         </div>
         
-        <div className="mt-3 p-3 rounded-lg bg-gray-700/50">
-          <div className="flex justify-between items-center">
-            <p className="text-white">Round {selectedRound} closes in:</p>
-            <p className={`font-mono font-bold text-xl ${
-              isSunday || isClosed ? 'text-red-400' :
-              isNearingClose ? 'text-yellow-400 animate-pulse' : 'text-white'
+        {/* Date/Time and Countdown */}
+        <div className="flex items-center justify-between rounded-md border border-gray-200 p-4 bg-gray-50">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center text-gray-600">
+              <Calendar className="h-4 w-4 text-gray-400 mr-1" />
+              <span className="text-sm">{formattedDate}</span>
+            </div>
+            <div className="flex items-center text-gray-600">
+              <Clock className="h-4 w-4 text-gray-400 mr-1" />
+              <span className="text-sm">{formattedTime}</span>
+            </div>
+          </div>
+          
+          <div className="flex flex-col items-end">
+            <p className="text-xs text-gray-500 mb-1">Round {selectedRound} closes in:</p>
+            <p className={`font-mono font-bold ${
+              isSunday || isClosed 
+                ? 'text-red-500' 
+                : isNearingClose 
+                  ? 'text-amber-500 animate-pulse' 
+                  : 'text-gray-800'
             }`}>
               {isSunday ? "CLOSED" : countdown}
             </p>
@@ -184,19 +205,25 @@ export default function PlayPage() {
       
       {/* Market Closed Message */}
       {isSunday ? (
-        <div className="bg-red-900/20 border border-red-800 rounded-xl p-6 mb-6 text-center">
-          <h3 className="text-white text-xl font-medium mb-2">Market Closed Today</h3>
-          <p className="text-white">Shillong Teer does not operate on Sundays.</p>
+        <div className="card-modern p-6 mb-6 text-center">
+          <div className="bg-amber-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Calendar className="h-6 w-6 text-amber-600" />
+          </div>
+          <h3 className="text-gray-800 text-lg font-medium mb-2">Market Closed Today</h3>
+          <p className="text-gray-600">Shillong Teer does not operate on Sundays.</p>
         </div>
       ) : (
         <>
           {/* Login Prompt (if not logged in) */}
           {!user ? (
-            <div className="bg-gray-800 rounded-xl p-6 mb-6 text-center">
-              <h3 className="text-white text-xl font-medium mb-3">Login Required</h3>
-              <p className="text-white mb-4">Please login to place bets and view your betting history.</p>
+            <div className="card-modern p-6 mb-6 text-center">
+              <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z"></path><circle cx="16.5" cy="7.5" r=".5"></circle></svg>
+              </div>
+              <h3 className="text-gray-800 text-xl font-medium mb-3">Login Required</h3>
+              <p className="text-gray-600 mb-4">Please login to place bets and view your betting history.</p>
               <Button 
-                className="bg-accent hover:bg-accent/90 text-white"
+                className="bg-primary hover:bg-primary/90 text-white"
                 onClick={() => navigate("/auth")}
               >
                 Login / Create Account
@@ -205,13 +232,10 @@ export default function PlayPage() {
           ) : (
             <>
               {/* Number Selection Grid */}
-              <div className="mb-4">
-                <h3 className="text-white text-lg font-medium mb-2">Select Numbers:</h3>
-                <NumberGrid 
-                  onNumberSelect={handleNumberSelect}
-                  selectedNumbers={selectedNumbers}
-                />
-              </div>
+              <NumberGrid 
+                onNumberSelect={handleNumberSelect}
+                selectedNumbers={selectedNumbers}
+              />
               
               {/* Direct Betting Form */}
               <BettingForm 

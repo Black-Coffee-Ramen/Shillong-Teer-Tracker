@@ -240,30 +240,34 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
   return (
     <>
       {isOffline && (
-        <div className="bg-orange-500/20 border border-orange-500 rounded-xl p-3 mb-4 flex items-center">
-          <WifiOff className="text-orange-500 mr-3 h-5 w-5" />
+        <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-5 flex items-center">
+          <div className="bg-amber-100 p-2 rounded-md mr-3">
+            <WifiOff className="text-amber-600 h-5 w-5" />
+          </div>
           <div>
-            <p className="text-white text-sm font-medium">You are currently offline</p>
-            <p className="text-gray-300 text-xs">Your bets will be saved locally and placed when you're back online.</p>
+            <p className="text-gray-800 text-sm font-medium">You are currently offline</p>
+            <p className="text-gray-600 text-xs">Your bets will be saved locally and placed when you're back online.</p>
           </div>
         </div>
       )}
       
       {!isOffline && pendingBets > 0 && (
-        <div className="bg-green-500/20 border border-green-500 rounded-xl p-3 mb-4 flex justify-between items-center">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-5 flex justify-between items-center">
           <div className="flex items-center">
-            <RefreshCw className="text-green-500 mr-3 h-5 w-5" />
+            <div className="bg-blue-100 p-2 rounded-md mr-3">
+              <RefreshCw className="text-blue-600 h-5 w-5" />
+            </div>
             <div>
-              <p className="text-white text-sm font-medium">
-                You have {pendingBets} offline {pendingBets === 1 ? 'bet' : 'bets'} pending
+              <p className="text-gray-800 text-sm font-medium">
+                {pendingBets} offline {pendingBets === 1 ? 'bet' : 'bets'} pending
               </p>
-              <p className="text-gray-300 text-xs">These will be synchronized automatically</p>
+              <p className="text-gray-600 text-xs">These will be synchronized automatically</p>
             </div>
           </div>
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-xs border-green-500 text-green-500 hover:bg-green-500/20"
+            className="text-xs bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
             onClick={triggerSync}
           >
             Sync Now
@@ -271,24 +275,26 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
         </div>
       )}
       
-      <div className="bg-secondary rounded-xl p-4 mb-4 shadow-md">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-white font-poppins font-semibold">Betting Amount</h2>
+      <div className="card-modern p-5 mb-5">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="section-title">Betting Amount</h3>
           {isOffline && (
-            <Badge variant="outline" className="text-orange-500 border-orange-500">
+            <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50">
               <WifiOff className="h-3 w-3 mr-1" /> Offline Mode
             </Badge>
           )}
         </div>
         
-        <div className="grid grid-cols-4 gap-2 mb-3">
+        <div className="grid grid-cols-4 gap-2 mb-4">
           {predefinedAmounts.map(predefinedAmount => (
             <button
               key={predefinedAmount}
               onClick={() => handleAmountSelect(predefinedAmount)}
               className={cn(
-                "bg-gray-800 hover:bg-gray-700 text-white py-2 rounded-md font-mono",
-                amount === predefinedAmount && "bg-accent hover:bg-accent/90"
+                "py-2 rounded-md text-sm font-medium transition-colors",
+                amount === predefinedAmount 
+                  ? "bg-primary text-white" 
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               )}
             >
               {formatCurrency(predefinedAmount)}
@@ -296,15 +302,15 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
           ))}
         </div>
         
-        <div className="flex items-center mt-4">
-          <p className="text-gray-400 text-sm mr-3">Custom Amount:</p>
+        <div className="flex items-center mb-5">
+          <p className="text-gray-700 text-sm font-medium mr-3 whitespace-nowrap">Custom:</p>
           <div className="relative flex-1">
             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">₹</span>
             <Input
               type="number"
               value={customAmount}
               onChange={handleCustomAmountChange}
-              className="w-full bg-gray-800 text-white py-2 pl-8 pr-3 rounded-md font-mono"
+              className="w-full bg-white border-gray-200 py-2 pl-8 pr-3 rounded-md"
               placeholder="Enter amount"
               min="5"
               max="10000"
@@ -312,14 +318,14 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
           </div>
         </div>
         
-        <div className="flex justify-between mt-4 bg-gray-800 p-3 rounded-lg">
-          <div>
-            <p className="text-gray-400 text-sm">Potential Winning:</p>
-            <p className="text-white font-mono">{formatCurrency(potentialWinning)}</p>
+        <div className="grid grid-cols-2 gap-4 mb-2">
+          <div className="bg-gray-50 p-3 rounded-md border border-gray-100">
+            <p className="text-gray-500 text-xs mb-1">Total Bet Amount</p>
+            <p className="text-gray-900 font-medium">{formatCurrency(totalBetAmount)}</p>
           </div>
-          <div className="text-right">
-            <p className="text-gray-400 text-sm">Total Bet Amount:</p>
-            <p className="text-white font-mono">{formatCurrency(totalBetAmount)}</p>
+          <div className="bg-blue-50 p-3 rounded-md border border-blue-100">
+            <p className="text-blue-600 text-xs mb-1">Potential Winning</p>
+            <p className="text-gray-900 font-medium">{formatCurrency(potentialWinning)}</p>
           </div>
         </div>
       </div>
@@ -328,43 +334,43 @@ export default function BettingForm({ selectedNumbers, selectedRound, onResetSel
         onClick={handlePlaceBet}
         disabled={!canPlaceBet}
         className={cn(
-          "w-full bg-accent hover:bg-accent/90 text-white py-3 rounded-xl font-poppins font-semibold flex items-center justify-center mb-6 h-14",
+          "w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-md font-medium flex items-center justify-center mb-6 h-12",
           !canPlaceBet && "opacity-50 cursor-not-allowed"
         )}
       >
         {placeBetMutation.isPending ? (
           <>
-            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
             Placing Bet...
           </>
         ) : isOffline ? (
           <>
-            <Save className="mr-2 h-5 w-5" />
+            <Save className="mr-2 h-4 w-4" />
             Save Bet Offline
           </>
         ) : (
           <>
-            <ArrowUpRight className="mr-2 h-5 w-5" />
-            Place Bet
+            <ArrowUpRight className="mr-2 h-4 w-4" />
+            Place Bet Now
           </>
         )}
       </Button>
       
       {/* AI Suggestions */}
-      <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-white font-poppins font-semibold flex items-center">
-            <span className="text-accent mr-2 text-lg">AI</span>
-            Analysis
-          </h2>
-          <button className="text-accent text-sm flex items-center">
-            Refresh <ArrowUpRight className="ml-1 h-3 w-3" />
+      <div className="card-modern p-5 mb-5">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="section-title flex items-center">
+            <span className="bg-primary/10 text-primary font-bold text-xs rounded-md px-1.5 py-0.5 mr-2">AI</span>
+            Smart Predictions
+          </h3>
+          <button className="text-primary text-sm font-medium flex items-center">
+            Refresh <RefreshCw className="ml-1 h-3 w-3" />
           </button>
         </div>
         
-        <div className="bg-gray-800 rounded-lg p-3">
-          <p className="text-white text-sm leading-relaxed">
-            Based on the last 7 days, numbers ending with <span className="text-white font-medium">3, 7, 8</span> appeared more frequently in Round {selectedRound}. Consider including them in your selection.
+        <div className="bg-gray-50 rounded-md p-4 border border-gray-100">
+          <p className="text-gray-700 text-sm leading-relaxed">
+            Based on the last 7 days, numbers ending with <span className="text-primary font-medium">3, 7, 8</span> appeared more frequently in Round {selectedRound}. Consider including them in your selection.
           </p>
         </div>
       </div>

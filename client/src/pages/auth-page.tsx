@@ -101,23 +101,30 @@ export default function AuthPage() {
   const registerErrors = registerForm.formState.errors;
 
   return (
-    <div className="min-h-screen bg-primary flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8 rounded-lg overflow-hidden">
         {/* Left side: Auth Form */}
-        <div className="bg-secondary p-8 rounded-lg shadow-lg">
-          <h1 className="text-2xl font-bold text-white mb-6 text-center">Shillong Teer</h1>
+        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
+          <div className="flex justify-center mb-6">
+            <div className="flex items-center">
+              <div className="bg-primary w-10 h-10 rounded-full flex items-center justify-center mr-2">
+                <span className="text-white font-bold text-xl">S</span>
+              </div>
+              <h1 className="text-xl font-bold text-gray-900">Shillong Teer</h1>
+            </div>
+          </div>
           
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 mb-8 bg-gray-100">
+              <TabsTrigger value="login" className="data-[state=active]:bg-white data-[state=active]:text-primary">Login</TabsTrigger>
+              <TabsTrigger value="register" className="data-[state=active]:bg-white data-[state=active]:text-primary">Register</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
               <Form {...loginForm}>
-                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-6">
+                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-5">
                   {loginMutation.error && (
-                    <div className="bg-destructive/20 text-destructive-foreground px-4 py-3 rounded-md text-sm" role="alert">
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-md text-sm border border-red-100" role="alert">
                       {loginMutation.error.message}
                     </div>
                   )}
@@ -127,16 +134,16 @@ export default function AuthPage() {
                     name="username"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white">Username</FormLabel>
+                        <FormLabel className="text-gray-700">Username</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="Enter your username" 
                             {...field} 
-                            className="bg-gray-800 border-gray-700 text-white" 
+                            className="border-gray-200 bg-white" 
                             autoComplete="username"
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -146,20 +153,20 @@ export default function AuthPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white">Password</FormLabel>
+                        <FormLabel className="text-gray-700">Password</FormLabel>
                         <div className="relative">
                           <FormControl>
                             <Input 
                               type={showLoginPassword ? "text" : "password"} 
                               placeholder="Enter your password" 
                               {...field} 
-                              className="bg-gray-800 border-gray-700 pr-10 text-white" 
+                              className="border-gray-200 bg-white pr-10" 
                               autoComplete="current-password"
                             />
                           </FormControl>
                           <button 
                             type="button"
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                             onClick={() => setShowLoginPassword(!showLoginPassword)}
                             aria-label={showLoginPassword ? "Hide password" : "Show password"}
                           >
@@ -170,18 +177,17 @@ export default function AuthPage() {
                             )}
                           </button>
                         </div>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
                   
                   {/* Login Disclaimer Notice */}
                   <div className="mt-2 mb-4">
-                    <div className="bg-gray-800/70 border border-yellow-600/30 rounded-md p-3">
-                      <div className="text-xs text-gray-300">
+                    <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+                      <div className="text-xs text-gray-600">
                         <p className="flex items-center mb-1">
-                          <span className="text-yellow-500 mr-1">⚠️</span>
-                          <span className="text-yellow-400 font-medium">Disclaimer</span>
+                          <span className="bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded text-xs font-medium mr-1">Notice</span>
                         </p>
                         <p>By logging in, you confirm that you are at least 18 years old and accept that this app is intended solely for participating in Shillong Teer, a legally recognized traditional archery-based game.</p>
                       </div>
@@ -190,7 +196,7 @@ export default function AuthPage() {
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-accent hover:bg-accent/90 text-white"
+                    className="w-full bg-primary hover:bg-primary/90 text-white py-2 h-11"
                     disabled={loginMutation.isPending || Object.keys(loginErrors).length > 0}
                   >
                     {loginMutation.isPending ? (
@@ -213,7 +219,7 @@ export default function AuthPage() {
               <Form {...registerForm}>
                 <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
                   {registerMutation.error && (
-                    <div className="bg-destructive/20 text-destructive-foreground px-4 py-3 rounded-md text-sm" role="alert">
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-md text-sm border border-red-100" role="alert">
                       {registerMutation.error.message}
                     </div>
                   )}
@@ -223,16 +229,16 @@ export default function AuthPage() {
                     name="username"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white">Username</FormLabel>
+                        <FormLabel className="text-gray-700">Username</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="Choose a username" 
                             {...field} 
-                            className="bg-gray-800 border-gray-700 text-white"
+                            className="border-gray-200 bg-white"
                             autoComplete="username"
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -242,20 +248,20 @@ export default function AuthPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white">Password</FormLabel>
+                        <FormLabel className="text-gray-700">Password</FormLabel>
                         <div className="relative">
                           <FormControl>
                             <Input 
                               type={showRegisterPassword ? "text" : "password"} 
                               placeholder="Create a password" 
-                              {...field} 
-                              className="bg-gray-800 border-gray-700 pr-10 text-white"
+                              {...field}
+                              className="border-gray-200 bg-white pr-10"
                               autoComplete="new-password"
                             />
                           </FormControl>
                           <button 
                             type="button"
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                             onClick={() => setShowRegisterPassword(!showRegisterPassword)}
                             aria-label={showRegisterPassword ? "Hide password" : "Show password"}
                           >
@@ -266,8 +272,8 @@ export default function AuthPage() {
                             )}
                           </button>
                         </div>
-                        <FormMessage />
-                        <p className="text-xs text-gray-400 mt-1">Must be at least 6 characters with letters and numbers</p>
+                        <FormMessage className="text-red-500" />
+                        <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters with letters and numbers</p>
                       </FormItem>
                     )}
                   />
@@ -277,16 +283,16 @@ export default function AuthPage() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white">Full Name (Optional)</FormLabel>
+                        <FormLabel className="text-gray-700">Full Name <span className="text-gray-400 text-xs">(Optional)</span></FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="Enter your full name" 
                             {...field} 
-                            className="bg-gray-800 border-gray-700 text-white"
+                            className="border-gray-200 bg-white"
                             autoComplete="name"
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -296,28 +302,28 @@ export default function AuthPage() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white">Email (Optional)</FormLabel>
+                        <FormLabel className="text-gray-700">Email <span className="text-gray-400 text-xs">(Optional)</span></FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="Enter your email" 
-                            {...field} 
-                            className="bg-gray-800 border-gray-700 text-white"
+                            {...field}
+                            className="border-gray-200 bg-white"
                             autoComplete="email"
                             type="email"
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-500" />
                       </FormItem>
                     )}
                   />
                   
                   {/* Disclaimer and Age Verification */}
                   <div className="mt-4 mb-4">
-                    <div className="bg-gray-800/70 border border-yellow-600/30 rounded-md p-4 mb-3">
-                      <h3 className="text-yellow-400 text-sm font-medium flex items-center mb-2">
-                        <span className="text-yellow-500 mr-1">⚠️</span> Disclaimer
+                    <div className="bg-gray-50 border border-gray-200 rounded-md p-4 mb-3">
+                      <h3 className="text-gray-700 text-sm font-medium flex items-center mb-2">
+                        <span className="bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded text-xs font-medium mr-2">Disclaimer</span>
                       </h3>
-                      <div className="text-xs text-gray-300 space-y-2">
+                      <div className="text-xs text-gray-600 space-y-2">
                         <p>This app is intended solely for participating in Shillong Teer, a legally recognized traditional archery-based number game.</p>
                         <p>Please note:</p>
                         <ul className="list-disc pl-4 space-y-1">
@@ -340,14 +346,14 @@ export default function AuthPage() {
                               type="checkbox"
                               checked={field.value}
                               onChange={field.onChange}
-                              className="mt-1"
+                              className="mt-1 rounded border-gray-300 text-primary"
                             />
                           </FormControl>
                           <div className="space-y-1 leading-none">
-                            <FormLabel className="text-sm text-gray-300">
+                            <FormLabel className="text-sm text-gray-600">
                               I am at least 18 years old and I accept the terms and disclaimer
                             </FormLabel>
-                            <FormMessage />
+                            <FormMessage className="text-red-500" />
                           </div>
                         </FormItem>
                       )}
@@ -356,7 +362,7 @@ export default function AuthPage() {
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-accent hover:bg-accent/90 text-white"
+                    className="w-full bg-primary hover:bg-primary/90 text-white py-2 h-11"
                     disabled={registerMutation.isPending || Object.keys(registerErrors).length > 0}
                   >
                     {registerMutation.isPending ? (
@@ -365,10 +371,10 @@ export default function AuthPage() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Creating Account...
+                        Creating account...
                       </div>
                     ) : (
-                      "Create Account"
+                      "Register"
                     )}
                   </Button>
                 </form>

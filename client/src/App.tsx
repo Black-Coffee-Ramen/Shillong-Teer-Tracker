@@ -15,6 +15,7 @@ import { ProtectedRoute } from "@/lib/protected-route";
 import AppLayout from "@/components/layout/AppLayout";
 import AudioFiles from "@/components/audio/AudioFiles";
 import OfflineDetector from "@/components/common/OfflineDetector";
+import OfflineIndicator from "@/components/common/OfflineIndicator";
 
 function Router() {
   return (
@@ -57,6 +58,7 @@ function App() {
           <AudioFiles />
           <NotificationContainer />
           <OfflineDetector />
+          <OfflineIndicator />
           <Toaster />
         </NotificationProvider>
       </AuthProvider>

@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useEffect } from "react";
 import {
   useQuery,
   useMutation,
@@ -7,6 +7,8 @@ import {
 import { insertUserSchema, User as SelectUser, InsertUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import * as localDB from "@/services/localDatabase";
+import * as syncService from "@/services/syncService";
 
 type AuthContextType = {
   user: SelectUser | null;
@@ -40,9 +42,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginMutation = useMutation<SelectUser, Error, LoginData>({
     mutationFn: async (credentials: LoginData) => {
       try {
-        // apiRequest already parses the JSON response
-        const userData = await apiRequest<SelectUser>("POST", "/api/login", credentials);
-        return userData;
+        // Try online login first
+        if (syncService.isOnline()) {
+          // apiRequest already parses the JSON response
+          const userData = await apiRequest<SelectUser>("POST", "/api/login", credentials);
+          
+          // Save user data to local database for offline use
+          await localDB.saveCurrentUser({
+            ...userData,
+            isLoggedIn: true
+          });
+          
+          return userData;
+        } else {
+          // Try offline login
+          const allUsers = await localDB.getAllFromStore<localDB.LocalUser>(localDB.STORES.USERS);
+          const user = allUsers.find(u => u.username === credentials.username);
+          
+          if (!user) {
+            throw new Error("Cannot login offline: User not found in local database.");
+          }
+          
+          // We don't have the password hash locally, so we're just checking username
+          // This is not secure, but allows basic offline functionality
+          // A real solution would require storing password hashes locally
+          
+          // Mark the user as logged in
+          await localDB.saveCurrentUser({
+            ...user,
+            isLoggedIn: true
+          });
+          
+          // Convert local user type to SelectUser type
+          return {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            name: user.name,
+            balance: user.balance,
+            password: "" // Add dummy password to match SelectUser type
+          } as SelectUser;
+        }
       } catch (error) {
         // Format the error message nicely for the user
         let message = (error as Error).message;
@@ -54,6 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           message = "Your session has expired. Please log in again.";
         } else if (message.includes("500")) {
           message = "We're experiencing technical difficulties. Please try again later.";
+        } else if (message.includes("offline")) {
+          message = "You're currently offline. Only previously logged-in users can access offline mode.";
         } else if (!message || message === "Failed to fetch") {
           message = "Network error. Please check your internet connection.";
         }
@@ -128,7 +170,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutMutation = useMutation<void, Error, void>({
     mutationFn: async () => {
       try {
-        await apiRequest("POST", "/api/logout");
+        // Try server logout if online
+        if (syncService.isOnline()) {
+          await apiRequest("POST", "/api/logout");
+        } else {
+          console.log("Offline logout - will sync when online");
+          // Add to sync queue for when we're back online
+          await syncService.addToSyncQueue("/api/logout", "POST");
+        }
+        
+        // Always log out locally regardless of online status
+        await localDB.logoutCurrentUser();
       } catch (error) {
         // Even if the logout fails server-side, we still want to clear local data
         console.error("Logout error (will still clear local session):", error);
@@ -136,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Clear local session data regardless of server response
         queryClient.setQueryData(["/api/user"], null);
         queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+        await localDB.logoutCurrentUser();
         
         // Check if this was a network error
         const errorMessage = (error as Error).message;

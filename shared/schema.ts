@@ -7,7 +7,9 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   email: text("email"),
+  phone: text("phone"),
   name: text("name"),
+  isVerified: boolean("is_verified").default(false),
   balance: integer("balance").default(0).notNull(),
 });
 
@@ -43,11 +45,23 @@ export const transactions = pgTable("transactions", {
   metadata: json("metadata").$type<Record<string, any>>(), // Additional data like bet number, round, etc.
 });
 
+export const otpCodes = pgTable("otp_codes", {
+  id: serial("id").primaryKey(),
+  phone: text("phone").notNull(),
+  email: text("email"),
+  code: text("code").notNull(),
+  type: text("type").notNull(), // registration, login, password-reset
+  expiresAt: timestamp("expires_at").notNull(),
+  isUsed: boolean("is_used").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
   email: true,
+  phone: true,
   name: true,
 });
 
@@ -76,13 +90,23 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   metadata: true,
 });
 
+export const insertOtpSchema = createInsertSchema(otpCodes).pick({
+  phone: true,
+  email: true,
+  code: true,
+  type: true,
+  expiresAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertBet = z.infer<typeof insertBetSchema>;
 export type InsertResult = z.infer<typeof insertResultSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+export type InsertOtp = z.infer<typeof insertOtpSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Bet = typeof bets.$inferSelect;
 export type Result = typeof results.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
+export type OtpCode = typeof otpCodes.$inferSelect;

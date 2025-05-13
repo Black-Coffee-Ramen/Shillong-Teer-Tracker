@@ -35,90 +35,95 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
     return num < 10 ? `0${num}` : `${num}`;
   };
   
-  // Create a 10x10 grid where columns are tens and rows are units
-  const renderNumberGrid = () => {
-    return (
-      <div className="w-full mx-auto overflow-hidden">
-        <table className="w-full border-collapse">
-          <tbody>
-            {/* Render rows (0-9 units) */}
-            {Array.from({ length: 10 }, (_, row) => (
-              <tr key={`row-${row}`}>
-                {/* Render columns (0-9 tens) */}
-                {Array.from({ length: 10 }, (_, col) => {
-                  const num = col * 10 + row;
-                  const isSelected = selectedNumbers.includes(num);
-                  const isPreviouslyBet = previouslyBetNumbers.includes(num);
-                  
-                  return (
-                    <td 
-                      key={`cell-${row}-${col}`}
-                      className="p-0 m-0"
-                      style={{ width: '10%', padding: 0 }}
-                    >
-                      <button
-                        onClick={() => onNumberSelect(num)}
-                        className={cn(
-                          "betting-number relative w-full bg-gray-800 hover:bg-gray-700 text-white rounded-md py-1.5 flex items-center justify-center font-mono transition-all",
-                          isSelected && "bg-orange-600 hover:bg-orange-700 border-2 border-orange-400",
-                          isPreviouslyBet && !isSelected && "border-2 border-green-500"
-                        )}
-                        style={{ width: '100%', height: '36px', minWidth: '30px' }}
-                      >
-                        <span>{formatNumber(num)}</span>
-                        {isPreviouslyBet && !isSelected && (
-                          <span className="absolute -top-1 -right-1 bg-green-500 rounded-full w-2 h-2"></span>
-                        )}
-                      </button>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-  
   return (
-    <div className="bg-secondary rounded-xl p-4 mb-4 shadow-md">
-      <h2 className="text-white font-poppins font-semibold mb-3">Select Your Number</h2>
+    <div className="bg-white rounded-lg p-5 mb-5 shadow-sm border border-gray-100">
+      <h3 className="text-gray-800 font-semibold mb-4 text-lg">Select Your Number</h3>
       
-      <div className="mb-4 overflow-x-auto">
-        {renderNumberGrid()}
+      <div className="mb-4 overflow-hidden">
+        {/* Selected indicators */}
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex -space-x-2">
+            {selectedNumbers.slice(0, 3).map(num => (
+              <div key={`indicator-${num}`} className="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-medium border-2 border-white">
+                {num}
+              </div>
+            ))}
+            {selectedNumbers.length > 3 && (
+              <div className="w-6 h-6 rounded-full bg-gray-100 text-gray-700 text-xs flex items-center justify-center font-medium border-2 border-white">
+                +{selectedNumbers.length - 3}
+              </div>
+            )}
+          </div>
+          
+          <div className="text-sm text-gray-500">
+            {selectedNumbers.length} selected
+          </div>
+        </div>
+        
+        {/* Modern grid */}
+        <div className="grid grid-cols-10 gap-1.5">
+          {Array.from({ length: 100 }, (_, i) => i).map(num => {
+            const isSelected = selectedNumbers.includes(num);
+            const isPreviouslyBet = previouslyBetNumbers.includes(num);
+            
+            return (
+              <button
+                key={num}
+                onClick={() => onNumberSelect(num)}
+                className={cn(
+                  "w-8 h-8 text-sm rounded flex items-center justify-center transition-colors relative",
+                  isSelected 
+                    ? "bg-primary text-white hover:bg-primary/90" 
+                    : isPreviouslyBet
+                      ? "bg-gray-100 text-gray-800 hover:bg-gray-200 border border-primary/30"
+                      : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                )}
+              >
+                {formatNumber(num)}
+                {isPreviouslyBet && !isSelected && (
+                  <span className="absolute -top-1 -right-1 bg-primary/60 rounded-full w-1.5 h-1.5"></span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
       
-      {/* Key for indicators */}
-      <div className="flex items-center gap-4 mb-4">
+      {/* Legend */}
+      <div className="flex items-center gap-6 mb-4 bg-gray-50 p-2 rounded-md">
         <div className="flex items-center">
-          <div className="w-4 h-4 bg-orange-600 border-2 border-orange-400 rounded-sm mr-2"></div>
-          <span className="text-white text-xs">Selected</span>
+          <div className="w-4 h-4 bg-primary rounded-sm mr-2"></div>
+          <span className="text-gray-600 text-xs">Selected</span>
         </div>
         <div className="flex items-center">
-          <div className="w-4 h-4 bg-gray-800 border-2 border-green-500 rounded-sm mr-2"></div>
-          <span className="text-white text-xs">Previously Bet</span>
+          <div className="w-4 h-4 bg-gray-100 border border-primary/30 rounded-sm mr-2 relative">
+            <span className="absolute -top-0.5 -right-0.5 bg-primary/60 rounded-full w-1.5 h-1.5"></span>
+          </div>
+          <span className="text-gray-600 text-xs">Previously Bet</span>
         </div>
       </div>
       
       {/* Selected Numbers */}
-      <div className="mt-4 mb-2">
-        <p className="text-white text-sm mb-2">Selected Numbers:</p>
+      <div className="mb-4 bg-gray-50 rounded-md p-3 border border-gray-100">
+        <p className="text-gray-700 text-sm font-medium mb-2">Selected Numbers:</p>
         <div className="flex flex-wrap gap-2">
           {selectedNumbers.length === 0 ? (
-            <div className="text-white text-sm italic">No numbers selected yet</div>
+            <div className="text-gray-400 text-sm italic">No numbers selected yet</div>
           ) : (
             selectedNumbers.map(num => (
-              <div key={num} className="bg-orange-600 border-2 border-orange-400 rounded-full px-3 py-1 text-white text-sm font-mono flex items-center">
+              <div key={num} className="bg-white border border-gray-200 rounded-md px-2 py-1 text-sm flex items-center">
                 {formatNumber(num)}
                 <button 
-                  className="ml-2 text-white text-xs"
+                  className="ml-2 text-gray-400 hover:text-red-500"
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent the grid button from being clicked
                     onNumberSelect(num);
                   }}
                 >
-                  ✕
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
                 </button>
               </div>
             ))
@@ -128,11 +133,11 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
       
       {/* Previously Bet Numbers */}
       {previouslyBetNumbers.length > 0 && (
-        <div className="mt-4">
-          <p className="text-white text-sm mb-2">Your Previously Bet Numbers:</p>
+        <div className="bg-gray-50 rounded-md p-3 border border-gray-100">
+          <p className="text-gray-700 text-sm font-medium mb-2">Your Previously Bet Numbers:</p>
           <div className="flex flex-wrap gap-2">
             {previouslyBetNumbers.map(num => (
-              <div key={`prev-${num}`} className="bg-gray-700 border border-green-500 rounded-full px-3 py-1 text-white text-sm font-mono">
+              <div key={`prev-${num}`} className="bg-white border border-gray-200 border-primary/20 rounded-md px-2 py-1 text-sm text-gray-600">
                 {formatNumber(num)}
               </div>
             ))}

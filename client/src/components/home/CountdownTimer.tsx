@@ -67,22 +67,29 @@ export default function CountdownTimer({ targetHour, targetMinute, label, roundN
   // Determine the right color for the countdown
   const getTimerColor = () => {
     if (isClosed) return "text-red-500";
-    if (isNearingClose) return "text-yellow-500"; 
-    return "text-white"; // Always use white for better visibility
+    if (isNearingClose) return "text-amber-500"; 
+    return "text-gray-800";
   };
   
   return (
-    <div className={`border ${isNearingClose ? 'border-yellow-500/50' : 'border-gray-700'} rounded-lg p-3 transition-all duration-300`}>
+    <div className={`
+      transition-all duration-300
+      ${isNearingClose ? 'bg-amber-50 border-amber-200' : ''}
+    `}>
       <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-white font-medium">Round {roundNumber}</h3>
-          <p className="text-gray-400 text-sm">{label}</p>
+        <div className="flex items-center">
+          {isNearingClose && (
+            <div className="w-2 h-2 bg-amber-500 rounded-full mr-2 animate-pulse"></div>
+          )}
+          {isClosed && (
+            <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+          )}
         </div>
         <div className="text-right">
-          <p className={`text-xs ${isNearingClose ? 'text-yellow-500 font-medium' : 'text-white'}`}>
+          <p className={`text-xs font-medium ${isNearingClose ? 'text-amber-600' : 'text-gray-500'}`}>
             {isClosed ? "Closed" : "Closes in"}
           </p>
-          <p className={`font-mono font-medium text-lg ${getTimerColor()} ${isNearingClose ? 'animate-pulse' : ''}`}>
+          <p className={`font-mono font-medium text-base ${getTimerColor()} ${isNearingClose ? 'animate-pulse' : ''}`}>
             {countdown}
           </p>
         </div>
