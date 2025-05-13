@@ -6,21 +6,21 @@ export default function LiveStream() {
   const channelUrl = "https://www.youtube.com/@Shillongteerlive129/streams";
   
   return (
-    <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
+    <div className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-200">
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-white font-semibold text-lg">Live Results</h2>
+        <h2 className="text-gray-800 font-semibold text-lg">Live Results</h2>
         <div className="flex items-center gap-2">
-          <span className="bg-red-500 bg-opacity-20 text-red-400 text-xs px-2 py-1 rounded-full flex items-center">
+          <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full flex items-center">
             <span className="w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></span>
             LIVE
           </span>
         </div>
       </div>
       
-      <div className="bg-gray-800 rounded-lg p-5 flex flex-col items-center justify-center text-center">
+      <div className="bg-gray-50 rounded-lg p-5 flex flex-col items-center justify-center text-center border border-gray-200">
         <Youtube className="h-12 w-12 text-red-500 mb-3" />
-        <h3 className="text-white font-medium mb-2">Watch Live Results on YouTube</h3>
-        <p className="text-gray-300 text-sm mb-4">
+        <h3 className="text-gray-800 font-medium mb-2">Watch Live Results on YouTube</h3>
+        <p className="text-gray-600 text-sm mb-4">
           View live draws and result announcements on the official Shillong Teer YouTube channel
         </p>
         
@@ -35,7 +35,7 @@ export default function LiveStream() {
         </Button>
       </div>
       
-      <p className="text-gray-300 text-xs text-center italic mt-3">
+      <p className="text-gray-500 text-xs text-center italic mt-3">
         The official Shillong Teer YouTube channel broadcasts live drawings and results daily.
       </p>
     </div>

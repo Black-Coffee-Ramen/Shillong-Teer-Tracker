@@ -174,11 +174,11 @@ export default function AISuggestions() {
   };
   
   return (
-    <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
+    <div className="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-200">
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-white font-semibold text-lg">AI Suggestions</h2>
+        <h2 className="text-gray-800 font-semibold text-lg">AI Suggestions</h2>
         <div className="flex items-center gap-1">
-          <span className="bg-blue-500 bg-opacity-20 text-blue-400 text-xs px-2 py-1 rounded-full">BETA</span>
+          <span className="bg-blue-100 text-blue-600 text-xs px-2 py-1 rounded-full">BETA</span>
         </div>
       </div>
       
@@ -222,31 +222,31 @@ export default function AISuggestions() {
         </Button>
       </div>
       
-      <div className="bg-gray-800 rounded-lg p-4 mb-3">
+      <div className="bg-gray-50 rounded-lg p-4 mb-3 border border-gray-200">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-4">
-            <Loader2 className="h-8 w-8 animate-spin text-accent mb-2" />
-            <p className="text-gray-400 text-sm">Analyzing patterns...</p>
+            <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+            <p className="text-gray-600 text-sm">Analyzing patterns...</p>
           </div>
         ) : (
           <div className="flex flex-col">
             <div className="flex items-start">
               <div className="w-full">
                 <div className="flex items-center justify-between">
-                  <p className="text-white text-sm font-medium">Today's Suggestion</p>
-                  <div className="bg-gray-700 px-2 py-1 rounded text-xs">
-                    <span className="text-green-400">{confidencePercentage}%</span> confidence
+                  <p className="text-gray-800 text-sm font-medium">Today's Suggestion</p>
+                  <div className="bg-primary/10 px-2 py-1 rounded text-xs">
+                    <span className="text-primary font-medium">{confidencePercentage}%</span> confidence
                   </div>
                 </div>
                 
                 {aiData?.description && (
                   <p 
-                    className="text-gray-300 text-xs mt-2 mb-3"
+                    className="text-gray-600 text-xs mt-2 mb-3"
                     dangerouslySetInnerHTML={{
                       __html: aiData.description.includes("numbers ending with")
                         ? aiData.description.replace(
                             /(\d+,\s*)*\d+/g, 
-                            match => `<span class="text-white font-medium">${match}</span>`
+                            match => `<span class="text-gray-800 font-medium">${match}</span>`
                           )
                         : aiData.description
                     }}
@@ -257,7 +257,7 @@ export default function AISuggestions() {
                   {aiData?.numbers.map(num => (
                     <span 
                       key={num} 
-                      className="bg-gray-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium"
+                      className="bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded-lg text-sm font-medium"
                     >
                       {num.toString().padStart(2, '0')}
                     </span>
@@ -268,7 +268,7 @@ export default function AISuggestions() {
                   <Button 
                     size="sm" 
                     variant="default" 
-                    className="bg-accent hover:bg-accent/90 text-xs w-full"
+                    className="bg-primary hover:bg-primary/90 text-xs w-full"
                     onClick={handleQuickBet}
                   >
                     Quick Bet
@@ -276,7 +276,7 @@ export default function AISuggestions() {
                   <Button 
                     size="sm" 
                     variant="outline" 
-                    className="text-xs w-full"
+                    className="text-xs w-full border-gray-300 text-gray-700 hover:bg-gray-50"
                     asChild
                   >
                     <Link href="/play">
@@ -290,7 +290,7 @@ export default function AISuggestions() {
         )}
       </div>
       
-      <p className="text-gray-300 text-xs text-center italic">
+      <p className="text-gray-500 text-xs text-center italic">
         AI predictions are based on historical data analysis and are not guarantees of winning results.
       </p>
     </div>
