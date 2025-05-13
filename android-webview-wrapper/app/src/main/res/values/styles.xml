@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme -->
+    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Primary brand color -->
+        <item name="android:colorPrimary">#FF6B00</item>
+        <!-- Darker variant of primary color -->
+        <item name="android:colorPrimaryDark">#D95A00</item>
+        <!-- Accent color -->
+        <item name="android:colorAccent">#FF6B00</item>
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">#D95A00</item>
+        <!-- Full screen mode -->
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+    </style>
+</resources>

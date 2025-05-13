@@ -16,9 +16,45 @@
  * It will generate an APK file in the dist/ directory
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { networkInterfaces } from 'os';
+
+// Get __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Determine the port being used by the server
+let port = 3000; // Default port
+const portFilePath = path.resolve(__dirname, '../.port');
+if (fs.existsSync(portFilePath)) {
+  try {
+    port = parseInt(fs.readFileSync(portFilePath, 'utf8').trim());
+    console.log(`Using detected server port: ${port}`);
+  } catch (error) {
+    console.warn('Warning: Could not read port file, using default port 3000');
+  }
+}
+
+// Get local IP address for LAN access
+function getLocalIpAddress() {
+  const nets = networkInterfaces();
+  
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      // Skip internal and non-IPv4 addresses
+      if (!net.internal && net.family === 'IPv4') {
+        return net.address;
+      }
+    }
+  }
+  return '127.0.0.1'; // Fallback to localhost
+}
+
+const localIp = getLocalIpAddress();
+console.log(`Local IP address: ${localIp}`);
 
 // Configuration
 const config = {
@@ -29,8 +65,8 @@ const config = {
   themeColor: '#FF6B00', // Updated to match your actual theme color
   display: 'standalone',
   orientation: 'portrait',
-  iconUrl: path.resolve(__dirname, '../public/icons/app-icon-512.png'),
-  publicUrl: 'https://shillongteerindia.app', // Change this to your production URL when deployed
+  iconUrl: path.resolve(__dirname, '../public/icons/icon-512x512.png'), // Updated to use the correct icon path
+  publicUrl: `http://${localIp}:${port}`, // Use local IP and detected port
   startUrl: '/',
   navigationColor: '#FF6B00',
   navigationColorDark: '#FF6B00',
@@ -39,6 +75,22 @@ const config = {
   version: '1.0.0',
   versionCode: 1,
   webManifestUrl: path.resolve(__dirname, '../public/manifest.json'),
+  fallbackType: 'customtabs', // Adding fallback to custom tabs for better offline experience
+  enableNotifications: true, // Enable push notifications
+  shortcuts: [
+    {
+      name: 'Play Now',
+      shortName: 'Play',
+      url: '/play',
+      icon: path.resolve(__dirname, '../public/icons/icon-96x96.png')
+    },
+    {
+      name: 'View Results',
+      shortName: 'Results',
+      url: '/results',
+      icon: path.resolve(__dirname, '../public/icons/icon-96x96.png')
+    }
+  ],
 };
 
 console.log('Starting Android APK build for Shillong Teer India...');

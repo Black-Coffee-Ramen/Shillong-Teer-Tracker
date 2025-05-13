@@ -82,9 +82,37 @@ The application follows a modern full-stack JavaScript architecture:
 
 ## Android APK Generation
 
-The platform can be converted to an Android APK using Bubblewrap CLI. Instructions are provided in:
+The platform can be converted to an Android APK using Bubblewrap CLI. We support two methods:
+
+### 1. Local APK (No Server Required)
+
+We've added a feature to build an APK that can run locally without requiring hosting on any external server. This is perfect for development and testing.
+
+Instructions are provided in:
+- `LOCAL-APK-GUIDE.md`
+
+Key features of the local APK:
+- Runs on your local network using your computer as server
+- No need for external hosting or domain
+- Built using the same Trusted Web Activity (TWA) technology
+- Full offline capabilities with service worker caching
+
+To build a local APK:
+```bash
+# Start the server
+npm run dev
+
+# Check your local IP address
+node scripts/get-local-ip.js
+
+# Build the APK
+./scripts/build-local-apk.sh
+```
+
+### 2. Standard Web APK (For Production)
+
+For production deployment, instructions are provided in:
 - `ANDROID-CONVERSION-GUIDE.md`
-- `PWA-APK-GUIDE.md`
 
 ## License
 

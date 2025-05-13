@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shillong Teer India</title>
+    <style>
+        :root {
+            --primary-color: #FF6B00;
+            --primary-dark: #D95A00;
+            --background-color: #121212;
+            --text-color: #FFFFFF;
+            --card-background: #1E1E1E;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        main {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        
+        .button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        
+        .button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        #status {
+            margin-top: 20px;
+            font-style: italic;
+        }
+        
+        #deviceInfo {
+            font-size: 14px;
+            margin-top: 10px;
+            color: #888;
+        }
+        
+        footer {
+            padding: 16px;
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+    <!-- Include our bridge script -->
+    <script src="pwa-bridge.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Shillong Teer India</h1>
+    </header>
+    
+    <main>
+        <div class="card">
+            <h2>WebView App Tester</h2>
+            <p>This page confirms that the Android WebView app is correctly loading your PWA content from the APK's assets.</p>
+            <p>When your complete web app is built and included in the assets folder, it will be loaded here instead of this test page.</p>
+            <button class="button" id="testButton">Test Native Features</button>
+            <div id="status"></div>
+            <div id="deviceInfo"></div>
+        </div>
+    </main>
+    
+    <footer>
+        &copy; 2023 Shillong Teer India. All rights reserved.
+    </footer>
+    
+    <script>
+        // Test if we're running in the Android app
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusElement = document.getElementById('status');
+            const deviceInfoElement = document.getElementById('deviceInfo');
+            const testButton = document.getElementById('testButton');
+            
+            // Display device info if available
+            if (window.TeerAppBridge && TeerAppBridge.isNativeApp) {
+                deviceInfoElement.textContent = 'Running on: ' + TeerAppBridge.getDeviceInfo();
+                statusElement.textContent = 'Native bridge detected! This app is running in the Android WebView.';
+            } else {
+                deviceInfoElement.textContent = 'Running in browser mode';
+                statusElement.textContent = 'Native bridge not detected. This is running in a regular browser.';
+            }
+            
+            // Add test button functionality
+            testButton.addEventListener('click', function() {
+                if (window.TeerAppBridge && TeerAppBridge.isNativeApp) {
+                    TeerAppBridge.showToast('Native toast message from WebView!');
+                    statusElement.textContent = 'Toast message sent!';
+                    
+                    // Test SQLite if available
+                    if (TeerAppBridge.isSQLiteAvailable) {
+                        TeerAppBridge.db.executeQuery("SELECT name FROM sqlite_master WHERE type='table';", [])
+                            .then(tables => {
+                                console.log('Available tables:', tables);
+                                statusElement.textContent = 'SQLite database is working! Check console for details.';
+                            })
+                            .catch(err => {
+                                console.error('SQLite error:', err);
+                                statusElement.textContent = 'SQLite test failed: ' + err.message;
+                            });
+                    }
+                } else {
+                    // Fallback for browser
+                    alert('This would show a native toast in the Android app');
+                    statusElement.textContent = 'Showing alert instead of native toast (browser mode)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

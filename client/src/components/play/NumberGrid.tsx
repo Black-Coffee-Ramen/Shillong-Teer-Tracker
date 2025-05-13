@@ -35,32 +35,58 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
     return num < 10 ? `0${num}` : `${num}`;
   };
   
+  // Create a 10x10 grid where columns are tens and rows are units
+  const renderNumberGrid = () => {
+    return (
+      <div className="w-full mx-auto overflow-hidden">
+        <table className="w-full border-collapse">
+          <tbody>
+            {/* Render rows (0-9 units) */}
+            {Array.from({ length: 10 }, (_, row) => (
+              <tr key={`row-${row}`}>
+                {/* Render columns (0-9 tens) */}
+                {Array.from({ length: 10 }, (_, col) => {
+                  const num = col * 10 + row;
+                  const isSelected = selectedNumbers.includes(num);
+                  const isPreviouslyBet = previouslyBetNumbers.includes(num);
+                  
+                  return (
+                    <td 
+                      key={`cell-${row}-${col}`}
+                      className="p-0 m-0"
+                      style={{ width: '10%', padding: 0 }}
+                    >
+                      <button
+                        onClick={() => onNumberSelect(num)}
+                        className={cn(
+                          "betting-number relative w-full bg-gray-800 hover:bg-gray-700 text-white rounded-md py-1.5 flex items-center justify-center font-mono transition-all",
+                          isSelected && "bg-orange-600 hover:bg-orange-700 border-2 border-orange-400",
+                          isPreviouslyBet && !isSelected && "border-2 border-green-500"
+                        )}
+                        style={{ width: '100%', height: '36px', minWidth: '30px' }}
+                      >
+                        <span>{formatNumber(num)}</span>
+                        {isPreviouslyBet && !isSelected && (
+                          <span className="absolute -top-1 -right-1 bg-green-500 rounded-full w-2 h-2"></span>
+                        )}
+                      </button>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+  
   return (
     <div className="bg-secondary rounded-xl p-4 mb-4 shadow-md">
       <h2 className="text-white font-poppins font-semibold mb-3">Select Your Number</h2>
       
-      <div className="grid grid-cols-5 gap-2 mb-4">
-        {Array.from({ length: 100 }, (_, i) => i).map(num => {
-          const isSelected = selectedNumbers.includes(num);
-          const isPreviouslyBet = previouslyBetNumbers.includes(num);
-          
-          return (
-            <button
-              key={num}
-              onClick={() => onNumberSelect(num)}
-              className={cn(
-                "betting-number relative bg-gray-800 hover:bg-gray-700 text-white rounded-md py-2 flex items-center justify-center font-mono transition-all",
-                isSelected && "bg-orange-600 hover:bg-orange-700 border-2 border-orange-400",
-                isPreviouslyBet && !isSelected && "border-2 border-green-500"
-              )}
-            >
-              <span>{formatNumber(num)}</span>
-              {isPreviouslyBet && !isSelected && (
-                <span className="absolute -top-1 -right-1 bg-green-500 rounded-full w-3 h-3"></span>
-              )}
-            </button>
-          );
-        })}
+      <div className="mb-4 overflow-x-auto">
+        {renderNumberGrid()}
       </div>
       
       {/* Key for indicators */}

@@ -1,6 +1,9 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 app.use(express.json());
@@ -56,15 +59,45 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  // Use port 3000 for local development and APK
+  // Try fallback ports if the primary port is in use
+  const tryPorts = [3000, 3001, 3002, 5000, 8080];
+  
+  const tryListen = (portIndex = 0) => {
+    if (portIndex >= tryPorts.length) {
+      log('All ports are in use. Please free up a port and try again.');
+      process.exit(1);
+      return;
+    }
+    
+    const port = tryPorts[portIndex];
+    server.listen({
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      log(`serving on port ${port}`);
+      // Save the successful port to a file for the APK build script to read
+      try {
+        // Get current directory
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        fs.writeFileSync(path.join(__dirname, '..', '.port'), port.toString());
+        log(`Port ${port} saved to .port file`);
+      } catch (err) {
+        log(`Could not save port to file: ${err}`);
+      }
+    }).on('error', (err) => {
+      // Using type assertion to handle the error code
+      const serverError = err as { code?: string };
+      if (serverError.code === 'EADDRINUSE') {
+        log(`Port ${port} is already in use, trying next port...`);
+        tryListen(portIndex + 1);
+      } else {
+        throw err;
+      }
+    });
+  };
+  
+  tryListen();
 })();
