@@ -397,17 +397,19 @@ export default function WalletCard() {
   
   return (
     <>
-      <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
-        <h2 className="text-white font-poppins font-semibold mb-4">E-Wallet</h2>
+      <div className="card-modern p-4 mb-6 shadow-sm">
+        <h2 className="text-gray-900 font-semibold mb-4">E-Wallet</h2>
         
-        <div className="bg-gradient-to-r from-secondary to-gray-800 rounded-lg py-4 px-4 mb-4 flex justify-between items-center">
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg py-4 px-4 mb-4 flex justify-between items-center border border-primary/20">
           <div>
-            <p className="text-gray-400 text-sm mb-1">Available Balance</p>
-            <p className="font-mono font-bold text-2xl text-white">
+            <p className="text-gray-600 text-sm mb-1">Available Balance</p>
+            <p className="font-mono font-bold text-2xl text-gray-900">
               {user ? formatCurrency(user.balance) : "Loading..."}
             </p>
           </div>
-          <i className="ri-wallet-3-line text-4xl text-accent opacity-50"></i>
+          <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h20v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3z"/><path d="M2 7h20"/></svg>
+          </div>
         </div>
         
         <div className="grid grid-cols-2 gap-3">
@@ -415,7 +417,7 @@ export default function WalletCard() {
             onClick={() => setIsDepositModalOpen(true)}
             className="bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium flex items-center justify-center"
           >
-            <i className="ri-add-line mr-1"></i> Deposit
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Deposit
           </Button>
           <Button
             onClick={() => {
@@ -433,29 +435,29 @@ export default function WalletCard() {
                 setIsWithdrawModalOpen(true);
               }
             }}
-            className="bg-accent hover:bg-accent/90 text-white py-2 rounded-lg font-medium flex items-center justify-center"
+            className="bg-primary hover:bg-primary/90 text-white py-2 rounded-lg font-medium flex items-center justify-center"
             disabled={!user || user.balance < 500}
           >
-            <i className="ri-arrow-right-up-line mr-1"></i> Withdraw
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg> Withdraw
           </Button>
         </div>
       </div>
       
       {/* Deposit Modal */}
       <Dialog open={isDepositModalOpen} onOpenChange={setIsDepositModalOpen}>
-        <DialogContent className="bg-secondary text-white">
+        <DialogContent className="bg-white text-gray-900">
           <DialogHeader>
-            <DialogTitle className="text-white font-poppins font-semibold text-lg">Deposit Funds</DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogTitle className="text-gray-900 font-semibold text-lg">Deposit Funds</DialogTitle>
+            <DialogDescription className="text-gray-600">
               Add funds to your wallet to place bets.
             </DialogDescription>
           </DialogHeader>
           
           <div className="mb-4">
-            <Label className="block text-gray-300 text-sm mb-2">Amount (₹)</Label>
+            <Label className="block text-gray-700 text-sm mb-2">Amount (₹)</Label>
             <Input
               type="number"
-              className="w-full bg-gray-800 text-white px-3 py-3 rounded-md font-mono"
+              className="w-full bg-white border border-gray-200 text-gray-900 px-3 py-3 rounded-md font-mono"
               placeholder="Enter amount"
               min="100"
               value={depositAmount}
@@ -465,32 +467,32 @@ export default function WalletCard() {
           </div>
           
           <div className="mb-4">
-            <Label className="block text-gray-300 text-sm mb-2">Payment Method</Label>
+            <Label className="block text-gray-700 text-sm mb-2">Payment Method</Label>
             <div className="grid grid-cols-2 gap-3">
-              <label className="bg-gray-800 rounded-md p-3 cursor-pointer flex items-center">
+              <label className="bg-gray-50 border border-gray-200 rounded-md p-3 cursor-pointer flex items-center hover:bg-gray-100">
                 <input 
                   type="radio" 
                   name="payment-method" 
-                  className="mr-2" 
+                  className="mr-2 accent-primary" 
                   checked={paymentMethod === "card"}
                   onChange={() => setPaymentMethod("card")}
                 />
                 <div className="flex items-center">
-                  <i className="ri-bank-card-line mr-2 text-accent"></i>
-                  <span className="text-white text-sm">Card</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-primary"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                  <span className="text-gray-800 text-sm">Card</span>
                 </div>
               </label>
-              <label className="bg-gray-800 rounded-md p-3 cursor-pointer flex items-center">
+              <label className="bg-gray-50 border border-gray-200 rounded-md p-3 cursor-pointer flex items-center hover:bg-gray-100">
                 <input 
                   type="radio" 
                   name="payment-method" 
-                  className="mr-2"
+                  className="mr-2 accent-primary"
                   checked={paymentMethod === "upi"}
                   onChange={() => setPaymentMethod("upi")}
                 />
                 <div className="flex items-center">
-                  <i className="ri-bank-line mr-2 text-accent"></i>
-                  <span className="text-white text-sm">UPI</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-primary"><path d="M6 9H4.5a2.5 2.5 0 0 0 0 5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 1 0 5H18"/><path d="M8 9v7"/><path d="M16 9v7"/><path d="M12 12V9"/><path d="M12 18v-6"/></svg>
+                  <span className="text-gray-800 text-sm">UPI</span>
                 </div>
               </label>
             </div>
@@ -498,7 +500,7 @@ export default function WalletCard() {
           
           <div className="mb-4 mt-2">
             <div className="flex justify-center mb-2">
-              <div className="bg-gray-800 rounded-md p-2 inline-block">
+              <div className="bg-white border border-gray-200 rounded-md p-2 inline-block">
                 <img 
                   src="https://i.postimg.cc/kGPKcVYZ/razorpay-logo.png" 
                   alt="Razorpay" 
@@ -508,17 +510,17 @@ export default function WalletCard() {
             </div>
             
             {import.meta.env.DEV && (
-              <div className="flex items-center justify-between mt-3 px-1 text-xs text-gray-400">
+              <div className="flex items-center justify-between mt-3 px-1 text-xs text-gray-600">
                 <span>Use test mode (without Razorpay)</span>
                 <div 
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${useTestMode ? 'bg-green-600' : 'bg-gray-700'}`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${useTestMode ? 'bg-green-600' : 'bg-gray-300'}`}
                   onClick={() => setUseTestMode(!useTestMode)}
                   role="switch"
                   aria-checked={useTestMode}
                   tabIndex={0}
                 >
                   <span 
-                    className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${useTestMode ? 'translate-x-6' : 'translate-x-1'}`} 
+                    className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${useTestMode ? 'translate-x-6' : 'translate-x-1'}`} 
                   />
                 </div>
               </div>
@@ -533,7 +535,7 @@ export default function WalletCard() {
             >
               {depositMutation.isPending || createOrderMutation.isPending || verifyPaymentMutation.isPending ? (
                 <>
-                  <i className="ri-loader-4-line animate-spin mr-2"></i>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                   {createOrderMutation.isPending ? "Initializing payment..." : 
                    verifyPaymentMutation.isPending ? "Verifying payment..." : "Processing..."}
                 </>
@@ -548,19 +550,19 @@ export default function WalletCard() {
       
       {/* Withdraw Modal */}
       <Dialog open={isWithdrawModalOpen} onOpenChange={setIsWithdrawModalOpen}>
-        <DialogContent className="bg-secondary text-white">
+        <DialogContent className="bg-white text-gray-900">
           <DialogHeader>
-            <DialogTitle className="text-white font-poppins font-semibold text-lg">Withdraw Funds</DialogTitle>
-            <DialogDescription className="text-gray-400">
+            <DialogTitle className="text-gray-900 font-semibold text-lg">Withdraw Funds</DialogTitle>
+            <DialogDescription className="text-gray-600">
               Withdraw funds from your wallet to your bank account.
             </DialogDescription>
           </DialogHeader>
           
           <div className="mb-4">
-            <Label className="block text-gray-300 text-sm mb-2">Amount (₹)</Label>
+            <Label className="block text-gray-700 text-sm mb-2">Amount (₹)</Label>
             <Input
               type="number"
-              className="w-full bg-gray-800 text-white px-3 py-3 rounded-md font-mono"
+              className="w-full bg-white border border-gray-200 text-gray-900 px-3 py-3 rounded-md font-mono"
               placeholder="Enter amount"
               min="500"
               max={user?.balance || 0}
@@ -570,40 +572,41 @@ export default function WalletCard() {
             <p className="text-gray-500 text-xs mt-1">Minimum withdrawal: ₹500</p>
             
             {/* Information about withdrawal restriction */}
-            <div className="mt-2 bg-gray-800/50 border border-yellow-600/30 rounded-md p-2">
-              <p className="text-xs text-gray-300">
-                <span className="text-yellow-500">ℹ️</span> Withdrawals are restricted for 2 hours after any win to prevent fraud and ensure compliance with regulations.
+            <div className="mt-2 bg-amber-50 border border-amber-200 rounded-md p-2">
+              <p className="text-xs text-amber-800">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block mr-1"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Withdrawals are restricted for 2 hours after any win to prevent fraud and ensure compliance with regulations.
               </p>
             </div>
           </div>
           
           <div className="mb-4">
-            <Label className="block text-gray-300 text-sm mb-2">Withdrawal Method</Label>
+            <Label className="block text-gray-700 text-sm mb-2">Withdrawal Method</Label>
             <div className="grid grid-cols-2 gap-3">
-              <label className="bg-gray-800 rounded-md p-3 cursor-pointer flex items-center">
+              <label className="bg-gray-50 border border-gray-200 rounded-md p-3 cursor-pointer flex items-center hover:bg-gray-100">
                 <input 
                   type="radio" 
                   name="withdrawal-method" 
-                  className="mr-2" 
+                  className="mr-2 accent-primary" 
                   checked={withdrawalMethod === "bank"}
                   onChange={() => setWithdrawalMethod("bank")}
                 />
                 <div className="flex items-center">
-                  <i className="ri-bank-line mr-2 text-accent"></i>
-                  <span className="text-white text-sm">Bank Transfer</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-primary"><path d="M3 9l9-6 9 6"/><path d="M21 9v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9"/><path d="M12 14v3"/><path d="M8 14v3"/><path d="M16 14v3"/></svg>
+                  <span className="text-gray-800 text-sm">Bank Transfer</span>
                 </div>
               </label>
-              <label className="bg-gray-800 rounded-md p-3 cursor-pointer flex items-center">
+              <label className="bg-gray-50 border border-gray-200 rounded-md p-3 cursor-pointer flex items-center hover:bg-gray-100">
                 <input 
                   type="radio" 
                   name="withdrawal-method" 
-                  className="mr-2"
+                  className="mr-2 accent-primary"
                   checked={withdrawalMethod === "upi"}
                   onChange={() => setWithdrawalMethod("upi")}
                 />
                 <div className="flex items-center">
-                  <i className="ri-secure-payment-line mr-2 text-accent"></i>
-                  <span className="text-white text-sm">UPI</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-primary"><path d="M6 9H4.5a2.5 2.5 0 0 0 0 5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 1 0 5H18"/><path d="M8 9v7"/><path d="M16 9v7"/><path d="M12 12V9"/><path d="M12 18v-6"/></svg>
+                  <span className="text-gray-800 text-sm">UPI</span>
                 </div>
               </label>
             </div>
@@ -612,28 +615,28 @@ export default function WalletCard() {
           {withdrawalMethod === "bank" ? (
             <div className="mb-4 space-y-3">
               <div>
-                <Label className="block text-gray-300 text-sm mb-2">Account Holder Name</Label>
+                <Label className="block text-gray-700 text-sm mb-2">Account Holder Name</Label>
                 <Input
-                  className="w-full bg-gray-800 text-white px-3 py-3 rounded-md"
+                  className="w-full bg-white border border-gray-200 text-gray-900 px-3 py-3 rounded-md"
                   placeholder="Enter name as per bank account"
                   value={bankDetails.accountName}
                   onChange={(e) => setBankDetails({...bankDetails, accountName: e.target.value})}
                 />
               </div>
               <div>
-                <Label className="block text-gray-300 text-sm mb-2">Account Number</Label>
+                <Label className="block text-gray-700 text-sm mb-2">Account Number</Label>
                 <Input
-                  className="w-full bg-gray-800 text-white px-3 py-3 rounded-md font-mono"
+                  className="w-full bg-white border border-gray-200 text-gray-900 px-3 py-3 rounded-md font-mono"
                   placeholder="Enter account number"
                   value={bankDetails.accountNumber}
                   onChange={(e) => setBankDetails({...bankDetails, accountNumber: e.target.value})}
                 />
               </div>
               <div>
-                <Label className="block text-gray-300 text-sm mb-2">IFSC Code</Label>
+                <Label className="block text-gray-700 text-sm mb-2">IFSC Code</Label>
                 <Input
-                  className="w-full bg-gray-800 text-white px-3 py-3 rounded-md font-mono uppercase"
-                  placeholder="Enter IFSC code"
+                  className="w-full bg-white border border-gray-200 text-gray-900 px-3 py-3 rounded-md font-mono uppercase"
+                  placeholder="Enter IFSC code (e.g., SBIN0001234)"
                   value={bankDetails.ifscCode}
                   onChange={(e) => setBankDetails({...bankDetails, ifscCode: e.target.value.toUpperCase()})}
                 />
@@ -641,9 +644,9 @@ export default function WalletCard() {
             </div>
           ) : (
             <div className="mb-4">
-              <Label className="block text-gray-300 text-sm mb-2">UPI ID</Label>
+              <Label className="block text-gray-700 text-sm mb-2">UPI ID</Label>
               <Input
-                className="w-full bg-gray-800 text-white px-3 py-3 rounded-md font-mono"
+                className="w-full bg-white border border-gray-200 text-gray-900 px-3 py-3 rounded-md font-mono"
                 placeholder="Enter UPI ID (e.g., name@upi)"
                 value={upiId}
                 onChange={(e) => setUpiId(e.target.value)}
@@ -654,12 +657,12 @@ export default function WalletCard() {
           <DialogFooter>
             <Button
               onClick={handleWithdraw}
-              className="w-full bg-accent hover:bg-accent/90 text-white py-3 rounded-lg font-medium mb-3"
+              className="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg font-medium mb-3"
               disabled={withdrawMutation.isPending}
             >
               {withdrawMutation.isPending ? (
                 <>
-                  <i className="ri-loader-4-line animate-spin mr-2"></i>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                   Processing...
                 </>
               ) : (

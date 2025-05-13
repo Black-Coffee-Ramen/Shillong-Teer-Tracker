@@ -142,11 +142,11 @@ export default function ProfilePage() {
           <Button 
             variant="outline" 
             onClick={() => setCurrentView('main')}
-            className="text-white"
+            className="text-gray-800 border-gray-300 hover:bg-gray-50"
           >
             &larr; Back to Profile
           </Button>
-          <h1 className="text-2xl font-semibold text-white mt-4 mb-6">Admin Dashboard</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 mt-4 mb-6">Admin Dashboard</h1>
         </div>
         <ResultsManager />
       </div>
@@ -157,23 +157,23 @@ export default function ProfilePage() {
   return (
     <div className="container mx-auto px-4 py-4">
       {/* User Profile */}
-      <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
+      <div className="card-modern p-4 mb-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
-            <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center text-white text-xl font-poppins mr-4">
+            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-xl font-medium mr-4">
               {getInitials()}
             </div>
             <div>
-              <h2 className="text-white font-poppins font-semibold">{user.name || user.username}</h2>
-              <p className="text-gray-400 text-sm">{user.email || `@${user.username}`}</p>
+              <h2 className="text-gray-900 font-semibold">{user.name || user.username}</h2>
+              <p className="text-gray-600 text-sm">{user.email || `@${user.username}`}</p>
             </div>
           </div>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="text-accent hover:text-accent/80"
+            className="text-primary hover:bg-primary/5 border-primary/20"
           >
             <RefreshCw className={`h-4 w-4 mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
             {isRefreshing ? 'Refreshing...' : 'Refresh'}
@@ -181,24 +181,24 @@ export default function ProfilePage() {
         </div>
         
         <div className="grid grid-cols-2 gap-3 mb-2">
-          <div className="bg-gray-800 rounded-lg p-3 text-center">
-            <p className="text-gray-400 text-xs mb-1">Total Bets</p>
+          <div className="bg-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
+            <p className="text-gray-600 text-xs mb-1">Total Bets</p>
             {isLoadingBets ? (
               <div className="flex justify-center">
-                <Loader2 className="h-5 w-5 animate-spin text-white" />
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
               </div>
             ) : (
-              <p className="font-mono font-bold text-xl text-white">{totalBets}</p>
+              <p className="font-mono font-bold text-xl text-gray-900">{totalBets}</p>
             )}
           </div>
-          <div className="bg-gray-800 rounded-lg p-3 text-center">
-            <p className="text-gray-400 text-xs mb-1">Wins</p>
+          <div className="bg-white border border-gray-200 rounded-lg p-3 text-center shadow-sm">
+            <p className="text-gray-600 text-xs mb-1">Wins</p>
             {isLoadingBets ? (
               <div className="flex justify-center">
-                <Loader2 className="h-5 w-5 animate-spin text-green-500" />
+                <Loader2 className="h-5 w-5 animate-spin text-green-600" />
               </div>
             ) : (
-              <p className="font-mono font-bold text-xl text-green-500">{wins}</p>
+              <p className="font-mono font-bold text-xl text-green-600">{wins}</p>
             )}
           </div>
         </div>
@@ -211,52 +211,52 @@ export default function ProfilePage() {
       <TransactionHistory />
       
       {/* Settings & Logout */}
-      <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
-        <div className="divide-y divide-gray-700">
+      <div className="card-modern p-4 mb-6 shadow-sm">
+        <div className="divide-y divide-gray-200">
           <button 
-            className="w-full py-3 flex justify-between items-center text-white"
+            className="w-full py-3 flex justify-between items-center text-gray-800 hover:bg-gray-50 rounded-md"
             onClick={() => setCurrentView('settings')}
           >
             <div className="flex items-center">
-              <Settings className="h-5 w-5 mr-3 text-accent" />
+              <Settings className="h-5 w-5 mr-3 text-primary" />
               <span>Account Settings</span>
             </div>
-            <span className="text-gray-500">&rarr;</span>
+            <span className="text-gray-400">&rarr;</span>
           </button>
           
           <button 
-            className="w-full py-3 flex justify-between items-center text-white"
+            className="w-full py-3 flex justify-between items-center text-gray-800 hover:bg-gray-50 rounded-md"
             onClick={() => setCurrentView('support')}
           >
             <div className="flex items-center">
-              <HelpCircle className="h-5 w-5 mr-3 text-accent" />
+              <HelpCircle className="h-5 w-5 mr-3 text-primary" />
               <span>Help & Support</span>
             </div>
-            <span className="text-gray-500">&rarr;</span>
+            <span className="text-gray-400">&rarr;</span>
           </button>
           
           <button 
-            className="w-full py-3 flex justify-between items-center text-white"
+            className="w-full py-3 flex justify-between items-center text-gray-800 hover:bg-gray-50 rounded-md"
             onClick={() => setCurrentView('privacy')}
           >
             <div className="flex items-center">
-              <Shield className="h-5 w-5 mr-3 text-accent" />
+              <Shield className="h-5 w-5 mr-3 text-primary" />
               <span>Privacy Policy</span>
             </div>
-            <span className="text-gray-500">&rarr;</span>
+            <span className="text-gray-400">&rarr;</span>
           </button>
           
           {/* Admin button - only show for admin users */}
           {user.username === 'admin' && (
             <button 
-              className="w-full py-3 flex justify-between items-center text-white"
+              className="w-full py-3 flex justify-between items-center text-gray-800 hover:bg-gray-50 rounded-md"
               onClick={() => setCurrentView('admin')}
             >
               <div className="flex items-center">
-                <Database className="h-5 w-5 mr-3 text-accent" />
+                <Database className="h-5 w-5 mr-3 text-primary" />
                 <span>Admin Dashboard</span>
               </div>
-              <span className="text-gray-500">&rarr;</span>
+              <span className="text-gray-400">&rarr;</span>
             </button>
           )}
           
@@ -264,7 +264,7 @@ export default function ProfilePage() {
             variant="ghost"
             onClick={handleLogout}
             disabled={logoutMutation.isPending}
-            className="w-full py-3 flex items-center justify-start text-red-500 hover:text-red-400"
+            className="w-full py-3 flex items-center justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
           >
             {logoutMutation.isPending ? (
               <Loader2 className="h-5 w-5 mr-3 animate-spin" />

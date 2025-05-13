@@ -288,6 +288,7 @@ export default function ResultsManager() {
       toast({
         title: "Success",
         description: `Processed ${data.totalWins} wins successfully`,
+        className: "bg-white border border-gray-200 text-gray-800"
       });
       setProcessingWins(false);
     },
@@ -296,6 +297,7 @@ export default function ResultsManager() {
         variant: "destructive",
         title: "Error",
         description: error.message || "Failed to process wins",
+        className: "bg-white border border-red-200 text-red-800"
       });
       setProcessingWins(false);
     }
@@ -316,15 +318,15 @@ export default function ResultsManager() {
   };
   
   return (
-    <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
+    <div className="bg-white rounded-lg p-4 mb-6 shadow-sm border border-gray-200">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-white text-lg font-semibold">Teer Results Manager</h2>
+        <h2 className="text-gray-800 text-lg font-semibold">Teer Results Manager</h2>
         <div className="flex space-x-2">
           <Button 
             variant="outline" 
             size="sm"
             onClick={handleExportCsv}
-            className="text-xs"
+            className="text-xs border-gray-200 text-gray-700 hover:bg-gray-50"
           >
             <Download className="h-3 w-3 mr-1" /> Export CSV
           </Button>
@@ -332,7 +334,7 @@ export default function ResultsManager() {
             variant="outline" 
             size="sm"
             onClick={() => setIsImporting(!isImporting)}
-            className="text-xs"
+            className="text-xs border-gray-200 text-gray-700 hover:bg-gray-50"
           >
             <Upload className="h-3 w-3 mr-1" /> {isImporting ? "Cancel Import" : "Import CSV"}
           </Button>
@@ -341,21 +343,21 @@ export default function ResultsManager() {
       
       {/* CSV Import Section */}
       {isImporting && (
-        <div className="bg-gray-800 p-3 rounded-md mb-4">
-          <h3 className="text-white text-sm font-medium mb-2">Import Results from CSV</h3>
-          <p className="text-gray-400 text-xs mb-2">
+        <div className="bg-white p-4 rounded-md mb-4 border border-gray-200 shadow-sm">
+          <h3 className="text-gray-800 text-sm font-medium mb-2">Import Results from CSV</h3>
+          <p className="text-gray-600 text-xs mb-2">
             Paste CSV data with columns: Date, F/R, S/R (formats: DD-MM-YYYY or YYYY-MM-DD)
           </p>
           <textarea 
             value={csvData}
             onChange={(e) => setCsvData(e.target.value)}
-            className="w-full bg-gray-900 text-white rounded-md p-2 text-sm font-mono h-24 mb-2"
+            className="w-full bg-white border border-gray-200 text-gray-800 rounded-md p-2 text-sm font-mono h-24 mb-2"
             placeholder="Date,F/R,S/R"
           />
           <Button
             onClick={handleCsvImport}
             size="sm"
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full bg-primary hover:bg-primary/90 text-white"
             disabled={!csvData.trim()}
           >
             <Save className="h-3 w-3 mr-1" /> Import Data
@@ -364,46 +366,46 @@ export default function ResultsManager() {
       )}
       
       {/* Add New Result Section */}
-      <div className="bg-gray-800 p-3 rounded-md mb-4">
-        <h3 className="text-white text-sm font-medium mb-2">Add New Result</h3>
-        <div className="grid grid-cols-3 gap-2">
+      <div className="bg-white p-4 rounded-md mb-4 border border-gray-200 shadow-sm">
+        <h3 className="text-gray-800 text-sm font-medium mb-2">Add New Result</h3>
+        <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="text-gray-400 text-xs">Date</label>
+            <label className="text-gray-600 text-xs mb-1 block">Date</label>
             <Input 
               type="date"
               value={newResult.date}
               onChange={(e) => setNewResult({...newResult, date: e.target.value})}
-              className="bg-gray-900 text-white"
+              className="bg-white border border-gray-200 text-gray-800"
             />
           </div>
           <div>
-            <label className="text-gray-400 text-xs">First Round</label>
+            <label className="text-gray-600 text-xs mb-1 block">First Round</label>
             <Input 
               type="number"
               min="0"
               max="99"
               value={newResult.round1 === null ? '' : newResult.round1}
               onChange={(e) => setNewResult({...newResult, round1: e.target.value ? parseInt(e.target.value) : null})}
-              className="bg-gray-900 text-white"
+              className="bg-white border border-gray-200 text-gray-800"
               placeholder="--"
             />
           </div>
           <div>
-            <label className="text-gray-400 text-xs">Second Round</label>
+            <label className="text-gray-600 text-xs mb-1 block">Second Round</label>
             <Input 
               type="number"
               min="0"
               max="99"
               value={newResult.round2 === null ? '' : newResult.round2}
               onChange={(e) => setNewResult({...newResult, round2: e.target.value ? parseInt(e.target.value) : null})}
-              className="bg-gray-900 text-white"
+              className="bg-white border border-gray-200 text-gray-800"
               placeholder="--"
             />
           </div>
         </div>
         <Button
           onClick={handleCreateResult}
-          className="w-full mt-3 bg-blue-600 hover:bg-blue-700"
+          className="w-full mt-3 bg-primary hover:bg-primary/90 text-white"
           disabled={!newResult.date}
         >
           <Plus className="h-4 w-4 mr-1" /> Add Result
@@ -414,23 +416,25 @@ export default function ResultsManager() {
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="border-gray-700">
-              <TableHead className="text-white">Date</TableHead>
-              <TableHead className="text-white">First Round</TableHead>
-              <TableHead className="text-white">Second Round</TableHead>
-              <TableHead className="text-white text-right">Actions</TableHead>
+            <TableRow className="border-gray-200">
+              <TableHead className="text-gray-700">Date</TableHead>
+              <TableHead className="text-gray-700">First Round</TableHead>
+              <TableHead className="text-gray-700">Second Round</TableHead>
+              <TableHead className="text-gray-700 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-gray-400 py-4">
+                <TableCell colSpan={4} className="text-center text-gray-500 py-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 animate-spin mx-auto mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                   Loading results...
                 </TableCell>
               </TableRow>
             ) : !results || results.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-gray-400 py-4">
+                <TableCell colSpan={4} className="text-center text-gray-500 py-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mx-auto mb-1 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                   No results found
                 </TableCell>
               </TableRow>
@@ -438,8 +442,8 @@ export default function ResultsManager() {
               results
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .map(result => (
-                  <TableRow key={result.id} className="border-gray-700">
-                    <TableCell className="text-white">
+                  <TableRow key={result.id} className="border-gray-200">
+                    <TableCell className="text-gray-800">
                       {formatDisplayDate(result.date)}
                     </TableCell>
                     <TableCell>
@@ -447,7 +451,7 @@ export default function ResultsManager() {
                         type="number"
                         min="0"
                         max="99"
-                        className="w-16 bg-gray-800 text-white"
+                        className="w-16 bg-white border border-gray-200 text-gray-800"
                         value={result.round1 === null ? '' : result.round1}
                         onChange={(e) => {
                           const value = e.target.value ? parseInt(e.target.value) : null;
@@ -460,7 +464,7 @@ export default function ResultsManager() {
                         type="number"
                         min="0"
                         max="99"
-                        className="w-16 bg-gray-800 text-white"
+                        className="w-16 bg-white border border-gray-200 text-gray-800"
                         value={result.round2 === null ? '' : result.round2}
                         onChange={(e) => {
                           const value = e.target.value ? parseInt(e.target.value) : null;
@@ -475,7 +479,7 @@ export default function ResultsManager() {
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            className="text-green-500 hover:text-green-400 hover:bg-green-950/30"
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
                             onClick={() => handleProcessWins(result.id)}
                             disabled={processingWins}
                           >
@@ -487,11 +491,12 @@ export default function ResultsManager() {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          className="text-red-500 hover:text-red-400 hover:bg-red-950/30"
+                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
                           onClick={() => {
                             toast({
                               title: "Info",
                               description: "Delete functionality not implemented yet",
+                              className: "bg-white border border-gray-200 text-gray-800"
                             });
                           }}
                         >

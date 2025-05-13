@@ -196,26 +196,26 @@ export default function ResultsTable() {
         <DetailedAnalysis onBack={() => setShowAnalysis(false)} />
       ) : (
         <>
-          <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
-            <h2 className="text-white font-poppins font-semibold mb-4">Shillong Teer Results</h2>
+          <div className="card-modern p-4 mb-6 shadow-sm">
+            <h2 className="text-gray-900 font-semibold mb-4">Shillong Teer Results</h2>
             
             {/* Date Selector */}
             <div className="flex items-center mb-4">
               <button 
-                className="text-gray-400 p-1" 
+                className="text-gray-600 p-1" 
                 onClick={() => navigateDate(-1)}
               >
                 <i className="ri-arrow-left-s-line text-xl"></i>
               </button>
               <input 
                 type="date" 
-                className="bg-gray-800 text-white px-3 py-2 rounded-md flex-1 text-center" 
+                className="bg-white border border-gray-200 text-gray-800 px-3 py-2 rounded-md flex-1 text-center" 
                 value={selectedDate}
                 onChange={handleDateChange}
                 max={format(new Date(), 'yyyy-MM-dd')}
               />
               <button 
-                className="text-gray-400 p-1" 
+                className="text-gray-600 p-1" 
                 onClick={() => navigateDate(1)}
                 disabled={format(new Date(), 'yyyy-MM-dd') === selectedDate}
               >
@@ -224,51 +224,51 @@ export default function ResultsTable() {
             </div>
             
             {/* Today's Result Display */}
-            <div className={`bg-gray-800 rounded-lg p-4 mb-4 ${isSunday ? 'border border-red-800' : ''}`}>
+            <div className={`bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 ${isSunday ? 'border border-red-300' : ''}`}>
               <div className="flex items-center justify-center mb-3">
-                <p className="text-gray-400 text-center text-sm">
+                <p className="text-gray-700 text-center text-sm">
                   {selectedDate ? format(new Date(selectedDate), 'MMMM d, yyyy') : ''}
                 </p>
                 {isSunday && (
-                  <span className="ml-2 bg-red-900/60 text-red-200 text-xs px-2 py-0.5 rounded-full">
+                  <span className="ml-2 bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">
                     Sunday - Closed
                   </span>
                 )}
               </div>
               
               {isSunday ? (
-                <div className="bg-red-900/20 rounded-lg p-4 text-center">
-                  <CalendarX className="h-8 w-8 text-red-500/80 mx-auto mb-2" />
-                  <p className="text-red-400 font-medium">Market closed on Sundays</p>
-                  <p className="text-gray-400 text-sm mt-1">Shillong Teer does not operate on Sundays</p>
+                <div className="bg-red-50 rounded-lg p-4 text-center border border-red-200">
+                  <CalendarX className="h-8 w-8 text-red-500 mx-auto mb-2" />
+                  <p className="text-red-600 font-medium">Market closed on Sundays</p>
+                  <p className="text-gray-600 text-sm mt-1">Shillong Teer does not operate on Sundays</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-4">
-                  <div className={`bg-secondary rounded-lg p-3 text-center ${!selectedDateResult && isFutureOrToday ? 'border border-yellow-800/50' : ''}`}>
-                    <p className="text-gray-400 text-xs mb-1">Round 1 (15:30)</p>
-                    <p className="font-mono font-bold text-2xl text-white">
+                  <div className={`bg-white rounded-lg p-3 text-center border border-gray-200 ${!selectedDateResult && isFutureOrToday ? 'border border-yellow-400' : ''}`}>
+                    <p className="text-gray-600 text-xs mb-1">Round 1 (15:30)</p>
+                    <p className="font-mono font-bold text-2xl text-gray-900">
                       {isLoading ? (
                         <span>Loading...</span>
                       ) : selectedDateResult?.round1 !== undefined && selectedDateResult.round1 !== null ? (
-                        <span className="text-white">{formatTwoDigits(selectedDateResult.round1)}</span>
+                        <span className="text-primary">{formatTwoDigits(selectedDateResult.round1)}</span>
                       ) : isFutureOrToday ? (
-                        <span className="text-yellow-300">Pending</span>
+                        <span className="text-amber-600">Pending</span>
                       ) : (
-                        <span className="text-gray-300">Not Available</span>
+                        <span className="text-gray-500">Not Available</span>
                       )}
                     </p>
                   </div>
-                  <div className={`bg-secondary rounded-lg p-3 text-center ${!selectedDateResult && isFutureOrToday ? 'border border-yellow-800/50' : ''}`}>
-                    <p className="text-gray-400 text-xs mb-1">Round 2 (16:30)</p>
-                    <p className="font-mono font-bold text-2xl text-white">
+                  <div className={`bg-white rounded-lg p-3 text-center border border-gray-200 ${!selectedDateResult && isFutureOrToday ? 'border border-yellow-400' : ''}`}>
+                    <p className="text-gray-600 text-xs mb-1">Round 2 (16:30)</p>
+                    <p className="font-mono font-bold text-2xl text-gray-900">
                       {isLoading ? (
                         <span>Loading...</span>
                       ) : selectedDateResult?.round2 !== undefined && selectedDateResult.round2 !== null ? (
-                        <span className="text-white">{formatTwoDigits(selectedDateResult.round2)}</span>
+                        <span className="text-primary">{formatTwoDigits(selectedDateResult.round2)}</span>
                       ) : isFutureOrToday ? (
-                        <span className="text-yellow-300">Pending</span>
+                        <span className="text-amber-600">Pending</span>
                       ) : (
-                        <span className="text-gray-300">Not Available</span>
+                        <span className="text-gray-500">Not Available</span>
                       )}
                     </p>
                   </div>
@@ -278,88 +278,88 @@ export default function ResultsTable() {
           </div>
           
           {/* Past Results Table */}
-          <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
-            <h2 className="text-white font-poppins font-semibold mb-3">Recent Results</h2>
+          <div className="card-modern p-4 mb-6 shadow-sm">
+            <h2 className="text-gray-900 font-semibold mb-3">Recent Results</h2>
             
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-gray-700">
-                    <th className="pb-2 text-gray-400 font-medium text-sm">Date</th>
-                    <th className="pb-2 text-gray-400 font-medium text-sm text-center">Round 1</th>
-                    <th className="pb-2 text-gray-400 font-medium text-sm text-center">Round 2</th>
+                  <tr className="border-b border-gray-200">
+                    <th className="pb-2 text-gray-600 font-medium text-sm">Date</th>
+                    <th className="pb-2 text-gray-600 font-medium text-sm text-center">Round 1</th>
+                    <th className="pb-2 text-gray-600 font-medium text-sm text-center">Round 2</th>
                   </tr>
                 </thead>
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={3} className="py-4 text-center text-gray-400">Loading results...</td>
+                      <td colSpan={3} className="py-4 text-center text-gray-500">Loading results...</td>
                     </tr>
                   ) : recentResults && recentResults.length > 0 ? (
                     recentResults.map(result => (
-                      <tr key={result.id} className="border-b border-gray-700">
-                        <td className="py-3 text-white text-sm">
+                      <tr key={result.id} className="border-b border-gray-200">
+                        <td className="py-3 text-gray-800 text-sm">
                           {format(new Date(result.date), 'MMMM d, yyyy')}
                         </td>
                         <td className="py-3 text-center">
                           {result.round1 !== undefined && result.round1 !== null ? (
-                            <span className="font-mono text-white font-medium">
+                            <span className="font-mono text-primary font-medium">
                               {formatTwoDigits(result.round1)}
                             </span>
                           ) : (
-                            <span className="text-gray-300">--</span>
+                            <span className="text-gray-500">--</span>
                           )}
                         </td>
                         <td className="py-3 text-center">
                           {result.round2 !== undefined && result.round2 !== null ? (
-                            <span className="font-mono text-white font-medium">
+                            <span className="font-mono text-primary font-medium">
                               {formatTwoDigits(result.round2)}
                             </span>
                           ) : (
-                            <span className="text-gray-300">--</span>
+                            <span className="text-gray-500">--</span>
                           )}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={3} className="py-4 text-center text-gray-400">No results available</td>
+                      <td colSpan={3} className="py-4 text-center text-gray-500">No results available</td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
             
-            <button className="w-full border border-accent text-accent py-2 rounded-lg mt-4 text-sm">
+            <button className="w-full border border-primary text-primary hover:bg-primary/5 py-2 rounded-lg mt-4 text-sm">
               Load More Results
             </button>
           </div>
           
           {/* Result Analysis */}
-          <div className="bg-secondary rounded-xl p-4 mb-6 shadow-md">
-            <h2 className="text-white font-poppins font-semibold mb-3 flex items-center">
-              <BarChart2 className="h-5 w-5 text-accent mr-2" />
+          <div className="card-modern p-4 mb-6 shadow-sm">
+            <h2 className="text-gray-900 font-semibold mb-3 flex items-center">
+              <BarChart2 className="h-5 w-5 text-primary mr-2" />
               Result Analysis
             </h2>
             
-            <div className="bg-gray-800 rounded-lg p-3 mb-3">
-              <p className="text-white text-sm mb-2">Most Frequent Numbers (Last 30 Days)</p>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3">
+              <p className="text-gray-800 text-sm mb-2">Most Frequent Numbers (Last 30 Days)</p>
               <div className="flex flex-wrap gap-2">
                 {frequentNumbers.map(([number, count]) => (
-                  <div key={number} className="bg-gray-700 px-3 py-1 rounded-full text-white text-xs flex items-center">
+                  <div key={number} className="bg-primary/10 border border-primary/20 px-3 py-1 rounded-full text-gray-800 text-xs flex items-center">
                     <span className="font-mono mr-1">{number.toString().padStart(2, '0')}</span>
-                    <span className="text-accent text-xs">({count}x)</span>
+                    <span className="text-primary text-xs">({count}x)</span>
                   </div>
                 ))}
                 {frequentNumbers.length === 0 && (
-                  <p className="text-gray-300 text-xs">Analyzing available results data...</p>
+                  <p className="text-gray-500 text-xs">Analyzing available results data...</p>
                 )}
               </div>
             </div>
             
             <button 
               onClick={() => setShowAnalysis(true)}
-              className="w-full bg-gray-800 hover:bg-gray-700 text-white py-2 rounded-lg text-sm flex items-center justify-center"
+              className="w-full bg-primary/10 hover:bg-primary/15 text-primary py-2 rounded-lg text-sm flex items-center justify-center"
             >
               <BarChart2 className="h-4 w-4 mr-1" />
               <span>View Detailed Analysis</span>
