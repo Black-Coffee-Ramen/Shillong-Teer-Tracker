@@ -2,11 +2,18 @@ import { users, type User, type InsertUser, bets, type Bet, type InsertBet, resu
 import createMemoryStore from "memorystore";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
-import { pool } from "./db";
+import { storage as memStorage } from "./storage";
 
-const PostgresSessionStore = connectPg(session);
+// Determine if we're using a real database or in-memory storage
+const useRealDatabase = !!pool && !!db;
+
+// Create appropriate session store
+const MemoryStore = createMemoryStore(session);
+const sessionStore = useRealDatabase 
+  ? new (connectPg(session))({ pool: pool as any, tableName: 'sessions' })
+  : new MemoryStore({ checkPeriod: 86400000 });
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -36,10 +43,8 @@ export class DatabaseStorage implements IStorage {
   sessionStore: any;
 
   constructor() {
-    this.sessionStore = new PostgresSessionStore({ 
-      pool, 
-      createTableIfMissing: true 
-    });
+    // Use the session store created above based on database availability
+    this.sessionStore = sessionStore;
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -287,4 +292,20 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Try to use the database storage, but fall back to in-memory if there's an error
+let storage;
+try {
+  if (useRealDatabase && db) {
+    storage = new DatabaseStorage();
+    console.log("Using DATABASE storage implementation");
+  } else {
+    throw new Error("Database not available");
+  }
+} catch (error) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  console.log("Database connection issue:", errorMessage);
+  console.log("Falling back to IN-MEMORY storage implementation");
+  storage = memStorage;
+}
+
+export { storage };
