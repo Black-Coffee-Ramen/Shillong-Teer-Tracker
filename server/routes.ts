@@ -6,6 +6,11 @@ import { z } from "zod";
 import { insertBetSchema, insertResultSchema, insertTransactionSchema, Bet } from "@shared/schema";
 import crypto from "crypto";
 import betRoutes from "./bet-routes";
+import aiRoutes from "./ai-routes";
+import chatRoutes from "./chat-routes";
+import supportRoutes from "./support-routes";
+import { Server as SocketIOServer } from "socket.io";
+import { db } from "./db";
 
 // Define a type for metadata to resolve TypeScript errors
 type MetadataType = {
@@ -18,6 +23,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add betting routes
   app.use("/api/betting", betRoutes);
+  
+  // Add AI routes
+  app.use("/api/ai", aiRoutes);
+  
+  // Add chat routes
+  app.use("/api/chat", chatRoutes);
+  
+  // Add support routes
+  app.use("/api/support", supportRoutes);
   
   // Handle service worker requests with the correct MIME type
   app.get("/service-worker.js", (_req, res, next) => {
@@ -793,5 +807,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // Set up Socket.IO server
+  const io = new SocketIOServer(httpServer, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    },
+    path: '/socket.io',
+    transports: ['websocket', 'polling'],
+    allowEIO3: true // Allow Engine.IO v3 client connection
+  });
+  
+  // Set up Socket.IO event handlers
+  io.on('connection', (socket) => {
+    console.log('New client connected', socket.id);
+    
+    // User authentication
+    socket.on('authenticate', async (userId) => {
+      if (!userId) return;
+      
+      try {
+        const user = await storage.getUser(Number(userId));
+        if (user) {
+          // Associate this socket with the user
+          socket.data.userId = user.id;
+          socket.data.username = user.username;
+          // Join a room specific to this user
+          socket.join(`user:${user.id}`);
+          console.log(`User ${user.username} (ID: ${user.id}) authenticated on socket ${socket.id}`);
+          
+          // Notify client of successful authentication
+          socket.emit('authenticated', { success: true, userId: user.id, username: user.username });
+        } else {
+          socket.emit('authenticated', { success: false, error: 'User not found' });
+        }
+      } catch (error) {
+        console.error('Error during socket authentication:', error);
+        socket.emit('authenticated', { success: false, error: 'Authentication failed' });
+      }
+    });
+    
+    // Join a chat group
+    socket.on('join-group', async (groupId) => {
+      if (!socket.data.userId) {
+        return socket.emit('error', { message: 'Authentication required' });
+      }
+      
+      try {
+        // Join room for this group
+        socket.join(`group:${groupId}`);
+        console.log(`User ${socket.data.username} joined group ${groupId}`);
+        socket.emit('joined-group', { success: true, groupId });
+      } catch (error) {
+        console.error('Error joining group:', error);
+        socket.emit('error', { message: 'Error joining group' });
+      }
+    });
+    
+    // Leave a chat group
+    socket.on('leave-group', (groupId) => {
+      socket.leave(`group:${groupId}`);
+      console.log(`User ${socket.data.username} left group ${groupId}`);
+      socket.emit('left-group', { success: true, groupId });
+    });
+    
+    // Send message (to user or group)
+    socket.on('send-message', async (message) => {
+      if (!socket.data.userId) {
+        return socket.emit('error', { message: 'Authentication required' });
+      }
+      
+      try {
+        const { recipientId, groupId, content } = message;
+        
+        // Create message in database
+        const newMessage = {
+          senderId: socket.data.userId,
+          content,
+          receiverId: recipientId || null,
+          groupId: groupId || null,
+          isRead: false,
+        };
+        
+        // Save to database if we have proper database access
+        if (db) {
+          // Message handling will be done through the API for now
+          // This will be expanded in the future
+        }
+        
+        // Emit to appropriate recipients
+        if (groupId) {
+          // Send to everyone in the group room
+          io.to(`group:${groupId}`).emit('new-message', {
+            ...newMessage,
+            timestamp: new Date(),
+            senderUsername: socket.data.username
+          });
+        } else if (recipientId) {
+          // Send to specific user's room and sender
+          io.to(`user:${recipientId}`).emit('new-message', {
+            ...newMessage,
+            timestamp: new Date(),
+            senderUsername: socket.data.username
+          });
+          
+          // Also send to the sender if they're not the recipient
+          if (socket.data.userId !== recipientId) {
+            socket.emit('new-message', {
+              ...newMessage,
+              timestamp: new Date(),
+              senderUsername: socket.data.username
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+        socket.emit('error', { message: 'Error sending message' });
+      }
+    });
+    
+    // Mark messages as read
+    socket.on('mark-read', async (messageIds) => {
+      if (!socket.data.userId || !messageIds || !messageIds.length) {
+        return;
+      }
+      
+      try {
+        // Logic to mark messages as read in the database
+        // Will be implemented in a future update
+        
+        // Confirm to client
+        socket.emit('messages-marked-read', { messageIds });
+      } catch (error) {
+        console.error('Error marking messages as read:', error);
+      }
+    });
+    
+    // Handle disconnection
+    socket.on('disconnect', () => {
+      console.log(`Client disconnected: ${socket.id}`);
+      if (socket.data.userId) {
+        console.log(`User ${socket.data.username} (ID: ${socket.data.userId}) disconnected`);
+      }
+    });
+  });
+
+  // Make io available on the request object
+  app.set('socketio', io);
+  
   return httpServer;
 }

@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { formatCurrency } from "@/lib/utils";
 import { Logo } from "@/components/common/Logo";
-import { Wallet } from "lucide-react";
+import { Wallet, HelpCircle, MessageSquare, ShieldAlert } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Header() {
@@ -24,7 +24,21 @@ export default function Header() {
           <nav className="hidden md:flex">
             <Link href="/play" className="nav-item">Play</Link>
             <Link href="/results" className="nav-item">Results</Link>
+            <Link href="/chat" className="nav-item">
+              <MessageSquare className="h-4 w-4 mr-1" />
+              Chat
+            </Link>
+            <Link href="/support" className="nav-item">
+              <HelpCircle className="h-4 w-4 mr-1" />
+              Help
+            </Link>
             <Link href="/profile" className="nav-item">Profile</Link>
+            {user?.username === 'Demo User' && (
+              <Link href="/admin" className="nav-item">
+                <ShieldAlert className="h-4 w-4 mr-1" />
+                Admin
+              </Link>
+            )}
           </nav>
           
           {/* Wallet Balance */}

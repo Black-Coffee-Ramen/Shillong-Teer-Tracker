@@ -8,7 +8,11 @@ import PlayPage from "@/pages/play-page";
 import ResultsPage from "@/pages/results-page";
 import ProfilePage from "@/pages/profile-page";
 import AuthPage from "@/pages/auth-page";
+import Chat from "@/pages/Chat";
+import Support from "@/pages/Support";
+import Admin from "@/pages/Admin";
 import { AuthProvider } from "@/hooks/use-auth";
+import { SocketProvider } from "@/hooks/use-socket";
 import { NotificationProvider } from "@/hooks/use-notification";
 import { NotificationContainer } from "@/components/ui/notification";
 import { ProtectedRoute } from "@/lib/protected-route";
@@ -44,6 +48,27 @@ function Router() {
           </AppLayout>
         )}
       />
+      <ProtectedRoute 
+        path="/chat" 
+        component={() => (
+          <AppLayout>
+            <Chat />
+          </AppLayout>
+        )}
+      />
+      <Route path="/support">
+        <AppLayout>
+          <Support />
+        </AppLayout>
+      </Route>
+      <ProtectedRoute 
+        path="/admin" 
+        component={() => (
+          <AppLayout>
+            <Admin />
+          </AppLayout>
+        )}
+      />
       <Route component={NotFound} />
     </Switch>
   );
@@ -53,14 +78,16 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <NotificationProvider>
-          <Router />
-          <AudioFiles />
-          <NotificationContainer />
-          <OfflineDetector />
-          <OfflineIndicator />
-          <Toaster />
-        </NotificationProvider>
+        <SocketProvider>
+          <NotificationProvider>
+            <Router />
+            <AudioFiles />
+            <NotificationContainer />
+            <OfflineDetector />
+            <OfflineIndicator />
+            <Toaster />
+          </NotificationProvider>
+        </SocketProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

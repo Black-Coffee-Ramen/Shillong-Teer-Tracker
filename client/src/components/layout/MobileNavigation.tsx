@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Home, Play, Trophy, User } from "lucide-react";
+import { Home, Play, Trophy, User, HelpCircle, MessageSquare } from "lucide-react";
 
 export default function MobileNavigation() {
   const [location] = useLocation();
@@ -9,6 +9,8 @@ export default function MobileNavigation() {
     { path: "/", icon: Home, label: "Home" },
     { path: "/play", icon: Play, label: "Play" },
     { path: "/results", icon: Trophy, label: "Results" },
+    { path: "/chat", icon: MessageSquare, label: "Chat" },
+    { path: "/support", icon: HelpCircle, label: "Help" },
     { path: "/profile", icon: User, label: "Profile" }
   ];
   

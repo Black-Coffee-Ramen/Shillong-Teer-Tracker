@@ -26,6 +26,10 @@
 }
 
 @layer components {
+  .nav-item {
+    @apply mx-3 py-2 text-gray-600 hover:text-primary transition-colors duration-200 flex items-center;
+  }
+  
   .card-modern {
     @apply bg-white rounded-lg shadow-sm border border-gray-100;
   }
