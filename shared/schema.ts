@@ -42,7 +42,7 @@ export const transactions = pgTable("transactions", {
   razorpayPaymentId: text("razorpay_payment_id"),
   razorpaySignature: text("razorpay_signature"),
   status: text("status").default("pending"), // pending, completed, failed
-  metadata: json("metadata").$type<Record<string, any>>(), // Additional data like bet number, round, etc.
+  metadata: json("metadata").$type<Record<string, any>>().notNull().default({}), // Additional data like bet number, round, etc.
 });
 
 export const otpCodes = pgTable("otp_codes", {

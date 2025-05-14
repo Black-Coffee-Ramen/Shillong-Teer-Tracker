@@ -12,19 +12,33 @@ export default function CountdownTimer({ targetHour, targetMinute, label, roundN
   const [countdown, setCountdown] = useState<string>("--:--:--");
   const [isClosed, setIsClosed] = useState<boolean>(false);
   const [isNearingClose, setIsNearingClose] = useState<boolean>(false);
+  const [bettingDate, setBettingDate] = useState<Date>(new Date());
   
   useEffect(() => {
     const calculateTimeRemaining = () => {
+      // Get current date and time 
       const now = new Date();
-      const target = new Date(now);
       
+      // Create target time for today
+      const target = new Date(now);
       target.setHours(targetHour, targetMinute, 0, 0);
       
-      // If the target time has already passed today, set target to tomorrow
-      if (now > target) {
+      // Check if the target time has already passed today
+      const isPassed = now > target;
+      
+      // Set betting date for display
+      const newBettingDate = new Date(now);
+      
+      // If passed, set target and betting date to tomorrow
+      if (isPassed) {
         target.setDate(target.getDate() + 1);
+        newBettingDate.setDate(newBettingDate.getDate() + 1);
       }
       
+      // Update the betting date
+      setBettingDate(newBettingDate);
+      
+      // Calculate time difference in milliseconds
       const diff = target.getTime() - now.getTime();
       
       // Check if less than 5 minutes to closing
@@ -36,14 +50,8 @@ export default function CountdownTimer({ targetHour, targetMinute, label, roundN
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
       
-      // Check if the round is closed (past the target time)
-      const nowHour = now.getHours();
-      const nowMinute = now.getMinutes();
-      const isClosedNow = 
-        (nowHour > targetHour) || 
-        (nowHour === targetHour && nowMinute >= targetMinute);
-      
-      setIsClosed(isClosedNow);
+      // Update closed state based on whether we've passed today's target time
+      setIsClosed(isPassed);
       
       return {
         formatted: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`,
@@ -73,25 +81,34 @@ export default function CountdownTimer({ targetHour, targetMinute, label, roundN
   
   return (
     <div className={`
-      transition-all duration-300
+      transition-all duration-300 
       ${isNearingClose ? 'bg-amber-50 border-amber-200' : ''}
+      p-3 rounded-md
     `}>
-      <div className="flex justify-between items-center">
-        <div className="flex items-center">
-          {isNearingClose && (
-            <div className="w-2 h-2 bg-amber-500 rounded-full mr-2 animate-pulse"></div>
-          )}
-          {isClosed && (
-            <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-          )}
-        </div>
-        <div className="text-right">
-          <p className={`text-xs font-medium ${isNearingClose ? 'text-amber-600' : 'text-gray-500'}`}>
-            {isClosed ? "Closed" : "Closes in"}
+      <div className="flex justify-center items-center">
+        <div className="text-center">
+          <p className={`text-sm font-medium ${isNearingClose ? 'text-amber-600' : 'text-gray-600'}`}>
+            Round {roundNumber} – Betting for: {`${bettingDate.getDate().toString().padStart(2, '0')}/${(bettingDate.getMonth() + 1).toString().padStart(2, '0')}/${bettingDate.getFullYear()}`}
           </p>
-          <p className={`font-mono font-medium text-base ${getTimerColor()} ${isNearingClose ? 'animate-pulse' : ''}`}>
+          <p className={`font-mono font-bold text-xl ${getTimerColor()} ${isNearingClose ? 'animate-pulse' : ''}`}>
             {countdown}
           </p>
+          
+          {/* Indicator for state */}
+          <div className="flex justify-center mt-1">
+            {isNearingClose && (
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-amber-500 rounded-full mr-1 animate-pulse"></div>
+                <span className="text-xs text-amber-600">Closing soon</span>
+              </div>
+            )}
+            {isClosed && (
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-red-500 rounded-full mr-1"></div>
+                <span className="text-xs text-red-600">Waiting for tomorrow</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

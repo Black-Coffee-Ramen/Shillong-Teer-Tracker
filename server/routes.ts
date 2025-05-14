@@ -1,14 +1,23 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./db-storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
 import { insertBetSchema, insertResultSchema, insertTransactionSchema, Bet } from "@shared/schema";
 import crypto from "crypto";
+import betRoutes from "./bet-routes";
+
+// Define a type for metadata to resolve TypeScript errors
+type MetadataType = {
+  [key: string]: any;
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuth(app);
+  
+  // Add betting routes
+  app.use("/api/betting", betRoutes);
   
   // Handle service worker requests with the correct MIME type
   app.get("/service-worker.js", (_req, res, next) => {
@@ -17,6 +26,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // API Routes
+  
+  // Admin only - Get all users with details
+  app.get("/api/admin/users", async (req, res) => {
+    // More detailed logging to diagnose issues
+    console.log("==== ADMIN USERS ENDPOINT ====");
+    console.log("Request path:", req.path);
+    console.log("Request query:", req.query);
+    console.log("Auth status:", req.isAuthenticated());
+    console.log("User details:", req.user ? 
+      `ID: ${req.user.id}, Username: ${req.user.username}` : "Not authenticated");
+    console.log("Headers:", req.headers);
+    
+    res.setHeader('Content-Type', 'application/json');
+    
+    if (!req.isAuthenticated() || req.user?.username !== "admin") {
+      console.log("Authentication failed - not admin");
+      return res.status(403).json({ message: "Unauthorized - Admin access required" });
+    }
+    
+    try {
+      console.log("Authentication successful - fetching users data");
+      // Get all users (in a real app, we'd use a database query)
+      // For in-memory demo, we'll iterate through potential user IDs
+      const users = [];
+      
+      for (let userId = 1; userId <= 10; userId++) {
+        const user = await storage.getUser(userId);
+        if (user) {
+          console.log(`Found user ID ${userId}: ${user.username}`);
+          // Get user's bets and transactions
+          const bets = await storage.getUserBets(userId);
+          console.log(`  Bets for user ${userId}: ${bets.length}`);
+          
+          const transactions = await storage.getUserTransactions(userId);
+          console.log(`  Transactions for user ${userId}: ${transactions.length}`);
+          
+          // Don't send password to client
+          const { password, ...userWithoutPassword } = user;
+          
+          users.push({
+            ...userWithoutPassword,
+            bets,
+            transactions
+          });
+        }
+      }
+      
+      console.log(`Returning ${users.length} users`);
+      return res.json(users);
+    } catch (error: any) {
+      console.error("Error fetching admin user data:", error);
+      console.error(error?.stack || "No stack trace available");
+      return res.status(500).json({ 
+        message: "Error retrieving user data" 
+      });
+    }
+  });
   
   // Process wins for new results
   app.post("/api/process-wins", async (req, res) => {
@@ -128,10 +194,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 amount: winAmount,
                 type: "win",
                 description: `Win on number ${bet.number} for Round 1`,
-                metadata: JSON.stringify({
+                metadata: {
                   number: bet.number,
                   round: 1
-                })
+                } as MetadataType
               });
               
               console.log(`Created win transaction #${transaction.id} for user ${user.id}`);
@@ -211,10 +277,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 amount: winAmount,
                 type: "win",
                 description: `Win on number ${bet.number} for Round 2`,
-                metadata: JSON.stringify({
+                metadata: {
                   number: bet.number,
                   round: 2
-                })
+                } as MetadataType
               });
               
               console.log(`Created win transaction #${transaction.id} for user ${user.id}`);
@@ -433,10 +499,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount: -betData.amount,
         type: "bet",
         description: `Bet placed on number ${betData.number} for Round ${betData.round}`,
-        metadata: JSON.stringify({
+        metadata: {
           number: betData.number,
           round: betData.round
-        })
+        } as MetadataType
       });
       
       res.status(201).json(bet);

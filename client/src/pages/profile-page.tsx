@@ -10,7 +10,9 @@ import AccountSettings from "@/components/profile/settings/AccountSettings";
 import SupportChat from "@/components/profile/support/SupportChat";
 import PrivacyPolicy from "@/components/profile/privacy/PrivacyPolicy";
 import ResultsManager from "@/components/profile/admin/ResultsManager";
-import { Settings, HelpCircle, Shield, LogOut, Loader2, RefreshCw, Database } from "lucide-react";
+import UserManagement from "@/components/profile/admin/UserManagement";
+import { BetExport } from "@/components/profile/admin/BetExport";
+import { Settings, HelpCircle, Shield, LogOut, Loader2, RefreshCw, Database, Users, FileDown } from "lucide-react";
 import { Bet } from "@shared/schema";
 
 type ScreenView = 'main' | 'settings' | 'support' | 'privacy' | 'admin';
@@ -148,7 +150,33 @@ export default function ProfilePage() {
           </Button>
           <h1 className="text-2xl font-semibold text-gray-900 mt-4 mb-6">Admin Dashboard</h1>
         </div>
-        <ResultsManager />
+        
+        {/* User Management */}
+        <div className="mb-6">
+          <div className="flex items-center mb-4">
+            <Users className="h-5 w-5 mr-2 text-purple-700" />
+            <h2 className="text-xl font-medium text-gray-800">User Management</h2>
+          </div>
+          <UserManagement />
+        </div>
+        
+        {/* Results Management */}
+        <div className="mb-6">
+          <div className="flex items-center mb-4">
+            <Database className="h-5 w-5 mr-2 text-purple-700" />
+            <h2 className="text-xl font-medium text-gray-800">Results Management</h2>
+          </div>
+          <ResultsManager />
+        </div>
+        
+        {/* Bet Export */}
+        <div className="mb-6">
+          <div className="flex items-center mb-4">
+            <FileDown className="h-5 w-5 mr-2 text-purple-700" />
+            <h2 className="text-xl font-medium text-gray-800">Data Export</h2>
+          </div>
+          <BetExport />
+        </div>
       </div>
     );
   }

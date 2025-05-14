@@ -12,6 +12,7 @@ export interface IStorage {
   
   placeBet(bet: InsertBet): Promise<Bet>;
   getUserBets(userId: number): Promise<Bet[]>;
+  getBetsByDate(date: Date, round?: number): Promise<Bet[]>;
   updateBet(id: number, updates: Partial<Bet>): Promise<Bet | undefined>;
   
   getResults(date?: Date): Promise<Result[]>;
@@ -21,6 +22,8 @@ export interface IStorage {
   
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getUserTransactions(userId: number): Promise<Transaction[]>;
+  
+  exportBets(startDate?: Date, endDate?: Date): Promise<Bet[]>;
   
   sessionStore: any; // Use any to fix type issues
 }
@@ -132,7 +135,9 @@ export class MemStorage implements IStorage {
       id, 
       balance: 0,
       name: insertUser.name || null,
-      email: insertUser.email || null
+      email: insertUser.email || null,
+      phone: insertUser.phone || null,
+      isVerified: false
     };
     this.users.set(id, user);
     return user;
@@ -168,6 +173,23 @@ export class MemStorage implements IStorage {
   async getUserBets(userId: number): Promise<Bet[]> {
     return Array.from(this.bets.values())
       .filter(bet => bet.userId === userId)
+      .sort((a, b) => b.date.getTime() - a.date.getTime());
+  }
+  
+  async getBetsByDate(date: Date, round?: number): Promise<Bet[]> {
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return Array.from(this.bets.values())
+      .filter(bet => {
+        const betDate = new Date(bet.date);
+        betDate.setHours(0, 0, 0, 0);
+        
+        const dateMatches = betDate.getTime() === targetDate.getTime();
+        const roundMatches = round ? bet.round === round : true;
+        
+        return dateMatches && roundMatches;
+      })
       .sort((a, b) => b.date.getTime() - a.date.getTime());
   }
   
@@ -252,7 +274,7 @@ export class MemStorage implements IStorage {
       razorpayOrderId: transaction.razorpayOrderId || null,
       razorpayPaymentId: transaction.razorpayPaymentId || null,
       razorpaySignature: transaction.razorpaySignature || null,
-      metadata: transaction.metadata || null
+      metadata: transaction.metadata || {}
     };
     
     this.transactions.set(id, newTransaction);
@@ -263,6 +285,30 @@ export class MemStorage implements IStorage {
     return Array.from(this.transactions.values())
       .filter(transaction => transaction.userId === userId)
       .sort((a, b) => b.date.getTime() - a.date.getTime());
+  }
+  
+  async exportBets(startDate?: Date, endDate?: Date): Promise<Bet[]> {
+    const bets = Array.from(this.bets.values());
+    
+    return bets.filter(bet => {
+      const betDate = new Date(bet.date);
+      
+      // Filter by start date if provided
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (betDate < start) return false;
+      }
+      
+      // Filter by end date if provided
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (betDate > end) return false;
+      }
+      
+      return true;
+    }).sort((a, b) => b.date.getTime() - a.date.getTime());
   }
 }
 

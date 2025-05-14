@@ -20,9 +20,16 @@ export default function HomePage() {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-bold text-gray-900">Shillong Teer</h1>
           <div className="flex items-center gap-2">
-            <select className="text-sm border border-gray-200 rounded px-2 py-1 text-gray-700 bg-white">
-              <option>Today's Draws</option>
-              <option>Tomorrow's Draws</option>
+            <select 
+              className="text-sm border border-gray-200 rounded px-2 py-1 text-gray-700 bg-white"
+              onChange={(e) => {
+                // We'll implement this functionality in the future if needed
+                const value = e.target.value;
+                console.log("Selected date view:", value);
+              }}
+            >
+              <option value="today">Today's Draws</option>
+              <option value="tomorrow">Tomorrow's Draws</option>
             </select>
           </div>
         </div>

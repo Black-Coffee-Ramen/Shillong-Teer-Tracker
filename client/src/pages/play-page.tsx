@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useOfflineBets } from "@/hooks/use-offline-data";
 import NumberGrid from "@/components/play/NumberGrid";
 import BettingForm from "@/components/play/BettingForm";
+import { BettingInterface } from "@/components/play/BettingInterface";
+import { BetHistory } from "@/components/play/BetHistory";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, WifiOff } from "lucide-react";
 
@@ -17,6 +19,7 @@ export default function PlayPage() {
   const [isClosed, setIsClosed] = useState<boolean>(false);
   const [isNearingClose, setIsNearingClose] = useState<boolean>(false);
   const [isSunday, setIsSunday] = useState<boolean>(false);
+  const [bettingDate, setBettingDate] = useState<Date>(new Date());
   const { user } = useAuth();
   const { toast } = useToast();
   const [_, navigate] = useLocation();
@@ -43,7 +46,7 @@ export default function PlayPage() {
     return () => clearInterval(interval);
   }, []);
   
-  // Simplified: Calculate countdown
+  // Enhanced countdown calculation with automatic next day reset and date display
   useEffect(() => {
     if (isSunday) {
       setCountdown("CLOSED");
@@ -52,47 +55,61 @@ export default function PlayPage() {
     }
     
     const updateCountdown = () => {
+      // Get current date and time 
       const now = new Date();
-      const options = { timeZone: 'Asia/Kolkata', hour12: false } as const;
-      const timeString = now.toLocaleTimeString('en-US', options);
-      const [hours, minutes, seconds] = timeString.split(':').map(Number);
       
-      // Target time based on selected round (15:30 or 16:30 IST)
-      const targetHour = selectedRound === 1 ? 15 : 16;
+      // Create a target date for today with the target time
+      const targetHour = selectedRound === 1 ? 15 : 16; // 15:30 or 16:30
       const targetMinute = 30;
       
-      // Check if round is closed
-      const isClosedNow = (hours > targetHour) || (hours === targetHour && minutes >= targetMinute);
-      setIsClosed(isClosedNow);
+      // Create target time for today
+      const target = new Date(now);
+      target.setHours(targetHour, targetMinute, 0, 0);
       
-      // Calculate time remaining
-      let targetSeconds = targetHour * 3600 + targetMinute * 60;
-      let currentSeconds = hours * 3600 + minutes * 60 + seconds;
+      // Check if the target time has already passed today
+      const isPassed = now >= target;
       
-      // If time already passed for today, show for tomorrow
-      if (currentSeconds >= targetSeconds) {
-        targetSeconds += 24 * 3600;
+      // Set betting date for display
+      const newBettingDate = new Date(now);
+      
+      // If passed, set target and betting date to tomorrow
+      if (isPassed) {
+        target.setDate(target.getDate() + 1);
+        newBettingDate.setDate(newBettingDate.getDate() + 1);
       }
       
-      const diff = targetSeconds - currentSeconds;
+      // Update the betting date
+      setBettingDate(newBettingDate);
+      
+      // Calculate time difference in milliseconds
+      const diff = target.getTime() - now.getTime();
+      
+      // Convert to seconds
+      const diffInSeconds = Math.floor(diff / 1000);
+      
+      // Calculate hours, minutes, seconds
+      const h = Math.floor(diffInSeconds / 3600);
+      const m = Math.floor((diffInSeconds % 3600) / 60);
+      const s = diffInSeconds % 60;
+      
+      // Update closed state
+      const isClosedNow = isPassed;
+      setIsClosed(isClosedNow);
       
       // Check if nearing close (less than 5 minutes)
-      setIsNearingClose(diff < 300 && diff > 0);
+      setIsNearingClose(diff < 300000 && diff > 0); // 300000 ms = 5 minutes
       
-      // Format countdown
-      const h = Math.floor(diff / 3600);
-      const m = Math.floor((diff % 3600) / 60);
-      const s = diff % 60;
-      
+      // Format countdown string
       return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     };
     
+    // Initial update
+    setCountdown(updateCountdown());
+    
+    // Update every second
     const interval = setInterval(() => {
       setCountdown(updateCountdown());
     }, 1000);
-    
-    // Initial update
-    setCountdown(updateCountdown());
     
     return () => clearInterval(interval);
   }, [selectedRound, isSunday]);
@@ -175,22 +192,13 @@ export default function PlayPage() {
           </button>
         </div>
         
-        {/* Date/Time and Countdown */}
-        <div className="flex items-center justify-between rounded-md border border-gray-200 p-4 bg-gray-50">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center text-gray-600">
-              <Calendar className="h-4 w-4 text-gray-400 mr-1" />
-              <span className="text-sm">{formattedDate}</span>
-            </div>
-            <div className="flex items-center text-gray-600">
-              <Clock className="h-4 w-4 text-gray-400 mr-1" />
-              <span className="text-sm">{formattedTime}</span>
-            </div>
-          </div>
-          
-          <div className="flex flex-col items-end">
-            <p className="text-xs text-gray-500 mb-1">Round {selectedRound} closes in:</p>
-            <p className={`font-mono font-bold ${
+        {/* Countdown with Betting Date */}
+        <div className="rounded-md border border-gray-200 p-4 bg-gray-50 flex justify-center">
+          <div className="flex flex-col items-center">
+            <p className="text-sm text-gray-600 mb-1">
+              Round {selectedRound} – Betting for: {`${bettingDate.getDate().toString().padStart(2, '0')}/${(bettingDate.getMonth() + 1).toString().padStart(2, '0')}/${bettingDate.getFullYear()}`}
+            </p>
+            <p className={`font-mono font-bold text-xl ${
               isSunday || isClosed 
                 ? 'text-red-500' 
                 : isNearingClose 
@@ -230,20 +238,36 @@ export default function PlayPage() {
               </Button>
             </div>
           ) : (
-            <>
-              {/* Number Selection Grid */}
-              <NumberGrid 
-                onNumberSelect={handleNumberSelect}
-                selectedNumbers={selectedNumbers}
-              />
-              
-              {/* Direct Betting Form */}
-              <BettingForm 
-                selectedNumbers={selectedNumbers}
-                selectedRound={selectedRound}
-                onResetSelection={resetSelection}
-              />
-            </>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                {/* New Betting Interface with Server-Side Time Validation */}
+                <BettingInterface />
+                
+                {/* Bet History Table */}
+                <div className="card-modern p-6">
+                  <BetHistory />
+                </div>
+              </div>
+              <div>
+                {/* Number Selection Grid */}
+                <div className="card-modern p-6 mb-6">
+                  <h3 className="text-gray-800 text-lg font-medium mb-4">Select Numbers</h3>
+                  <NumberGrid 
+                    onNumberSelect={handleNumberSelect}
+                    selectedNumbers={selectedNumbers}
+                  />
+                  {selectedNumbers.length > 0 && (
+                    <div className="mt-4">
+                      <BettingForm 
+                        selectedNumbers={selectedNumbers}
+                        selectedRound={selectedRound}
+                        onResetSelection={resetSelection}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
         </>
       )}

@@ -4,7 +4,7 @@ import { Express } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { storage } from "./storage";
+import { storage } from "./db-storage";
 import { User as SelectUser } from "@shared/schema";
 import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
@@ -276,8 +276,9 @@ export function setupAuth(app: Express) {
     }
   });
   
-  // Create an admin user if it doesn't exist
+  // Create demo users if they don't exist
   (async () => {
+    // Create admin user
     const adminUser = await storage.getUserByUsername("admin");
     if (!adminUser) {
       const hashedPassword = await hashPassword("admin123");
@@ -288,6 +289,48 @@ export function setupAuth(app: Express) {
         email: "admin@example.com"
       });
       console.log("Admin user created");
+    }
+    
+    // Create demo user
+    const demoUser = await storage.getUserByUsername("user1");
+    if (!demoUser) {
+      const hashedPassword = await hashPassword("password123");
+      const user = await storage.createUser({
+        username: "user1",
+        password: hashedPassword,
+        name: "Demo User",
+        email: "user@example.com",
+        phone: "9876543210"
+      });
+      
+      // Create sample bets for the demo user
+      const today = new Date();
+      
+      // Add a few sample bets
+      await storage.placeBet({
+        userId: user.id,
+        number: 42,
+        amount: 100,
+        round: 1
+      });
+      
+      await storage.placeBet({
+        userId: user.id,
+        number: 78,
+        amount: 200,
+        round: 2
+      });
+      
+      // Create a sample transaction
+      await storage.createTransaction({
+        userId: user.id,
+        amount: 1000,
+        type: "deposit",
+        description: "Initial deposit",
+        metadata: { method: "bank" } as any
+      });
+      
+      console.log("Demo user with sample data created");
     }
   })();
 }
