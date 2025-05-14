@@ -44,6 +44,31 @@ function isBettingOpen(round: number): { isOpen: boolean; message: string } {
   };
 }
 
+// Test endpoint to debug bet exports
+router.get("/debug-export", async (req: Request, res: Response) => {
+  try {
+    const allBets = await storage.exportBets();
+    const startDate = new Date('2025-05-12');
+    const endDate = new Date('2025-05-13');
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(23, 59, 59, 999);
+    
+    const filteredBets = await storage.exportBets(startDate, endDate);
+    
+    res.json({
+      allBets,
+      filteredBets,
+      dateRange: {
+        start: startDate.toISOString(),
+        end: endDate.toISOString()
+      }
+    });
+  } catch (error) {
+    console.error("Debug export error:", error);
+    res.status(500).json({ error: "Error in debug export" });
+  }
+});
+
 // Get betting status
 router.get("/status", (req: Request, res: Response) => {
   const round1Status = isBettingOpen(1);
@@ -170,26 +195,81 @@ router.get("/export", async (req: Request, res: Response) => {
   }
   
   try {
+    console.log("Export request received with query params:", req.query);
+    
     // Parse date parameters
     let startDate: Date | undefined = undefined;
     let endDate: Date | undefined = undefined;
     
     if (req.query.startDate) {
-      startDate = new Date(req.query.startDate as string);
+      // Handle ISO string or other date formats
+      const startDateStr = req.query.startDate as string;
+      
+      // If we receive a YYYY-MM-DD format from client, make sure to parse it correctly
+      if (startDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // For YYYY-MM-DD format, use split and make sure month is 0-indexed
+        const [year, month, day] = startDateStr.split('-').map(num => parseInt(num, 10));
+        startDate = new Date(year, month - 1, day); // Month is 0-indexed in JavaScript
+      } else {
+        startDate = new Date(startDateStr);
+      }
+      
+      console.log("Parsed startDate:", startDate, "from string:", startDateStr);
+      
       if (isNaN(startDate.getTime())) {
         return res.status(400).json({ message: "Invalid start date format" });
       }
+      
+      // Ensure startDate is set to beginning of day
+      startDate.setHours(0, 0, 0, 0);
     }
     
     if (req.query.endDate) {
-      endDate = new Date(req.query.endDate as string);
+      // Handle ISO string or other date formats
+      const endDateStr = req.query.endDate as string;
+      
+      // If we receive a YYYY-MM-DD format from client, make sure to parse it correctly
+      if (endDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // For YYYY-MM-DD format, use split and make sure month is 0-indexed
+        const [year, month, day] = endDateStr.split('-').map(num => parseInt(num, 10));
+        endDate = new Date(year, month - 1, day); // Month is 0-indexed in JavaScript
+      } else {
+        endDate = new Date(endDateStr);
+      }
+      
+      console.log("Parsed endDate:", endDate, "from string:", endDateStr);
+      
       if (isNaN(endDate.getTime())) {
         return res.status(400).json({ message: "Invalid end date format" });
       }
+      
+      // Ensure endDate is set to end of day
+      endDate.setHours(23, 59, 59, 999);
     }
     
-    // Get bets data
+    // Check all bets in system 
+    const allBets = await storage.exportBets(undefined, undefined);
+    console.log("Total bets in system:", allBets.length);
+    
+    if (allBets.length === 0) {
+      console.log("No bets found in system. Exporting empty dataset.");
+    } else {
+      console.log("Available bet dates:");
+      const dateMap: Record<string, boolean> = {};
+      allBets.forEach(bet => {
+        const date = new Date(bet.date);
+        const dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+        dateMap[dateStr] = true;
+      });
+      console.log(Object.keys(dateMap));
+    }
+    
+    // Get bets data with date filtering
     const bets = await storage.exportBets(startDate, endDate);
+    console.log(`Found ${bets.length} bets matching date range:`, 
+      startDate ? startDate.toISOString() : "all-time", 
+      "to", 
+      endDate ? endDate.toISOString() : "present");
     
     // Determine export format (json or csv)
     const format = (req.query.format as string)?.toLowerCase() || "json";
@@ -215,8 +295,8 @@ router.get("/export", async (req: Request, res: Response) => {
     res.json({
       count: bets.length,
       dateRange: {
-        start: startDate?.toISOString() || "all-time",
-        end: endDate?.toISOString() || "present"
+        start: startDate ? startDate.toISOString() : "all-time",
+        end: endDate ? endDate.toISOString() : "present"
       },
       bets
     });

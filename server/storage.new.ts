@@ -55,85 +55,6 @@ export class MemStorage implements IStorage {
       checkPeriod: 86400000,
     });
     
-    // Create an admin user for testing
-    this.users.set(1, {
-      id: 1,
-      username: "admin",
-      password: "$2b$10$9dQg9FHxvU3wRKqLgFh1AuqLsKghb8yrEMZfxXsZ5t6l.V.9G1dJW", // hashed "password123"
-      balance: 10000,
-      name: "Admin User",
-      email: "admin@example.com",
-      phone: null,
-      isVerified: true
-    });
-    this.currentUserId++;
-    
-    // Add a regular user
-    this.users.set(2, {
-      id: 2,
-      username: "user",
-      password: "$2b$10$9dQg9FHxvU3wRKqLgFh1AuqLsKghb8yrEMZfxXsZ5t6l.V.9G1dJW", // hashed "password123"
-      balance: 5000,
-      name: "Regular User",
-      email: "user@example.com",
-      phone: null,
-      isVerified: true
-    });
-    this.currentUserId++;
-    
-    // Add some test bets for export functionality
-    // May 12, 2025 bets
-    const may12 = new Date('2025-05-12T10:00:00Z');
-    this.bets.set(1, {
-      id: 1,
-      userId: 2,
-      number: 42,
-      amount: 100,
-      round: 1,
-      date: may12,
-      isWin: true,
-      winAmount: 800
-    });
-    this.currentBetId++;
-    
-    this.bets.set(2, {
-      id: 2,
-      userId: 2,
-      number: 17,
-      amount: 200,
-      round: 2,
-      date: may12,
-      isWin: false,
-      winAmount: 0
-    });
-    this.currentBetId++;
-    
-    // May 13, 2025 bets
-    const may13 = new Date('2025-05-13T09:30:00Z');
-    this.bets.set(3, {
-      id: 3,
-      userId: 2,
-      number: 55,
-      amount: 150,
-      round: 1,
-      date: may13,
-      isWin: false,
-      winAmount: 0
-    });
-    this.currentBetId++;
-    
-    this.bets.set(4, {
-      id: 4,
-      userId: 1, // admin user
-      number: 78,
-      amount: 500,
-      round: 2,
-      date: may13,
-      isWin: true,
-      winAmount: 4000
-    });
-    this.currentBetId++;
-    
     // Full historical results data as of March 30, 2025
     const resultsData = [
       { date: "2025-03-29", round1: 61, round2: 51 },
@@ -368,59 +289,26 @@ export class MemStorage implements IStorage {
   
   async exportBets(startDate?: Date, endDate?: Date): Promise<Bet[]> {
     const bets = Array.from(this.bets.values());
-    console.log(`exportBets called with ${bets.length} total bets`);
     
-    // For debugging
-    bets.forEach(bet => {
-      console.log(`Bet ID ${bet.id}, date: ${bet.date.toISOString()}, user: ${bet.userId}, amount: ${bet.amount}`);
-    });
-    
-    // If no date filters, return all bets
-    if (!startDate && !endDate) {
-      return bets.sort((a, b) => b.date.getTime() - a.date.getTime());
-    }
-    
-    // Format dates for consistent comparison - use YYYY-MM-DD as string for comparison
-    const formatDateString = (date: Date): string => {
-      const year = date.getFullYear();
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const day = date.getDate().toString().padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-    
-    let startDateStr: string | undefined;
-    let endDateStr: string | undefined;
-    
-    if (startDate) {
-      startDateStr = formatDateString(startDate);
-      console.log("Start date filter:", startDateStr);
-    }
-    
-    if (endDate) {
-      endDateStr = formatDateString(endDate);
-      console.log("End date filter:", endDateStr);
-    }
-    
-    const filteredBets = bets.filter(bet => {
+    return bets.filter(bet => {
       const betDate = new Date(bet.date);
-      const betDateStr = formatDateString(betDate);
       
       // Filter by start date if provided
-      if (startDateStr && betDateStr < startDateStr) {
-        return false;
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (betDate < start) return false;
       }
       
       // Filter by end date if provided
-      if (endDateStr && betDateStr > endDateStr) {
-        return false;
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (betDate > end) return false;
       }
       
-      console.log(`Bet ID ${bet.id} with date ${betDateStr} included in results`);
       return true;
     }).sort((a, b) => b.date.getTime() - a.date.getTime());
-    
-    console.log(`exportBets returning ${filteredBets.length} filtered bets`);
-    return filteredBets;
   }
 }
 
