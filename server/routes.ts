@@ -812,11 +812,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const io = new SocketIOServer(httpServer, {
     cors: {
       origin: "*",
-      methods: ["GET", "POST"]
+      methods: ["GET", "POST", "OPTIONS"],
+      credentials: true
     },
     path: '/socket.io',
-    transports: ['websocket', 'polling'],
-    allowEIO3: true // Allow Engine.IO v3 client connection
+    transports: ['polling', 'websocket'],
+    connectTimeout: 45000,
+    pingTimeout: 30000,
+    pingInterval: 25000,
+    allowEIO3: true
   });
   
   // Set up Socket.IO event handlers

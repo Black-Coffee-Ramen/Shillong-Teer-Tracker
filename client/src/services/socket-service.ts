@@ -9,6 +9,14 @@ class SocketService {
   private listeners: Map<string, Set<Function>> = new Map();
   
   /**
+   * Check if socket is connected
+   * @returns true if connected, false otherwise
+   */
+  isConnected(): boolean {
+    return this.socket?.connected || false;
+  }
+  
+  /**
    * Connect to the Socket.IO server and set up event listeners
    * @param userId The current user's ID
    */
@@ -19,15 +27,13 @@ class SocketService {
       return;
     }
     
-    // Use the current host, working in both development and production
-    // Create the socket connection with the same origin as the current page
-    this.socket = io(window.location.origin, {
-      path: '/socket.io',
-      autoConnect: true,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      transports: ['polling', 'websocket']  // Start with polling which is more reliable in most environments
+    // Create simple connection using defaults which are more reliable
+    this.socket = io();
+    
+    // Add basic error handling
+    this.socket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+      this.emit('connection-status', { connected: false, error });
     });
     
     // Set up event listeners
