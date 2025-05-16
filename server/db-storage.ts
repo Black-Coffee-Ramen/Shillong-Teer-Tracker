@@ -30,6 +30,7 @@ export interface IStorage {
   getResultByDate(date: Date): Promise<Result | undefined>;
   createResult(result: InsertResult): Promise<Result>;
   updateResult(id: number, updates: Partial<InsertResult>): Promise<Result | undefined>;
+  deleteResult(id: number): Promise<boolean>;
   
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getUserTransactions(userId: number): Promise<Transaction[]>;
