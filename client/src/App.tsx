@@ -78,7 +78,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SocketProvider>
+        <SimpleSocketProvider>
           <NotificationProvider>
             <Router />
             <AudioFiles />
@@ -87,7 +87,7 @@ function App() {
             <OfflineIndicator />
             <Toaster />
           </NotificationProvider>
-        </SocketProvider>
+        </SimpleSocketProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

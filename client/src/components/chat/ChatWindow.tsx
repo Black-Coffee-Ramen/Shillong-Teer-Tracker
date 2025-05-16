@@ -123,16 +123,19 @@ export function ChatWindow({
       setMessages([...messages, tempMessage]);
       setNewMessage('');
       
-      // Send message to server via both HTTP and WebSocket
-      // The HTTP call ensures the message is stored in the database
-      await chatService.sendMessage(message);
+      // First, send message to server via HTTP to store in database
+      const savedMessage = await chatService.sendMessage(message);
       
-      // The socket call ensures real-time delivery
-      socketService.sendMessage({
-        content: message.content,
-        recipientId: message.recipientId,
-        groupId: message.groupId
-      });
+      // Then, emit the message through Socket.IO for real-time delivery
+      if (savedMessage) {
+        socketService.sendMessage({
+          id: savedMessage.id,
+          content: savedMessage.content,
+          recipientId: savedMessage.recipientId,
+          groupId: savedMessage.groupId,
+          userId: savedMessage.userId
+        });
+      }
     } catch (error) {
       console.error('Failed to send message:', error);
       toast({

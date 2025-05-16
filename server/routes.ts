@@ -808,19 +808,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   
-  // Set up Socket.IO server
+  // Set up Socket.IO server with minimal configuration for improved reliability
   const io = new SocketIOServer(httpServer, {
     cors: {
       origin: "*",
-      methods: ["GET", "POST", "OPTIONS"],
-      credentials: true
-    },
-    path: '/socket.io',
-    transports: ['polling', 'websocket'],
-    connectTimeout: 45000,
-    pingTimeout: 30000,
-    pingInterval: 25000,
-    allowEIO3: true
+      methods: ["GET", "POST"]
+    }
   });
   
   // Set up Socket.IO event handlers
