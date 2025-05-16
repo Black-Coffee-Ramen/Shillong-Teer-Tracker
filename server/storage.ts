@@ -19,6 +19,7 @@ export interface IStorage {
   getResultByDate(date: Date): Promise<Result | undefined>;
   createResult(result: InsertResult): Promise<Result>;
   updateResult(id: number, updates: Partial<InsertResult>): Promise<Result | undefined>;
+  deleteResult(id: number): Promise<boolean>;
   
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getUserTransactions(userId: number): Promise<Transaction[]>;
@@ -368,12 +369,6 @@ export class MemStorage implements IStorage {
   
   async exportBets(startDate?: Date, endDate?: Date): Promise<Bet[]> {
     const bets = Array.from(this.bets.values());
-    console.log(`exportBets called with ${bets.length} total bets`);
-    
-    // For debugging
-    bets.forEach(bet => {
-      console.log(`Bet ID ${bet.id}, date: ${bet.date.toISOString()}, user: ${bet.userId}, amount: ${bet.amount}`);
-    });
     
     // If no date filters, return all bets
     if (!startDate && !endDate) {
@@ -393,12 +388,10 @@ export class MemStorage implements IStorage {
     
     if (startDate) {
       startDateStr = formatDateString(startDate);
-      console.log("Start date filter:", startDateStr);
     }
     
     if (endDate) {
       endDateStr = formatDateString(endDate);
-      console.log("End date filter:", endDateStr);
     }
     
     const filteredBets = bets.filter(bet => {
@@ -415,11 +408,9 @@ export class MemStorage implements IStorage {
         return false;
       }
       
-      console.log(`Bet ID ${bet.id} with date ${betDateStr} included in results`);
       return true;
     }).sort((a, b) => b.date.getTime() - a.date.getTime());
     
-    console.log(`exportBets returning ${filteredBets.length} filtered bets`);
     return filteredBets;
   }
 }

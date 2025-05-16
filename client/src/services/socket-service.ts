@@ -21,13 +21,13 @@ class SocketService {
     
     // Use the current host, working in both development and production
     // Create the socket connection with the same origin as the current page
-    this.socket = io({
+    this.socket = io(window.location.origin, {
       path: '/socket.io',
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
-      transports: ['websocket', 'polling']  // Try WebSocket first, then fall back to polling
+      transports: ['polling', 'websocket']  // Start with polling which is more reliable in most environments
     });
     
     // Set up event listeners
