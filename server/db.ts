@@ -11,7 +11,7 @@ console.log("DATABASE_URL environment variable check:",
 
 // Force the use of in-memory storage for local development
 // Change this to false if you want to use a real database
-const FORCE_IN_MEMORY = false;
+const FORCE_IN_MEMORY = true;
 
 // Determine if we should use a real database
 const useRealDatabase = !FORCE_IN_MEMORY && 
