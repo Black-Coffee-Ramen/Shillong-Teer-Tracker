@@ -60,7 +60,7 @@ export class MemStorage implements IStorage {
     this.users.set(1, {
       id: 1,
       username: "admin",
-      password: "c6ba91b90d922e159893f46c387e5dc49e8a0b2aec2230b9755e2d5ac72fd5509c89c6b33f533c02f8b65b7a21c7ac3b4b0b4e7b6a7e8f1d2c8f9e0a4b5f3e8.1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p", // scrypt hashed "password123"
+      password: "9397a2ba5aa4419412c027dfeb0a6aa79eb4df1da76ee5f33c892bf3adfbe220f64020d1ee5c62507761f988409b0267ed933dee64c0c49e69d2067132cb6016.20c7a33d8d2080b1a76779f998865da8", // scrypt hashed "password123"
       balance: 10000,
       name: "Admin User",
       email: "admin@example.com",
@@ -73,7 +73,7 @@ export class MemStorage implements IStorage {
     this.users.set(2, {
       id: 2,
       username: "user",
-      password: "c6ba91b90d922e159893f46c387e5dc49e8a0b2aec2230b9755e2d5ac72fd5509c89c6b33f533c02f8b65b7a21c7ac3b4b0b4e7b6a7e8f1d2c8f9e0a4b5f3e8.1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p", // scrypt hashed "password123"
+      password: "9397a2ba5aa4419412c027dfeb0a6aa79eb4df1da76ee5f33c892bf3adfbe220f64020d1ee5c62507761f988409b0267ed933dee64c0c49e69d2067132cb6016.20c7a33d8d2080b1a76779f998865da8", // scrypt hashed "password123"
       balance: 5000,
       name: "Regular User",
       email: "user@example.com",

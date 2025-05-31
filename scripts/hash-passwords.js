@@ -1,5 +1,5 @@
-const { scrypt, randomBytes } = require('crypto');
-const { promisify } = require('util');
+import { scrypt, randomBytes } from 'crypto';
+import { promisify } from 'util';
 
 const scryptAsync = promisify(scrypt);
 
