@@ -60,8 +60,8 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
           </div>
         </div>
         
-        {/* Modern grid with the pattern 00,10,20... in rows - Enlarged for mobile */}
-        <div className="grid grid-cols-10 gap-3 sm:gap-4">
+        {/* Modern grid with the pattern 00,10,20... in rows - Proper spacing to prevent overlap */}
+        <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 sm:gap-3">
           {Array.from({ length: 10 }, (_, row) => (
             // For each row, create 10 columns (0-9) with the pattern
             Array.from({ length: 10 }, (_, col) => {
@@ -76,7 +76,7 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
                   key={num}
                   onClick={() => onNumberSelect(num)}
                   className={cn(
-                    "w-10 h-10 sm:w-12 sm:h-12 text-sm sm:text-base font-medium rounded-lg flex items-center justify-center transition-all duration-200 relative touch-manipulation active:scale-95",
+                    "min-w-[44px] min-h-[44px] w-full h-12 sm:w-12 sm:h-12 text-sm sm:text-base font-medium rounded-lg flex items-center justify-center transition-all duration-200 relative touch-manipulation active:scale-95",
                     isSelected 
                       ? "bg-purple-700 text-white hover:bg-purple-800 shadow-md" 
                       : isPreviouslyBet
