@@ -238,34 +238,31 @@ export default function PlayPage() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                {/* New Betting Interface with Server-Side Time Validation */}
-                <BettingInterface />
-                
-                {/* Bet History Table */}
-                <div className="card-modern p-6">
-                  <BetHistory />
-                </div>
+            <div className="space-y-6">
+              {/* Number Selection Grid - Full Width */}
+              <div className="card-modern p-6">
+                <h3 className="text-gray-800 text-lg font-medium mb-4">Select Numbers</h3>
+                <NumberGrid 
+                  onNumberSelect={handleNumberSelect}
+                  selectedNumbers={selectedNumbers}
+                />
+                {selectedNumbers.length > 0 && (
+                  <div className="mt-4">
+                    <BettingForm 
+                      selectedNumbers={selectedNumbers}
+                      selectedRound={selectedRound}
+                      onResetSelection={resetSelection}
+                    />
+                  </div>
+                )}
               </div>
-              <div>
-                {/* Number Selection Grid */}
-                <div className="card-modern p-6 mb-6">
-                  <h3 className="text-gray-800 text-lg font-medium mb-4">Select Numbers</h3>
-                  <NumberGrid 
-                    onNumberSelect={handleNumberSelect}
-                    selectedNumbers={selectedNumbers}
-                  />
-                  {selectedNumbers.length > 0 && (
-                    <div className="mt-4">
-                      <BettingForm 
-                        selectedNumbers={selectedNumbers}
-                        selectedRound={selectedRound}
-                        onResetSelection={resetSelection}
-                      />
-                    </div>
-                  )}
-                </div>
+              
+              {/* New Betting Interface with Server-Side Time Validation */}
+              <BettingInterface />
+              
+              {/* Bet History Table */}
+              <div className="card-modern p-6">
+                <BetHistory />
               </div>
             </div>
           )}
