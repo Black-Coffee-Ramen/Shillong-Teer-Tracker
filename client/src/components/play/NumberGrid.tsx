@@ -61,7 +61,7 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
         </div>
         
         {/* Modern grid with the pattern 00,10,20... in rows - Enlarged for mobile */}
-        <div className="grid grid-cols-10 gap-2 sm:gap-2.5">
+        <div className="grid grid-cols-10 gap-3 sm:gap-4">
           {Array.from({ length: 10 }, (_, row) => (
             // For each row, create 10 columns (0-9) with the pattern
             Array.from({ length: 10 }, (_, col) => {
