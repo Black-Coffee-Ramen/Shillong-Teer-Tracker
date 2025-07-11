@@ -9,6 +9,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Serve static files from public directory
+app.use(express.static(path.resolve(process.cwd(), "public")));
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -63,7 +66,7 @@ app.use((req, res, next) => {
   // Try fallback ports if the primary port is in use
   const tryPorts = [3000, 3001, 3002, 5000, 8080];
   
-  const tryListen = (portIndex = 0) => {
+  const tryListen = async (portIndex = 0): Promise<void> => {
     if (portIndex >= tryPorts.length) {
       log('All ports are in use. Please free up a port and try again.');
       process.exit(1);
@@ -71,33 +74,33 @@ app.use((req, res, next) => {
     }
     
     const port = tryPorts[portIndex];
-    server.listen({
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
-      log(`serving on port ${port}`);
-      // Save the successful port to a file for the APK build script to read
-      try {
-        // Get current directory
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-        fs.writeFileSync(path.join(__dirname, '..', '.port'), port.toString());
-        log(`Port ${port} saved to .port file`);
-      } catch (err) {
-        log(`Could not save port to file: ${err}`);
-      }
-    }).on('error', (err) => {
-      // Using type assertion to handle the error code
-      const serverError = err as { code?: string };
-      if (serverError.code === 'EADDRINUSE') {
-        log(`Port ${port} is already in use, trying next port...`);
-        tryListen(portIndex + 1);
-      } else {
-        throw err;
-      }
+    
+    return new Promise((resolve, reject) => {
+      const serverInstance = server.listen(port, "0.0.0.0", () => {
+        log(`serving on port ${port}`);
+        // Save the successful port to a file for the APK build script to read
+        try {
+          // Get current directory
+          const __filename = fileURLToPath(import.meta.url);
+          const __dirname = path.dirname(__filename);
+          fs.writeFileSync(path.join(__dirname, '..', '.port'), port.toString());
+          log(`Port ${port} saved to .port file`);
+        } catch (err) {
+          log(`Could not save port to file: ${err}`);
+        }
+        resolve();
+      }).on('error', async (err: any) => {
+        if (err.code === 'EADDRINUSE') {
+          log(`Port ${port} is already in use, trying next port...`);
+          serverInstance.close();
+          await tryListen(portIndex + 1);
+          resolve();
+        } else {
+          reject(err);
+        }
+      });
     });
   };
   
-  tryListen();
+  await tryListen();
 })();

@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
+import path from "path";
 import { storage } from "./db-storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
@@ -34,9 +35,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/support", supportRoutes);
   
   // Handle service worker requests with the correct MIME type
-  app.get("/service-worker.js", (_req, res, next) => {
+  app.get("/service-worker.js", (_req, res) => {
     res.setHeader("Content-Type", "application/javascript");
-    next();
+    res.sendFile(path.resolve(process.cwd(), "public", "service-worker.js"));
   });
 
   // API Routes
