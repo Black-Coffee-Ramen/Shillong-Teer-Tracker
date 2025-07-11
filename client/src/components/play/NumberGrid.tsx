@@ -41,27 +41,27 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
       
       <div className="mb-4 overflow-hidden">
         {/* Selected indicators */}
-        <div className="flex justify-between items-center mb-3">
+        <div className="flex justify-between items-center mb-4">
           <div className="flex -space-x-2">
             {selectedNumbers.slice(0, 3).map(num => (
-              <div key={`indicator-${num}`} className="w-6 h-6 rounded-full bg-purple-700 text-white text-xs flex items-center justify-center font-medium border-2 border-white">
+              <div key={`indicator-${num}`} className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-purple-700 text-white text-sm font-medium flex items-center justify-center border-2 border-white shadow-sm">
                 {formatNumber(num)}
               </div>
             ))}
             {selectedNumbers.length > 3 && (
-              <div className="w-6 h-6 rounded-full bg-gray-100 text-gray-700 text-xs flex items-center justify-center font-medium border-2 border-white">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gray-100 text-gray-700 text-sm font-medium flex items-center justify-center border-2 border-white shadow-sm">
                 +{selectedNumbers.length - 3}
               </div>
             )}
           </div>
           
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 font-medium">
             {selectedNumbers.length} selected
           </div>
         </div>
         
-        {/* Modern grid with the pattern 00,10,20... in rows */}
-        <div className="grid grid-cols-10 gap-1.5">
+        {/* Modern grid with the pattern 00,10,20... in rows - Enlarged for mobile */}
+        <div className="grid grid-cols-10 gap-2 sm:gap-2.5">
           {Array.from({ length: 10 }, (_, row) => (
             // For each row, create 10 columns (0-9) with the pattern
             Array.from({ length: 10 }, (_, col) => {
@@ -76,17 +76,17 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
                   key={num}
                   onClick={() => onNumberSelect(num)}
                   className={cn(
-                    "w-8 h-8 text-sm rounded flex items-center justify-center transition-colors relative",
+                    "w-10 h-10 sm:w-12 sm:h-12 text-sm sm:text-base font-medium rounded-lg flex items-center justify-center transition-all duration-200 relative touch-manipulation active:scale-95",
                     isSelected 
-                      ? "bg-purple-700 text-white hover:bg-purple-800" 
+                      ? "bg-purple-700 text-white hover:bg-purple-800 shadow-md" 
                       : isPreviouslyBet
-                        ? "bg-gray-100 text-gray-800 hover:bg-gray-200 border border-purple-300"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        ? "bg-gray-100 text-gray-800 hover:bg-gray-200 border-2 border-purple-300 hover:border-purple-400"
+                        : "bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300 hover:border-gray-400"
                   )}
                 >
                   {formatNumber(num)}
                   {isPreviouslyBet && !isSelected && (
-                    <span className="absolute -top-1 -right-1 bg-purple-500 rounded-full w-1.5 h-1.5"></span>
+                    <span className="absolute -top-1 -right-1 bg-purple-500 rounded-full w-2 h-2 sm:w-2.5 sm:h-2.5"></span>
                   )}
                 </button>
               );
@@ -96,37 +96,37 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
       </div>
       
       {/* Legend */}
-      <div className="flex items-center gap-6 mb-4 bg-gray-50 p-2 rounded-md">
+      <div className="flex items-center gap-6 mb-4 bg-gray-50 p-3 rounded-lg">
         <div className="flex items-center">
-          <div className="w-4 h-4 bg-purple-700 rounded-sm mr-2"></div>
-          <span className="text-gray-600 text-xs">Selected</span>
+          <div className="w-5 h-5 bg-purple-700 rounded-lg mr-3 shadow-sm"></div>
+          <span className="text-gray-600 text-sm font-medium">Selected</span>
         </div>
         <div className="flex items-center">
-          <div className="w-4 h-4 bg-gray-100 border border-purple-300 rounded-sm mr-2 relative">
-            <span className="absolute -top-0.5 -right-0.5 bg-purple-500 rounded-full w-1.5 h-1.5"></span>
+          <div className="w-5 h-5 bg-gray-100 border-2 border-purple-300 rounded-lg mr-3 relative">
+            <span className="absolute -top-1 -right-1 bg-purple-500 rounded-full w-2 h-2"></span>
           </div>
-          <span className="text-gray-600 text-xs">Previously Bet</span>
+          <span className="text-gray-600 text-sm font-medium">Previously Bet</span>
         </div>
       </div>
       
       {/* Selected Numbers */}
-      <div className="mb-4 bg-gray-50 rounded-md p-3 border border-gray-100">
-        <p className="text-gray-700 text-sm font-medium mb-2">Selected Numbers:</p>
-        <div className="flex flex-wrap gap-2">
+      <div className="mb-4 bg-gray-50 rounded-lg p-4 border border-gray-100">
+        <p className="text-gray-700 text-sm font-medium mb-3">Selected Numbers:</p>
+        <div className="flex flex-wrap gap-2.5">
           {selectedNumbers.length === 0 ? (
             <div className="text-gray-400 text-sm italic">No numbers selected yet</div>
           ) : (
             selectedNumbers.map(num => (
-              <div key={num} className="bg-white border border-gray-200 rounded-md px-2 py-1 text-sm flex items-center">
+              <div key={num} className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium flex items-center shadow-sm">
                 {formatNumber(num)}
                 <button 
-                  className="ml-2 text-gray-400 hover:text-purple-700"
+                  className="ml-2.5 text-gray-400 hover:text-purple-700 transition-colors p-1 rounded touch-manipulation"
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent the grid button from being clicked
                     onNumberSelect(num);
                   }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
@@ -139,11 +139,11 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
       
       {/* Previously Bet Numbers */}
       {previouslyBetNumbers.length > 0 && (
-        <div className="bg-gray-50 rounded-md p-3 border border-gray-100">
-          <p className="text-gray-700 text-sm font-medium mb-2">Your Previously Bet Numbers:</p>
-          <div className="flex flex-wrap gap-2">
+        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+          <p className="text-gray-700 text-sm font-medium mb-3">Your Previously Bet Numbers:</p>
+          <div className="flex flex-wrap gap-2.5">
             {previouslyBetNumbers.map(num => (
-              <div key={`prev-${num}`} className="bg-white border border-gray-200 border-purple-200 rounded-md px-2 py-1 text-sm text-gray-600">
+              <div key={`prev-${num}`} className="bg-white border-2 border-purple-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 shadow-sm">
                 {formatNumber(num)}
               </div>
             ))}
