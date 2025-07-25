@@ -60,8 +60,8 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
           </div>
         </div>
         
-        {/* Compact 10x10 grid - Mobile optimized */}
-        <div className="grid grid-cols-10 gap-1 sm:gap-2">
+        {/* Mobile-optimized 10x10 grid with larger touch targets */}
+        <div className="grid grid-cols-10 gap-1.5 sm:gap-2 p-2">
           {Array.from({ length: 10 }, (_, row) => (
             // For each row, create 10 columns (0-9) with the pattern
             Array.from({ length: 10 }, (_, col) => {
@@ -76,17 +76,17 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
                   key={num}
                   onClick={() => onNumberSelect(num)}
                   className={cn(
-                    "w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 text-xs sm:text-sm font-medium rounded-md flex items-center justify-center transition-all duration-200 relative touch-manipulation active:scale-95",
+                    "min-h-[32px] w-full aspect-square text-xs sm:text-sm font-semibold rounded-lg flex items-center justify-center transition-all duration-200 relative touch-manipulation active:scale-95 border-2 shadow-sm",
                     isSelected 
-                      ? "bg-purple-700 text-white hover:bg-purple-800 shadow-md" 
+                      ? "bg-purple-700 text-white hover:bg-purple-800 border-purple-600 shadow-lg transform scale-105" 
                       : isPreviouslyBet
-                        ? "bg-gray-100 text-gray-800 hover:bg-gray-200 border border-purple-300 hover:border-purple-400"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300 hover:border-gray-400"
+                        ? "bg-gray-50 text-gray-900 hover:bg-gray-100 border-purple-300 hover:border-purple-500"
+                        : "bg-white text-gray-900 hover:bg-gray-50 border-gray-300 hover:border-gray-500"
                   )}
                 >
                   {formatNumber(num)}
                   {isPreviouslyBet && !isSelected && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-purple-500 rounded-full w-1.5 h-1.5 sm:w-2 sm:h-2"></span>
+                    <span className="absolute -top-1 -right-1 bg-purple-500 rounded-full w-2.5 h-2.5 sm:w-3 sm:h-3 border border-white"></span>
                   )}
                 </button>
               );
