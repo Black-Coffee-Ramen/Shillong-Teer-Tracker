@@ -60,38 +60,53 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
           </div>
         </div>
         
-        {/* Modern grid with the pattern 00,10,20... in rows - Mobile optimized */}
-        <div className="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-3 md:gap-4">
-          {Array.from({ length: 10 }, (_, row) => (
-            // For each row, create 10 columns (0-9) with the pattern
-            Array.from({ length: 10 }, (_, col) => {
-              // Calculate the number based on row and column
-              const num = row + (col * 10);
-              // Check if selected or previously bet
-              const isSelected = selectedNumbers.includes(num);
-              const isPreviouslyBet = previouslyBetNumbers.includes(num);
-              
-              return (
-                <button
-                  key={num}
-                  onClick={() => onNumberSelect(num)}
-                  className={cn(
-                    "min-w-[56px] min-h-[56px] w-full h-16 md:h-14 lg:w-14 lg:h-14 text-lg md:text-base lg:text-lg font-medium rounded-lg flex items-center justify-center transition-all duration-200 relative touch-manipulation active:scale-95",
-                    isSelected 
-                      ? "bg-purple-700 text-white hover:bg-purple-800 shadow-md" 
-                      : isPreviouslyBet
-                        ? "bg-gray-100 text-gray-800 hover:bg-gray-200 border-2 border-purple-300 hover:border-purple-400"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-200 border border-gray-300 hover:border-gray-400"
-                  )}
-                >
-                  {formatNumber(num)}
-                  {isPreviouslyBet && !isSelected && (
-                    <span className="absolute -top-1 -right-1 bg-purple-500 rounded-full w-2 h-2 sm:w-2.5 sm:h-2.5"></span>
-                  )}
-                </button>
-              );
-            })
-          )).flat()}
+        {/* Horizontal scrolling number grid - Mobile optimized single row */}
+        <div className="relative">
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex gap-3 pb-2 min-w-max">
+              {Array.from({ length: 100 }, (_, index) => {
+                const num = index;
+                // Check if selected or previously bet
+                const isSelected = selectedNumbers.includes(num);
+                const isPreviouslyBet = previouslyBetNumbers.includes(num);
+                
+                return (
+                  <button
+                    key={num}
+                    onClick={() => onNumberSelect(num)}
+                    className={cn(
+                      "flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 text-lg font-medium rounded-lg flex items-center justify-center transition-all duration-200 relative touch-manipulation active:scale-95 border-2",
+                      isSelected 
+                        ? "bg-purple-700 text-white hover:bg-purple-800 shadow-md border-purple-700" 
+                        : isPreviouslyBet
+                          ? "bg-gray-100 text-gray-800 hover:bg-gray-200 border-purple-300 hover:border-purple-400"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-300 hover:border-gray-400"
+                    )}
+                  >
+                    {formatNumber(num)}
+                    {isPreviouslyBet && !isSelected && (
+                      <span className="absolute -top-1 -right-1 bg-purple-500 rounded-full w-2.5 h-2.5"></span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Scroll indicators */}
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent pointer-events-none"></div>
+        </div>
+        
+        {/* Horizontal scroll hint */}
+        <div className="mt-3 flex items-center justify-center text-xs text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+            <path d="m9 18 6-6-6-6"/>
+          </svg>
+          Swipe left and right to view all numbers
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2 rotate-180">
+            <path d="m9 18 6-6-6-6"/>
+          </svg>
         </div>
       </div>
       
