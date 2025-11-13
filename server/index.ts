@@ -62,9 +62,9 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Use port 3000 for local development and APK
+  // Use port 5000 as primary port for Replit deployment
   // Try fallback ports if the primary port is in use
-  const tryPorts = [3000, 3001, 3002, 5000, 8080];
+  const tryPorts = [5000, 3000, 3001, 3002, 8080];
   
   const tryListen = async (portIndex = 0): Promise<void> => {
     if (portIndex >= tryPorts.length) {
