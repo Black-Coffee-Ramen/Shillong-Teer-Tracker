@@ -282,13 +282,17 @@ export function setupAuth(app: Express) {
     const adminUser = await storage.getUserByUsername("admin");
     if (!adminUser) {
       const hashedPassword = await hashPassword("admin123");
-      await storage.createUser({
+      const admin = await storage.createUser({
         username: "admin",
         password: hashedPassword,
         name: "Admin",
         email: "admin@example.com"
       });
-      console.log("Admin user created");
+      
+      // Give admin starting balance
+      await storage.updateUserBalance(admin.id, 10000);
+      
+      console.log("Admin user created with username: admin, password: admin123");
     }
     
     // Create demo user
@@ -303,8 +307,8 @@ export function setupAuth(app: Express) {
         phone: "9876543210"
       });
       
-      // Create sample bets for the demo user
-      const today = new Date();
+      // Give demo user starting balance
+      await storage.updateUserBalance(user.id, 5000);
       
       // Add a few sample bets
       await storage.placeBet({

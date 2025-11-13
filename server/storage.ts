@@ -56,86 +56,9 @@ export class MemStorage implements IStorage {
       checkPeriod: 86400000,
     });
     
-    // Create an admin user for testing - using scrypt hashed passwords
-    this.users.set(1, {
-      id: 1,
-      username: "admin",
-      password: "9397a2ba5aa4419412c027dfeb0a6aa79eb4df1da76ee5f33c892bf3adfbe220f64020d1ee5c62507761f988409b0267ed933dee64c0c49e69d2067132cb6016.20c7a33d8d2080b1a76779f998865da8", // scrypt hashed "password123"
-      balance: 10000,
-      name: "Admin User",
-      email: "admin@example.com",
-      phone: null,
-      isVerified: true
-    });
-    this.currentUserId++;
+    // Demo users are created by auth.ts to avoid password conflicts
     
-    // Add a regular user
-    this.users.set(2, {
-      id: 2,
-      username: "user",
-      password: "9397a2ba5aa4419412c027dfeb0a6aa79eb4df1da76ee5f33c892bf3adfbe220f64020d1ee5c62507761f988409b0267ed933dee64c0c49e69d2067132cb6016.20c7a33d8d2080b1a76779f998865da8", // scrypt hashed "password123"
-      balance: 5000,
-      name: "Regular User",
-      email: "user@example.com",
-      phone: null,
-      isVerified: true
-    });
-    this.currentUserId++;
-    
-    // Add some test bets for export functionality
-    // May 12, 2025 bets
-    const may12 = new Date('2025-05-12T10:00:00Z');
-    this.bets.set(1, {
-      id: 1,
-      userId: 2,
-      number: 42,
-      amount: 100,
-      round: 1,
-      date: may12,
-      isWin: true,
-      winAmount: 800
-    });
-    this.currentBetId++;
-    
-    this.bets.set(2, {
-      id: 2,
-      userId: 2,
-      number: 17,
-      amount: 200,
-      round: 2,
-      date: may12,
-      isWin: false,
-      winAmount: 0
-    });
-    this.currentBetId++;
-    
-    // May 13, 2025 bets
-    const may13 = new Date('2025-05-13T09:30:00Z');
-    this.bets.set(3, {
-      id: 3,
-      userId: 2,
-      number: 55,
-      amount: 150,
-      round: 1,
-      date: may13,
-      isWin: false,
-      winAmount: 0
-    });
-    this.currentBetId++;
-    
-    this.bets.set(4, {
-      id: 4,
-      userId: 1, // admin user
-      number: 78,
-      amount: 500,
-      round: 2,
-      date: may13,
-      isWin: true,
-      winAmount: 4000
-    });
-    this.currentBetId++;
-    
-    // Full historical results data as of March 30, 2025
+    // Historical results data
     const resultsData = [
       { date: "2025-03-29", round1: 61, round2: 51 },
       { date: "2025-03-28", round1: 86, round2: 25 },
