@@ -101,10 +101,17 @@ export default function AuthPage() {
   const registerErrors = registerForm.formState.errors;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8 rounded-lg overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-50/30 to-blue-50/20"></div>
+      
+      {/* Decorative elements */}
+      <div className="absolute top-0 left-0 w-72 h-72 bg-primary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+      
+      <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8 relative z-10">
         {/* Left side: Auth Form */}
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100">
+        <div className="bg-white/80 backdrop-blur-lg p-8 rounded-2xl shadow-2xl border border-white/50">
           <div className="flex justify-center mb-6">
             <div className="flex items-center">
               <div className="bg-primary w-10 h-10 rounded-full flex items-center justify-center mr-2">
@@ -384,33 +391,49 @@ export default function AuthPage() {
         </div>
         
         {/* Right side: Hero Section */}
-        <div className="bg-gray-900 p-8 hidden md:flex md:flex-col md:justify-center rounded-lg">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">Welcome to Shillong Teer</h2>
-            <p className="text-gray-300 mb-8">The premier platform for Shillong Teer betting with live results and secure payments.</p>
+        <div className="bg-gradient-to-br from-primary via-purple-600 to-blue-600 p-8 hidden md:flex md:flex-col md:justify-center rounded-2xl shadow-2xl relative overflow-hidden">
+          {/* Decorative pattern overlay */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0" style={{backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px'}}></div>
+          </div>
+          
+          <div className="text-center relative z-10">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm mb-6">
+              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center">
+                <span className="text-primary font-bold text-3xl">S</span>
+              </div>
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-4 drop-shadow-lg">Welcome to Shillong Teer</h2>
+            <p className="text-white/90 mb-8 text-lg">The premier platform for Shillong Teer betting with live results and secure payments.</p>
             
             <div className="space-y-4">
-              <div className="flex items-center text-left bg-secondary/40 rounded-lg p-4">
-                <i className="ri-gamepad-line text-2xl text-accent mr-4"></i>
+              <div className="flex items-center text-left bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300">
+                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mr-4">
+                  <i className="ri-gamepad-line text-2xl text-white"></i>
+                </div>
                 <div>
-                  <h3 className="text-white font-medium">Place Bets Easily</h3>
-                  <p className="text-gray-400 text-sm">Select from 00-99 numbers and place bets with just a few taps</p>
+                  <h3 className="text-white font-semibold">Place Bets Easily</h3>
+                  <p className="text-white/80 text-sm">Select from 00-99 numbers and place bets with just a few taps</p>
                 </div>
               </div>
               
-              <div className="flex items-center text-left bg-secondary/40 rounded-lg p-4">
-                <i className="ri-wallet-3-line text-2xl text-accent mr-4"></i>
+              <div className="flex items-center text-left bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300">
+                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mr-4">
+                  <i className="ri-wallet-3-line text-2xl text-white"></i>
+                </div>
                 <div>
-                  <h3 className="text-white font-medium">Secure Wallet</h3>
-                  <p className="text-gray-400 text-sm">Deposit and withdraw funds securely through various payment methods</p>
+                  <h3 className="text-white font-semibold">Secure Wallet</h3>
+                  <p className="text-white/80 text-sm">Deposit and withdraw funds securely through various payment methods</p>
                 </div>
               </div>
               
-              <div className="flex items-center text-left bg-secondary/40 rounded-lg p-4">
-                <i className="ri-ai-generate text-2xl text-accent mr-4"></i>
+              <div className="flex items-center text-left bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all duration-300">
+                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mr-4">
+                  <i className="ri-ai-generate text-2xl text-white"></i>
+                </div>
                 <div>
-                  <h3 className="text-white font-medium">AI Predictions</h3>
-                  <p className="text-gray-400 text-sm">Get number suggestions based on historical trends and patterns</p>
+                  <h3 className="text-white font-semibold">AI Predictions</h3>
+                  <p className="text-white/80 text-sm">Get number suggestions based on historical trends and patterns</p>
                 </div>
               </div>
             </div>

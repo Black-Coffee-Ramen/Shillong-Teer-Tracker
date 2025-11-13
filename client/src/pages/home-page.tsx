@@ -14,11 +14,14 @@ export default function HomePage() {
   const { user } = useAuth();
   
   return (
-    <div className="py-4">
+    <div className="py-6 px-4 max-w-7xl mx-auto">
       {/* Main Betting Section */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-xl font-bold text-gray-900">Shillong Teer</h1>
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">Shillong Teer</h1>
+            <p className="text-sm text-gray-600">Traditional archery-based lottery game</p>
+          </div>
           <div className="flex items-center gap-2">
             <select 
               className="text-sm border border-gray-200 rounded px-2 py-1 text-gray-700 bg-white"
@@ -36,24 +39,28 @@ export default function HomePage() {
       </div>
       
       {/* Today's Results Preview */}
-      <div className="card-modern p-5 mb-6">
-        <h2 className="section-title flex items-center">
-          <Trophy className="mr-2 h-4 w-4 text-primary" />
+      <div className="card-modern p-6 mb-8">
+        <h2 className="section-title flex items-center text-xl mb-4">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mr-3">
+            <Trophy className="h-5 w-5 text-primary" />
+          </div>
           Today's Results
         </h2>
         <ResultsPreview />
       </div>
       
       {/* Upcoming Draws & Countdown */}
-      <div className="card-modern p-5 mb-6">
-        <h2 className="section-title flex items-center">
-          <Timer className="mr-2 h-4 w-4 text-primary" />
+      <div className="card-modern p-6 mb-8">
+        <h2 className="section-title flex items-center text-xl mb-5">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mr-3">
+            <Timer className="h-5 w-5 text-primary" />
+          </div>
           Upcoming Draws
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
           {/* Round 1 */}
-          <div className="card-modern border-2 border-gray-100 p-4">
+          <div className="bg-gradient-to-br from-primary/5 to-purple-50/50 border-2 border-primary/20 rounded-xl p-5 hover:shadow-lg transition-all duration-300">
             <div className="flex justify-between items-center mb-2">
               <div className="flex items-center">
                 <div className="bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center mr-2">
@@ -67,7 +74,7 @@ export default function HomePage() {
           </div>
           
           {/* Round 2 */}
-          <div className="card-modern border-2 border-gray-100 p-4">
+          <div className="bg-gradient-to-br from-blue-50/50 to-purple-50/50 border-2 border-blue-200/30 rounded-xl p-5 hover:shadow-lg transition-all duration-300">
             <div className="flex justify-between items-center mb-2">
               <div className="flex items-center">
                 <div className="bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center mr-2">
@@ -82,8 +89,8 @@ export default function HomePage() {
         </div>
         
         <Link href="/play">
-          <Button className="w-full bg-primary text-white hover:bg-primary/90 py-3 rounded-md font-medium flex items-center justify-center h-12">
-            <Play className="mr-2 h-5 w-5" /> Place Bet
+          <Button className="w-full bg-gradient-to-r from-primary to-purple-600 text-white hover:from-primary/90 hover:to-purple-600/90 py-3 rounded-xl font-semibold flex items-center justify-center h-14 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
+            <Play className="mr-2 h-5 w-5" /> Place Your Bet Now
           </Button>
         </Link>
       </div>

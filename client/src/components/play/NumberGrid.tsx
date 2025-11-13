@@ -36,8 +36,13 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
   };
   
   return (
-    <div className="bg-white rounded-lg p-5 mb-5 shadow-sm border border-gray-100">
-      <h3 className="text-gray-800 font-semibold mb-4 text-lg">Select Your Number</h3>
+    <div className="bg-gradient-to-br from-white to-gray-50/50 rounded-xl p-6 mb-6 shadow-lg border border-gray-100">
+      <h3 className="text-gray-900 font-bold mb-5 text-xl flex items-center">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mr-3">
+          <span className="text-primary font-bold">🎯</span>
+        </div>
+        Select Your Number
+      </h3>
       
       <div className="mb-4 overflow-hidden">
         {/* Selected indicators */}
@@ -76,12 +81,12 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
                   key={num}
                   onClick={() => onNumberSelect(num)}
                   className={cn(
-                    "min-h-[32px] w-full aspect-square text-xs sm:text-sm font-semibold rounded-lg flex items-center justify-center transition-all duration-200 relative touch-manipulation active:scale-95 border-2 shadow-sm",
+                    "min-h-[32px] w-full aspect-square text-xs sm:text-sm font-bold rounded-lg flex items-center justify-center transition-all duration-200 relative touch-manipulation active:scale-95 border-2",
                     isSelected 
-                      ? "bg-purple-700 text-white hover:bg-purple-800 border-purple-600 shadow-lg transform scale-105" 
+                      ? "bg-gradient-to-br from-primary to-purple-700 text-white hover:from-primary/90 hover:to-purple-700/90 border-primary/60 shadow-lg transform scale-105 shadow-primary/30" 
                       : isPreviouslyBet
-                        ? "bg-gray-50 text-gray-900 hover:bg-gray-100 border-purple-300 hover:border-purple-500"
-                        : "bg-white text-gray-900 hover:bg-gray-50 border-gray-300 hover:border-gray-500"
+                        ? "bg-gradient-to-br from-gray-50 to-white text-gray-900 hover:from-purple-50 hover:to-white border-primary/30 hover:border-primary/60 shadow-sm"
+                        : "bg-white text-gray-900 hover:bg-gradient-to-br hover:from-gray-50 hover:to-white border-gray-200 hover:border-gray-400 shadow-sm hover:shadow"
                   )}
                 >
                   {formatNumber(num)}
@@ -96,13 +101,13 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
       </div>
       
       {/* Legend */}
-      <div className="flex items-center gap-6 mb-4 bg-gray-50 p-3 rounded-lg">
+      <div className="flex items-center gap-6 mb-4 bg-gradient-to-r from-gray-50 to-gray-100/50 p-4 rounded-xl border border-gray-200">
         <div className="flex items-center">
-          <div className="w-5 h-5 bg-purple-700 rounded-lg mr-3 shadow-sm"></div>
-          <span className="text-gray-600 text-sm font-medium">Selected</span>
+          <div className="w-6 h-6 bg-gradient-to-br from-primary to-purple-700 rounded-lg mr-3 shadow-md"></div>
+          <span className="text-gray-700 text-sm font-semibold">Selected</span>
         </div>
         <div className="flex items-center">
-          <div className="w-5 h-5 bg-gray-100 border-2 border-purple-300 rounded-lg mr-3 relative">
+          <div className="w-6 h-6 bg-gray-50 border-2 border-primary/30 rounded-lg mr-3 relative shadow-sm">
             <span className="absolute -top-1 -right-1 bg-purple-500 rounded-full w-2 h-2"></span>
           </div>
           <span className="text-gray-600 text-sm font-medium">Previously Bet</span>
