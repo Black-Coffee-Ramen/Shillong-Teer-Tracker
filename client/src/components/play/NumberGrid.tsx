@@ -36,34 +36,32 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
   };
   
   return (
-    <div className="bg-white rounded-2xl p-4 sm:p-5 mb-6 shadow-lg border border-gray-100">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-gray-900 font-bold text-lg sm:text-xl flex items-center">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mr-3">
-            <span className="text-2xl">🎯</span>
-          </div>
+    <div className="bg-white rounded-2xl p-4 sm:p-5 mb-6 shadow-sm">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-gray-900 font-bold text-lg flex items-center gap-2">
+          <span className="text-xl">🎯</span>
           Select Your Number
         </h3>
-        <div className="text-sm text-gray-600 font-medium bg-gray-100 px-3 py-1.5 rounded-full">
+        <div className="text-xs text-gray-600 font-medium">
           {selectedNumbers.length} selected
         </div>
       </div>
       
-      {/* Legend */}
-      <div className="flex items-center gap-4 mb-4 bg-gray-50 p-3 rounded-xl text-xs sm:text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-gradient-to-br from-primary to-purple-700 rounded-full shadow-md"></div>
-          <span className="text-gray-700 font-medium">Selected</span>
+      {/* Compact Legend */}
+      <div className="flex items-center gap-3 mb-3 text-xs text-gray-600">
+        <div className="flex items-center gap-1.5">
+          <div className="w-4 h-4 bg-gradient-to-br from-primary to-purple-700 rounded"></div>
+          <span>Selected</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
-          <span className="text-gray-600">Available</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-4 h-4 bg-gray-100 rounded"></div>
+          <span>Available</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 bg-gray-200 border-2 border-primary/40 rounded-full relative">
+        <div className="flex items-center gap-1.5">
+          <div className="w-4 h-4 bg-gray-100 rounded relative">
             <span className="absolute -top-0.5 -right-0.5 bg-primary rounded-full w-2 h-2"></span>
           </div>
-          <span className="text-gray-600">Previously Bet</span>
+          <span>Previously Bet</span>
         </div>
       </div>
       
@@ -84,17 +82,15 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
                     data-testid={`number-button-${num}`}
                     onClick={() => onNumberSelect(num)}
                     className={cn(
-                      "w-11 h-11 rounded-lg font-bold text-sm transition-all duration-200 relative touch-manipulation active:scale-95",
+                      "w-11 h-11 rounded-lg font-semibold text-sm transition-all duration-150 relative touch-manipulation active:scale-95",
                       isSelected 
-                        ? "bg-gradient-to-br from-primary to-purple-700 text-white shadow-lg scale-105" 
-                        : isPreviouslyBet
-                          ? "bg-gray-100 text-gray-900 border-2 border-primary/50 hover:border-primary"
-                          : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                        ? "bg-gradient-to-br from-primary to-purple-700 text-white shadow-md" 
+                        : "bg-gray-100 text-gray-900 hover:bg-gray-200"
                     )}
                   >
                     {formatNumber(num)}
                     {isPreviouslyBet && !isSelected && (
-                      <span className="absolute -top-1 -right-1 bg-primary rounded-full w-3 h-3 border-2 border-white"></span>
+                      <span className="absolute -top-1 -right-1 bg-primary rounded-full w-3 h-3"></span>
                     )}
                   </button>
                 );
