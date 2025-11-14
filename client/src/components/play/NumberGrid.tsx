@@ -68,9 +68,9 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
       </div>
       
       {/* Horizontal scrollable number grid */}
-      <div className="overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 mb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        <div className="inline-block min-w-full px-4 sm:px-0">
-          <div className="grid grid-cols-10 gap-1.5 sm:gap-2 w-fit mx-auto">
+      <div className="overflow-x-auto -mx-4 sm:mx-0 mb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+        <div className="inline-block px-4 sm:px-0">
+          <div className="grid grid-cols-10 gap-2 min-w-max">
             {Array.from({ length: 10 }, (_, row) => {
               // Each row shows: 00-90, 01-91, 02-92, etc.
               return Array.from({ length: 10 }, (_, col) => {
@@ -84,17 +84,17 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
                     data-testid={`number-button-${num}`}
                     onClick={() => onNumberSelect(num)}
                     className={cn(
-                      "w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base transition-all duration-200 relative touch-manipulation active:scale-95",
+                      "w-11 h-11 rounded-lg font-bold text-sm transition-all duration-200 relative touch-manipulation active:scale-95",
                       isSelected 
-                        ? "bg-gradient-to-br from-primary to-purple-700 text-white shadow-md scale-105 shadow-primary/20" 
+                        ? "bg-gradient-to-br from-primary to-purple-700 text-white shadow-lg scale-105" 
                         : isPreviouslyBet
-                          ? "bg-gray-200 text-gray-900 border-primary/40 border-2 hover:border-primary/60"
-                          : "bg-gray-200 text-gray-900 hover:bg-gray-300"
+                          ? "bg-gray-100 text-gray-900 border-2 border-primary/50 hover:border-primary"
+                          : "bg-gray-100 text-gray-900 hover:bg-gray-200"
                     )}
                   >
                     {formatNumber(num)}
                     {isPreviouslyBet && !isSelected && (
-                      <span className="absolute -top-0.5 -right-0.5 bg-primary rounded-full w-2.5 h-2.5 sm:w-3 sm:h-3 border border-white"></span>
+                      <span className="absolute -top-1 -right-1 bg-primary rounded-full w-3 h-3 border-2 border-white"></span>
                     )}
                   </button>
                 );
@@ -103,6 +103,22 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
           </div>
         </div>
       </div>
+      
+      <style>{`
+        .scrollbar-thin::-webkit-scrollbar {
+          height: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: #d1d5db;
+          border-radius: 3px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+          background: #9ca3af;
+        }
+      `}</style>
       
       {/* Selected Numbers Display */}
       {selectedNumbers.length > 0 && (
