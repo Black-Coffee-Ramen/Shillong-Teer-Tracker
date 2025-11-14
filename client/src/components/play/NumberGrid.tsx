@@ -36,120 +36,104 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
   };
   
   return (
-    <div className="bg-gradient-to-br from-white to-gray-50/50 rounded-xl p-6 mb-6 shadow-lg border border-gray-100">
-      <h3 className="text-gray-900 font-bold mb-5 text-xl flex items-center">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mr-3">
-          <span className="text-primary font-bold">🎯</span>
-        </div>
-        Select Your Number
-      </h3>
-      
-      <div className="mb-4 overflow-hidden">
-        {/* Selected indicators */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex -space-x-2">
-            {selectedNumbers.slice(0, 3).map(num => (
-              <div key={`indicator-${num}`} className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-purple-700 text-white text-sm font-medium flex items-center justify-center border-2 border-white shadow-sm">
-                {formatNumber(num)}
-              </div>
-            ))}
-            {selectedNumbers.length > 3 && (
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gray-100 text-gray-700 text-sm font-medium flex items-center justify-center border-2 border-white shadow-sm">
-                +{selectedNumbers.length - 3}
-              </div>
-            )}
+    <div className="bg-white rounded-2xl p-4 sm:p-5 mb-6 shadow-lg border border-gray-100">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-gray-900 font-bold text-lg sm:text-xl flex items-center">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mr-3">
+            <span className="text-2xl">🎯</span>
           </div>
-          
-          <div className="text-sm text-gray-500 font-medium">
-            {selectedNumbers.length} selected
-          </div>
-        </div>
-        
-        {/* Mobile-optimized 10x10 grid with larger touch targets */}
-        <div className="grid grid-cols-10 gap-1.5 sm:gap-2 p-2">
-          {Array.from({ length: 10 }, (_, row) => (
-            // For each row, create 10 columns (0-9) with the pattern
-            Array.from({ length: 10 }, (_, col) => {
-              // Calculate the number: row + (col * 10) gives us 00,10,20... pattern
-              const num = row + (col * 10);
-              // Check if selected or previously bet
-              const isSelected = selectedNumbers.includes(num);
-              const isPreviouslyBet = previouslyBetNumbers.includes(num);
-              
-              return (
-                <button
-                  key={num}
-                  onClick={() => onNumberSelect(num)}
-                  className={cn(
-                    "min-h-[32px] w-full aspect-square text-xs sm:text-sm font-bold rounded-lg flex items-center justify-center transition-all duration-200 relative touch-manipulation active:scale-95 border-2",
-                    isSelected 
-                      ? "bg-gradient-to-br from-primary to-purple-700 text-white hover:from-primary/90 hover:to-purple-700/90 border-primary/60 shadow-lg transform scale-105 shadow-primary/30" 
-                      : isPreviouslyBet
-                        ? "bg-gradient-to-br from-gray-50 to-white text-gray-900 hover:from-purple-50 hover:to-white border-primary/30 hover:border-primary/60 shadow-sm"
-                        : "bg-white text-gray-900 hover:bg-gradient-to-br hover:from-gray-50 hover:to-white border-gray-200 hover:border-gray-400 shadow-sm hover:shadow"
-                  )}
-                >
-                  {formatNumber(num)}
-                  {isPreviouslyBet && !isSelected && (
-                    <span className="absolute -top-1 -right-1 bg-purple-500 rounded-full w-2.5 h-2.5 sm:w-3 sm:h-3 border border-white"></span>
-                  )}
-                </button>
-              );
-            })
-          )).flat()}
+          Select Your Number
+        </h3>
+        <div className="text-sm text-gray-600 font-medium bg-gray-100 px-3 py-1.5 rounded-full">
+          {selectedNumbers.length} selected
         </div>
       </div>
       
       {/* Legend */}
-      <div className="flex items-center gap-6 mb-4 bg-gradient-to-r from-gray-50 to-gray-100/50 p-4 rounded-xl border border-gray-200">
-        <div className="flex items-center">
-          <div className="w-6 h-6 bg-gradient-to-br from-primary to-purple-700 rounded-lg mr-3 shadow-md"></div>
-          <span className="text-gray-700 text-sm font-semibold">Selected</span>
+      <div className="flex items-center gap-4 mb-4 bg-gray-50 p-3 rounded-xl text-xs sm:text-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 bg-gradient-to-br from-primary to-purple-700 rounded-full shadow-md"></div>
+          <span className="text-gray-700 font-medium">Selected</span>
         </div>
-        <div className="flex items-center">
-          <div className="w-6 h-6 bg-gray-50 border-2 border-primary/30 rounded-lg mr-3 relative shadow-sm">
-            <span className="absolute -top-1 -right-1 bg-purple-500 rounded-full w-2 h-2"></span>
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+          <span className="text-gray-600">Available</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 bg-gray-200 border-2 border-primary/40 rounded-full relative">
+            <span className="absolute -top-0.5 -right-0.5 bg-primary rounded-full w-2 h-2"></span>
           </div>
-          <span className="text-gray-600 text-sm font-medium">Previously Bet</span>
+          <span className="text-gray-600">Previously Bet</span>
         </div>
       </div>
       
-      {/* Selected Numbers */}
-      <div className="mb-4 bg-gray-50 rounded-lg p-4 border border-gray-100">
-        <p className="text-gray-700 text-sm font-medium mb-3">Selected Numbers:</p>
-        <div className="flex flex-wrap gap-2.5">
-          {selectedNumbers.length === 0 ? (
-            <div className="text-gray-400 text-sm italic">No numbers selected yet</div>
-          ) : (
-            selectedNumbers.map(num => (
-              <div key={num} className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium flex items-center shadow-sm">
+      {/* Horizontal scrollable number grid */}
+      <div className="space-y-2 mb-4">
+        {Array.from({ length: 10 }, (_, row) => {
+          // Each row shows: 00-90, 01-91, 02-92, etc.
+          const rowNumbers = Array.from({ length: 10 }, (_, col) => row + (col * 10));
+          
+          return (
+            <div 
+              key={`row-${row}`} 
+              className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 px-1"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {rowNumbers.map(num => {
+                const isSelected = selectedNumbers.includes(num);
+                const isPreviouslyBet = previouslyBetNumbers.includes(num);
+                
+                return (
+                  <button
+                    key={num}
+                    data-testid={`number-button-${num}`}
+                    onClick={() => onNumberSelect(num)}
+                    className={cn(
+                      "flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full font-bold text-base sm:text-lg transition-all duration-200 relative touch-manipulation active:scale-95",
+                      isSelected 
+                        ? "bg-gradient-to-br from-primary to-purple-700 text-white border-primary/60 shadow-lg scale-105 shadow-primary/20" 
+                        : isPreviouslyBet
+                          ? "bg-gray-200 text-gray-900 border-primary/40 border-2 hover:border-primary/60 shadow-sm"
+                          : "bg-gray-200 text-gray-900 border-transparent hover:bg-gray-300 shadow-sm"
+                    )}
+                  >
+                    {formatNumber(num)}
+                    {isPreviouslyBet && !isSelected && (
+                      <span className="absolute -top-0.5 -right-0.5 bg-primary rounded-full w-3 h-3 border-2 border-white"></span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* Selected Numbers Display */}
+      {selectedNumbers.length > 0 && (
+        <div className="bg-gradient-to-r from-primary/5 to-purple-50/50 rounded-xl p-4 border border-primary/20">
+          <p className="text-gray-700 text-sm font-semibold mb-3">Selected Numbers:</p>
+          <div className="flex flex-wrap gap-2">
+            {selectedNumbers.map(num => (
+              <div 
+                key={num} 
+                data-testid={`selected-number-${num}`}
+                className="bg-gradient-to-br from-primary to-purple-700 text-white rounded-full w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-sm font-bold shadow-lg relative"
+              >
                 {formatNumber(num)}
                 <button 
-                  className="ml-2.5 text-gray-400 hover:text-purple-700 transition-colors p-1 rounded touch-manipulation"
+                  className="absolute -top-1 -right-1 bg-white text-primary rounded-full w-5 h-5 flex items-center justify-center hover:bg-gray-100 transition-colors touch-manipulation shadow-md"
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent the grid button from being clicked
+                    e.stopPropagation();
                     onNumberSelect(num);
                   }}
+                  aria-label={`Remove ${formatNumber(num)}`}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                   </svg>
                 </button>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-      
-      {/* Previously Bet Numbers */}
-      {previouslyBetNumbers.length > 0 && (
-        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-          <p className="text-gray-700 text-sm font-medium mb-3">Your Previously Bet Numbers:</p>
-          <div className="flex flex-wrap gap-2.5">
-            {previouslyBetNumbers.map(num => (
-              <div key={`prev-${num}`} className="bg-white border-2 border-purple-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 shadow-sm">
-                {formatNumber(num)}
               </div>
             ))}
           </div>
