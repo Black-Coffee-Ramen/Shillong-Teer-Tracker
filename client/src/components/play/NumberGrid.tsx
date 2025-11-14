@@ -76,34 +76,36 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
           return (
             <div 
               key={`row-${row}`} 
-              className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 px-1"
+              className="overflow-x-auto scrollbar-hide pb-1 min-w-0"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              {rowNumbers.map(num => {
-                const isSelected = selectedNumbers.includes(num);
-                const isPreviouslyBet = previouslyBetNumbers.includes(num);
-                
-                return (
-                  <button
-                    key={num}
-                    data-testid={`number-button-${num}`}
-                    onClick={() => onNumberSelect(num)}
-                    className={cn(
-                      "flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full font-bold text-base sm:text-lg transition-all duration-200 relative touch-manipulation active:scale-95",
-                      isSelected 
-                        ? "bg-gradient-to-br from-primary to-purple-700 text-white border-primary/60 shadow-lg scale-105 shadow-primary/20" 
-                        : isPreviouslyBet
-                          ? "bg-gray-200 text-gray-900 border-primary/40 border-2 hover:border-primary/60 shadow-sm"
-                          : "bg-gray-200 text-gray-900 border-transparent hover:bg-gray-300 shadow-sm"
-                    )}
-                  >
-                    {formatNumber(num)}
-                    {isPreviouslyBet && !isSelected && (
-                      <span className="absolute -top-0.5 -right-0.5 bg-primary rounded-full w-3 h-3 border-2 border-white"></span>
-                    )}
-                  </button>
-                );
-              })}
+              <div className="flex flex-nowrap gap-2 px-1">
+                {rowNumbers.map(num => {
+                  const isSelected = selectedNumbers.includes(num);
+                  const isPreviouslyBet = previouslyBetNumbers.includes(num);
+                  
+                  return (
+                    <button
+                      key={num}
+                      data-testid={`number-button-${num}`}
+                      onClick={() => onNumberSelect(num)}
+                      className={cn(
+                        "flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full font-bold text-base sm:text-lg transition-all duration-200 relative touch-manipulation active:scale-95",
+                        isSelected 
+                          ? "bg-gradient-to-br from-primary to-purple-700 text-white border-primary/60 shadow-lg scale-105 shadow-primary/20" 
+                          : isPreviouslyBet
+                            ? "bg-gray-200 text-gray-900 border-primary/40 border-2 hover:border-primary/60 shadow-sm"
+                            : "bg-gray-200 text-gray-900 border-transparent hover:bg-gray-300 shadow-sm"
+                      )}
+                    >
+                      {formatNumber(num)}
+                      {isPreviouslyBet && !isSelected && (
+                        <span className="absolute -top-0.5 -right-0.5 bg-primary rounded-full w-3 h-3 border-2 border-white"></span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           );
         })}
