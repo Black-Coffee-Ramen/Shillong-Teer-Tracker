@@ -240,22 +240,19 @@ export default function PlayPage() {
           ) : (
             <div className="space-y-6">
               {/* Number Selection Grid - Full Width */}
-              <div className="card-modern p-6">
-                <h3 className="text-gray-800 text-lg font-medium mb-4">Select Numbers</h3>
-                <NumberGrid 
-                  onNumberSelect={handleNumberSelect}
-                  selectedNumbers={selectedNumbers}
-                />
-                {selectedNumbers.length > 0 && (
-                  <div className="mt-4">
-                    <BettingForm 
-                      selectedNumbers={selectedNumbers}
-                      selectedRound={selectedRound}
-                      onResetSelection={resetSelection}
-                    />
-                  </div>
-                )}
-              </div>
+              <NumberGrid 
+                onNumberSelect={handleNumberSelect}
+                selectedNumbers={selectedNumbers}
+              />
+              {selectedNumbers.length > 0 && (
+                <div className="card-modern p-6">
+                  <BettingForm 
+                    selectedNumbers={selectedNumbers}
+                    selectedRound={selectedRound}
+                    onResetSelection={resetSelection}
+                  />
+                </div>
+              )}
               
               {/* New Betting Interface with Server-Side Time Validation */}
               <BettingInterface />

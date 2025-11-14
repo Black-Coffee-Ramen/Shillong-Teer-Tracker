@@ -38,8 +38,7 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
   return (
     <div className="bg-white rounded-2xl p-4 sm:p-5 mb-6 shadow-sm">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-gray-900 font-bold text-lg flex items-center gap-2">
-          <span className="text-xl">🎯</span>
+        <h3 className="text-gray-900 font-bold text-lg">
           Select Your Number
         </h3>
         <div className="text-xs text-gray-600 font-medium">
@@ -48,17 +47,17 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
       </div>
       
       {/* Compact Legend */}
-      <div className="flex items-center gap-3 mb-3 text-xs text-gray-600">
-        <div className="flex items-center gap-1.5">
-          <div className="w-4 h-4 bg-gradient-to-br from-primary to-purple-700 rounded"></div>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3 text-xs text-gray-600">
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <div className="w-4 h-4 bg-gradient-to-br from-primary to-purple-700 rounded flex-shrink-0"></div>
           <span>Selected</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-4 h-4 bg-gray-100 rounded"></div>
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <div className="w-4 h-4 bg-gray-100 rounded flex-shrink-0"></div>
           <span>Available</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-4 h-4 bg-gray-100 rounded relative">
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <div className="w-4 h-4 bg-gray-100 rounded relative flex-shrink-0">
             <span className="absolute -top-0.5 -right-0.5 bg-primary rounded-full w-2 h-2"></span>
           </div>
           <span>Previously Bet</span>
