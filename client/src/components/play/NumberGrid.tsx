@@ -68,47 +68,40 @@ export default function NumberGrid({ onNumberSelect, selectedNumbers }: NumberGr
       </div>
       
       {/* Horizontal scrollable number grid */}
-      <div className="space-y-2 mb-4">
-        {Array.from({ length: 10 }, (_, row) => {
-          // Each row shows: 00-90, 01-91, 02-92, etc.
-          const rowNumbers = Array.from({ length: 10 }, (_, col) => row + (col * 10));
-          
-          return (
-            <div 
-              key={`row-${row}`} 
-              className="overflow-x-auto scrollbar-hide pb-1 min-w-0"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              <div className="flex flex-nowrap gap-2 px-1">
-                {rowNumbers.map(num => {
-                  const isSelected = selectedNumbers.includes(num);
-                  const isPreviouslyBet = previouslyBetNumbers.includes(num);
-                  
-                  return (
-                    <button
-                      key={num}
-                      data-testid={`number-button-${num}`}
-                      onClick={() => onNumberSelect(num)}
-                      className={cn(
-                        "flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full font-bold text-base sm:text-lg transition-all duration-200 relative touch-manipulation active:scale-95",
-                        isSelected 
-                          ? "bg-gradient-to-br from-primary to-purple-700 text-white border-primary/60 shadow-lg scale-105 shadow-primary/20" 
-                          : isPreviouslyBet
-                            ? "bg-gray-200 text-gray-900 border-primary/40 border-2 hover:border-primary/60 shadow-sm"
-                            : "bg-gray-200 text-gray-900 border-transparent hover:bg-gray-300 shadow-sm"
-                      )}
-                    >
-                      {formatNumber(num)}
-                      {isPreviouslyBet && !isSelected && (
-                        <span className="absolute -top-0.5 -right-0.5 bg-primary rounded-full w-3 h-3 border-2 border-white"></span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+      <div className="overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 mb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="inline-block min-w-full px-4 sm:px-0">
+          <div className="grid grid-cols-10 gap-1.5 sm:gap-2 w-fit mx-auto">
+            {Array.from({ length: 10 }, (_, row) => {
+              // Each row shows: 00-90, 01-91, 02-92, etc.
+              return Array.from({ length: 10 }, (_, col) => {
+                const num = row + (col * 10);
+                const isSelected = selectedNumbers.includes(num);
+                const isPreviouslyBet = previouslyBetNumbers.includes(num);
+                
+                return (
+                  <button
+                    key={num}
+                    data-testid={`number-button-${num}`}
+                    onClick={() => onNumberSelect(num)}
+                    className={cn(
+                      "w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm md:text-base transition-all duration-200 relative touch-manipulation active:scale-95",
+                      isSelected 
+                        ? "bg-gradient-to-br from-primary to-purple-700 text-white shadow-md scale-105 shadow-primary/20" 
+                        : isPreviouslyBet
+                          ? "bg-gray-200 text-gray-900 border-primary/40 border-2 hover:border-primary/60"
+                          : "bg-gray-200 text-gray-900 hover:bg-gray-300"
+                    )}
+                  >
+                    {formatNumber(num)}
+                    {isPreviouslyBet && !isSelected && (
+                      <span className="absolute -top-0.5 -right-0.5 bg-primary rounded-full w-2.5 h-2.5 sm:w-3 sm:h-3 border border-white"></span>
+                    )}
+                  </button>
+                );
+              });
+            }).flat()}
+          </div>
+        </div>
       </div>
       
       {/* Selected Numbers Display */}
