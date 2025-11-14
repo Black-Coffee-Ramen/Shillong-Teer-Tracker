@@ -80,7 +80,6 @@ app.use((req, res, next) => {
         log(`serving on port ${port}`);
         // Save the successful port to a file for the APK build script to read
         try {
-          // Get current directory
           const __filename = fileURLToPath(import.meta.url);
           const __dirname = path.dirname(__filename);
           fs.writeFileSync(path.join(__dirname, '..', '.port'), port.toString());
@@ -89,12 +88,11 @@ app.use((req, res, next) => {
           log(`Could not save port to file: ${err}`);
         }
         resolve();
-      }).on('error', async (err: any) => {
+      }).on('error', (err: any) => {
         if (err.code === 'EADDRINUSE') {
           log(`Port ${port} is already in use, trying next port...`);
           serverInstance.close();
-          await tryListen(portIndex + 1);
-          resolve();
+          tryListen(portIndex + 1).then(resolve).catch(reject);
         } else {
           reject(err);
         }
